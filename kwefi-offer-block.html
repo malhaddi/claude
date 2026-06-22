@@ -1,22 +1,22 @@
 <!-- ============================================================
-     KWEFI · OFFER BLOCK (standalone)
-     Offer cards + free gifts + sold-out + pre-order CTA
-     Paste this whole thing into a Shopify "Custom Liquid" box.
+     RASEEL · OFFER BLOCK (standalone)
+     Angebotskarten + Geschenke + CTA
+     Füge dies in einen Shopify "Custom Liquid"-Block ein.
 
-     EDIT YOUR DATA in the PLANS / GIFT_DATA objects in the
-     <script> near the bottom. Replace [BRACKETED] placeholders
-     and the placehold.co image URLs with your own assets.
+     DATEN BEARBEITEN in den PLANS / GIFT_DATA Objekten im
+     <script> weiter unten. Ersetze die [KLAMMER]-Platzhalter
+     und die placehold.co Bild-URLs durch deine eigenen Assets.
 ============================================================ -->
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
 
 .kw{
-  /* ====== EDIT BRAND COLORS HERE ====== */
-  --accent:#ea580c;
-  --accent-deep:#c2410c;
-  --accent-soft:rgba(234,88,12,0.10);
-  --green:#16a34a;
-  --green-soft:rgba(22,163,74,0.10);
+  /* ====== MARKENFARBEN (RASEEL) ====== */
+  --accent:#1f5048;          /* Petrol/Teal – CTA, Preise, Labels */
+  --accent-deep:#163a34;
+  --accent-soft:rgba(31,80,72,0.10);
+  --green:#c47c87;           /* Altrosa – Best Value, Geschenke, Auswahl */
+  --green-soft:rgba(196,124,135,0.12);
   --red:#dc2626;
 
   --bg:#ffffff;
@@ -37,8 +37,7 @@
   background:var(--bg);
   -webkit-font-smoothing:antialiased;
   line-height:1.55;
-  /* Constrained to a single column to match the original buy box.
-     Bump max-width or remove it if you want it wider. */
+  /* Auf eine Spalte begrenzt. max-width erhöhen/entfernen für mehr Breite. */
   max-width:460px;
   margin:0 auto;
 }
@@ -46,7 +45,7 @@
 .kw img{max-width:100%;height:auto;display:block}
 
 /* ====== CTA ====== */
-.kw-cta{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;background:var(--accent);color:#fff;text-decoration:none;padding:16px 24px;border-radius:100px;font-family:var(--head);font-weight:800;font-size:15px;letter-spacing:0.06em;text-transform:uppercase;box-shadow:0 12px 32px -12px rgba(234,88,12,0.45);transition:transform .15s ease,background .15s ease;border:none;cursor:pointer}
+.kw-cta{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;background:var(--accent);color:#fff;text-decoration:none;padding:16px 24px;border-radius:100px;font-family:var(--head);font-weight:800;font-size:15px;letter-spacing:0.06em;text-transform:uppercase;box-shadow:0 12px 32px -12px rgba(31,80,72,0.45);transition:transform .15s ease,background .15s ease;border:none;cursor:pointer}
 .kw-cta:hover{transform:translateY(-2px);background:var(--accent-deep)}
 .kw-cta-label{display:flex;align-items:center;gap:8px}
 .kw-cta-label::after{content:"\2192";font-size:18px}
@@ -56,21 +55,16 @@
 .kw-cta-total-strike{font-size:12px;text-decoration:line-through;opacity:0.7;font-weight:600}
 .kw-cta-total-price{font-size:20px;font-weight:900;color:#fff}
 
-/* ====== INFO PILLS ====== */
-.kw-info-pills{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
-.kw-info-pill{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--card-line);border-radius:10px;padding:9px 13px;font-family:var(--head);font-weight:700;font-size:12.5px;color:var(--ink)}
-.kw-info-pill .ico{font-size:15px;line-height:1}
-
-/* ====== OFFER CARDS ====== */
+/* ====== ANGEBOTSKARTEN ====== */
 .kw-offer{display:flex;flex-direction:column;gap:14px;margin-bottom:16px}
 .kw-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .kw-card{position:relative;background:var(--bg);border:2px solid var(--card-line);border-radius:14px;padding:20px 14px 14px;cursor:pointer;text-align:center;display:flex;flex-direction:column;transition:all .18s ease}
 .kw-card:hover{border-color:#cfd5dc}
-.kw-card.is-selected{border-color:var(--green);background:var(--green-soft);box-shadow:0 0 0 1px var(--green),0 0 24px rgba(22,163,74,0.1)}
+.kw-card.is-selected{border-color:var(--green);background:var(--green-soft);box-shadow:0 0 0 1px var(--green),0 0 24px rgba(196,124,135,0.12)}
 .kw-card-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;font-family:var(--head);font-weight:800;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:5px 12px;border-radius:6px;white-space:nowrap;display:none}
 .kw-card.is-recommended .kw-card-badge{display:block}
 .kw-card-save{position:absolute;top:10px;right:10px;background:var(--accent);color:#fff;font-family:var(--head);font-weight:900;font-size:10px;letter-spacing:0.04em;padding:3px 7px;border-radius:5px;text-transform:uppercase;line-height:1.2}
-.kw-card-name{font-family:var(--display);font-weight:400;font-size:30px;color:var(--ink);line-height:1;letter-spacing:0.01em;margin-bottom:4px;text-transform:uppercase}
+.kw-card-name{font-family:var(--display);font-weight:400;font-size:26px;color:var(--ink);line-height:1.05;letter-spacing:0.01em;margin-bottom:4px;text-transform:uppercase}
 .kw-card-name .sub{font-family:var(--head);font-weight:800;font-size:11px;display:block;color:var(--tx-dim);letter-spacing:0.08em;margin-top:6px;text-transform:uppercase}
 .kw-card.is-selected .kw-card-name .sub{color:var(--ink)}
 .kw-card-img{width:100%;aspect-ratio:1/1;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:10px 0;overflow:hidden;background:var(--card)}
@@ -86,24 +80,7 @@
 .kw-card-pre{font-family:var(--head);font-weight:700;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:3px;display:flex;align-items:center;justify-content:center;gap:5px}
 .kw-card-pre::before{content:"";width:6px;height:6px;background:var(--green);border-radius:50%}
 
-/* ====== SOLD OUT ====== */
-.kw-sold{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;background:#e9eaec;color:#6b7280;padding:14px 22px;border-radius:100px;font-family:var(--head);font-weight:800;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;cursor:not-allowed;margin-bottom:10px;border:none;position:relative;overflow:hidden}
-.kw-sold::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(0,0,0,0.02) 0px,rgba(0,0,0,0.02) 8px,transparent 8px,transparent 16px);pointer-events:none}
-.kw-sold-label{display:inline-flex;align-items:center;gap:9px;position:relative}
-.kw-sold-dot{width:8px;height:8px;border-radius:50%;background:#9ca3af;animation:kwSoldDot 1.6s ease-in-out infinite}
-@keyframes kwSoldDot{0%,100%{opacity:1}50%{opacity:0.35}}
-.kw-sold-price{font-family:var(--head);font-weight:700;font-size:12px;display:inline-flex;align-items:center;gap:7px;position:relative}
-.kw-sold-price .strike{text-decoration:line-through;opacity:0.75;font-weight:600}
-
-/* ====== SHIP-DATE NOTE + STOCK ====== */
-.kw-pre-note{display:flex;align-items:center;justify-content:center;gap:7px;text-align:center;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--tx-dim);margin-top:10px}
-.kw-pre-note svg{width:14px;height:14px;color:var(--accent);flex-shrink:0}
-.kw-pre-note strong{color:var(--ink);font-weight:800}
-.kw-stock{display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--head);font-weight:700;font-size:12.5px;color:var(--green);margin-top:14px;letter-spacing:0.03em}
-.kw-stock-dot{display:inline-block;width:9px;height:9px;background:var(--green);border-radius:50%;animation:kwStockPulse 1.4s ease-in-out infinite;box-shadow:0 0 0 0 rgba(22,163,74,0.6)}
-@keyframes kwStockPulse{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(22,163,74,0.6)}50%{opacity:0.55;transform:scale(1.25);box-shadow:0 0 0 6px rgba(22,163,74,0)}}
-
-/* ====== BONUS GIFTS ====== */
+/* ====== GESCHENKE ====== */
 .kw-gifts-head{display:flex;align-items:center;gap:14px;margin-top:6px;margin-bottom:14px}
 .kw-gifts-head .line{flex:1;height:1px;background:var(--card-line)}
 .kw-gifts-head .ttl{font-family:var(--head);font-weight:800;font-size:11.5px;color:var(--ink);white-space:nowrap;letter-spacing:0.06em;text-transform:uppercase}
@@ -131,7 +108,7 @@
 .kw-claim .val{color:var(--green);font-weight:900}
 .kw-upgrade-link{color:var(--green);font-weight:800;cursor:pointer;border-bottom:2px solid var(--green);padding-bottom:1px;transition:.2s;text-transform:uppercase;letter-spacing:0.04em;font-family:var(--head);font-size:11.5px}
 
-/* ====== GIFT EXPLAINER MODAL ====== */
+/* ====== GESCHENK-MODAL ====== */
 .kw-giftmodal-backdrop{position:fixed;inset:0;background:rgba(255,255,255,0.78);backdrop-filter:blur(8px);z-index:10001;display:none;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .25s}
 .kw-giftmodal-backdrop.is-open{display:flex;opacity:1}
 .kw-giftmodal{background:var(--bg);border:1px solid var(--card-line);border-radius:18px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative;transform:scale(0.9);transition:transform .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 30px 80px rgba(0,0,0,0.18)}
@@ -139,7 +116,7 @@
 .kw-giftmodal-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:var(--card);border:1px solid var(--card-line);color:var(--ink);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;z-index:2;font-family:var(--head)}
 .kw-giftmodal-close:hover{background:#eef0f3;transform:rotate(90deg)}
 .kw-giftmodal-hero{padding:30px 24px 0;text-align:center}
-.kw-giftmodal-tag{display:inline-block;font-family:var(--head);font-weight:800;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);background:var(--green-soft);border:1px solid rgba(22,163,74,0.35);padding:4px 10px;border-radius:5px;margin-bottom:14px}
+.kw-giftmodal-tag{display:inline-block;font-family:var(--head);font-weight:800;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);background:var(--green-soft);border:1px solid rgba(196,124,135,0.35);padding:4px 10px;border-radius:5px;margin-bottom:14px}
 .kw-giftmodal-tag .strike{text-decoration:line-through;opacity:0.7;margin-right:5px}
 .kw-giftmodal-img{width:140px;height:140px;margin:0 auto 14px;border-radius:16px;background:var(--card);border:1px solid var(--card-line);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .kw-giftmodal-img img{width:100%;height:100%;object-fit:contain}
@@ -156,16 +133,16 @@
 .kw-giftmodal-row:last-child{margin-bottom:0}
 .kw-giftmodal-row .name{font-family:var(--head);font-weight:800;font-size:14px;color:var(--ink);line-height:1.2}
 .kw-giftmodal-row .name small{display:block;font-family:var(--sans);font-weight:500;font-size:12px;color:var(--tx);margin-top:4px;line-height:1.45}
-.kw-giftmodal-row .dose{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--accent);letter-spacing:0.02em;white-space:nowrap;background:var(--accent-soft);border:1px solid rgba(234,88,12,0.25);border-radius:6px;padding:3px 8px}
+.kw-giftmodal-row .dose{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--accent);letter-spacing:0.02em;white-space:nowrap;background:var(--accent-soft);border:1px solid rgba(31,80,72,0.25);border-radius:6px;padding:3px 8px}
 .kw-giftmodal-row.no-dose{grid-template-columns:1fr}
 .kw-giftmodal-feats{list-style:none;padding:0;margin:0}
 .kw-giftmodal-feats li{position:relative;padding-left:28px;font-size:13.5px;color:var(--tx);line-height:1.5;margin-bottom:10px}
 .kw-giftmodal-feats li::before{content:"\2713";position:absolute;left:0;top:0;width:18px;height:18px;background:var(--green);color:#fff;font-weight:900;font-size:11px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 .kw-giftmodal-feats li strong{color:var(--ink);font-weight:700}
-.kw-giftmodal-foot{display:flex;align-items:center;gap:8px;font-family:var(--head);font-weight:800;font-size:11.5px;letter-spacing:0.04em;color:var(--green);padding:12px 14px;background:var(--green-soft);border:1px solid rgba(22,163,74,0.35);border-radius:10px;margin-top:18px;text-transform:uppercase;line-height:1.3}
+.kw-giftmodal-foot{display:flex;align-items:center;gap:8px;font-family:var(--head);font-weight:800;font-size:11.5px;letter-spacing:0.04em;color:var(--green);padding:12px 14px;background:var(--green-soft);border:1px solid rgba(196,124,135,0.35);border-radius:10px;margin-top:18px;text-transform:uppercase;line-height:1.3}
 .kw-giftmodal-foot svg{width:16px;height:16px;flex-shrink:0}
 
-/* ====== TOAST + CONFETTI (fire when Offer 2 unlocks all gifts) ====== */
+/* ====== TOAST + KONFETTI ====== */
 .kw-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.7);background:var(--bg);border:2px solid var(--green);border-radius:18px;padding:22px 30px;box-shadow:0 20px 60px rgba(0,0,0,0.2);z-index:10000;text-align:center;opacity:0;pointer-events:none;transition:opacity .35s,transform .45s cubic-bezier(.34,1.56,.64,1);max-width:90vw}
 .kw-toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .kw-toast-icon{font-size:36px;line-height:1;margin-bottom:8px}
@@ -175,16 +152,10 @@
 @media (max-width:640px){
   .kw-cards{gap:10px}
   .kw-card{padding:18px 10px 12px}
-  .kw-card-name{font-size:24px}
+  .kw-card-name{font-size:22px}
   .kw-card-price{font-size:20px}
   .kw-gifts{gap:8px}
   .kw-gift-label{font-size:10px}
-  .kw-sold{padding:11px 16px;font-size:11px;letter-spacing:0.05em;gap:8px}
-  .kw-sold-price{font-size:11px;gap:5px}
-  .kw-sold-dot{width:7px;height:7px}
-  .kw-pre-note{font-size:10px;letter-spacing:0.05em;gap:5px;flex-wrap:wrap;padding:0 8px}
-  .kw-pre-note svg{width:12px;height:12px}
-  .kw-stock{font-size:11.5px;margin-top:12px}
   .kw-card-pre{font-size:8.5px;letter-spacing:0.08em}
   .kw-giftmodal-backdrop{padding:14px}
   .kw-giftmodal{border-radius:14px}
@@ -196,153 +167,133 @@
 
 <div class="kw">
 
-  <!-- INFO PILLS -->
-  <div class="kw-info-pills">
-    <span class="kw-info-pill" id="kwInfoQty"><span class="ico">&#128230;</span><span class="kw-info-qty-text">[Qty / size]</span></span>
-    <span class="kw-info-pill"><span class="ico">&#127482;&#127480;</span>[Origin / Made in __]</span>
-    <span class="kw-info-pill"><span class="ico">&#127807;</span>[Cert tag]</span>
-  </div>
-
-  <!-- OFFER CARDS -->
+  <!-- ANGEBOTSKARTEN -->
   <div class="kw-offer" id="kwOffer">
     <div class="kw-cards" id="kwCards">
 
       <div class="kw-card is-selected" data-plan="1">
-        <span class="kw-card-badge">[Standard]</span>
-        <div class="kw-card-name">Offer 1<span class="sub">[Normal]</span></div>
-        <div class="kw-card-img"><img src="https://placehold.co/400x400/fafafa/9ca3af?text=Offer+1" alt="[Offer 1]"></div>
+        <span class="kw-card-badge">Standard</span>
+        <div class="kw-card-name">Einzelflasche<span class="sub">1 Flasche</span></div>
+        <div class="kw-card-img"><img src="https://placehold.co/400x400/fafafa/9ca3af?text=Einzelflasche" alt="Einzelflasche"></div>
         <div class="kw-card-check">
           <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M8 12l3 3 5-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          [Get Started]
+          Auswählen
         </div>
         <div class="kw-card-divider"></div>
-        <div class="kw-card-pre">Pre-Order Price</div>
+        <div class="kw-card-pre">Aktionspreis</div>
         <div class="kw-card-price">
-          <span class="strike" data-strike-1>[$xx.xx]</span>
-          <span data-price-1>[$xx.xx]</span>
+          <span class="strike" data-strike-1>[€xx,xx]</span>
+          <span data-price-1>[€xx,xx]</span>
         </div>
-        <div class="kw-card-perunit" data-perunit-1>[$ per unit]</div>
-        <div class="kw-card-bill" data-bill-1>[Single unit &middot; one-time]</div>
+        <div class="kw-card-perunit" data-perunit-1>[€ pro Flasche]</div>
+        <div class="kw-card-bill" data-bill-1>Einzelflasche &middot; einmalig</div>
       </div>
 
       <div class="kw-card is-recommended" data-plan="2">
-        <span class="kw-card-badge">[Best Value]</span>
-        <span class="kw-card-save">Save XX%</span>
-        <div class="kw-card-name">Offer 2<span class="sub">[Better AOV]</span></div>
-        <div class="kw-card-img"><img src="https://placehold.co/400x400/fafafa/9ca3af?text=Offer+2" alt="[Offer 2]"></div>
+        <span class="kw-card-badge">Beliebteste Wahl</span>
+        <span class="kw-card-save">Spare XX%</span>
+        <div class="kw-card-name">Haarfülle-<br>Programm<span class="sub">Bestes Ergebnis</span></div>
+        <div class="kw-card-img"><img src="https://placehold.co/400x400/fafafa/9ca3af?text=Programm" alt="Haarfülle-Programm"></div>
         <div class="kw-card-check">
           <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M8 12l3 3 5-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          [Best Value]
+          Beliebteste Wahl
         </div>
         <div class="kw-card-divider"></div>
-        <div class="kw-card-pre">Pre-Order Price</div>
+        <div class="kw-card-pre">Aktionspreis</div>
         <div class="kw-card-price">
-          <span class="strike" data-strike-2>[$xxx.xx]</span>
-          <span data-price-2>[$xxx.xx]</span>
+          <span class="strike" data-strike-2>[€xxx,xx]</span>
+          <span data-price-2>[€xxx,xx]</span>
         </div>
-        <div class="kw-card-perunit" data-perunit-2>[$ per unit]</div>
-        <div class="kw-card-bill" data-bill-2>[Bundle &middot; one-time]</div>
+        <div class="kw-card-perunit" data-perunit-2>[€ pro Flasche]</div>
+        <div class="kw-card-bill" data-bill-2>Spar-Set &middot; einmalig</div>
       </div>
 
     </div>
 
-    <!-- BONUS GIFTS -->
+    <!-- GESCHENKE -->
     <div class="kw-gifts-head">
       <span class="line"></span>
-      <span class="ttl">Free Gifts &mdash; <em>Pre-Order Only</em></span>
+      <span class="ttl">Deine <em>exklusiven</em> Geschenke</span>
       <span class="line"></span>
     </div>
 
     <div class="kw-gifts" id="kwGifts">
       <div class="kw-gift" data-gift="0">
         <div class="kw-gift-card">
-          <div class="kw-gift-tag"><span class="strike">[$x.xx]</span>FREE</div>
-          <div class="kw-gift-img"><img src="https://placehold.co/200x200/fafafa/9ca3af?text=Gift+1" alt="[Gift 1]"></div>
+          <div class="kw-gift-tag"><span class="strike">10€</span>GRATIS</div>
+          <div class="kw-gift-img"><img src="https://placehold.co/200x200/fafafa/9ca3af?text=10€" alt="10€ Rabatt"></div>
           <div class="kw-gift-lock">
             <div class="kw-gift-lock-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
             <div class="kw-gift-unlock-msg"></div>
           </div>
           <span class="kw-gift-info">i</span>
         </div>
-        <div class="kw-gift-label">[Gift 1 Name]</div>
+        <div class="kw-gift-label">10€ Rabatt</div>
       </div>
 
       <div class="kw-gift" data-gift="1">
         <div class="kw-gift-card">
-          <div class="kw-gift-tag"><span class="strike">[$xx.xx]</span>FREE</div>
-          <div class="kw-gift-img"><img src="https://placehold.co/200x200/fafafa/9ca3af?text=Gift+2" alt="[Gift 2]"></div>
+          <div class="kw-gift-tag"><span class="strike">19,95€</span>GRATIS</div>
+          <div class="kw-gift-img"><img src="https://placehold.co/200x200/fafafa/9ca3af?text=Guide" alt="Digitaler Haarpflege-Guide"></div>
           <div class="kw-gift-lock">
             <div class="kw-gift-lock-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
             <div class="kw-gift-unlock-msg"></div>
           </div>
           <span class="kw-gift-info">i</span>
         </div>
-        <div class="kw-gift-label">[Gift 2 Name]</div>
+        <div class="kw-gift-label">Digitaler Haarpflege-Guide</div>
       </div>
 
       <div class="kw-gift" data-gift="2">
         <div class="kw-gift-card">
-          <div class="kw-gift-tag"><span class="strike">[$xx.xx]</span>FREE</div>
-          <div class="kw-gift-img"><img src="https://placehold.co/200x200/fafafa/9ca3af?text=Gift+3" alt="[Gift 3]"></div>
+          <div class="kw-gift-tag"><span class="strike">6,95€</span>GRATIS</div>
+          <div class="kw-gift-img"><img src="https://placehold.co/200x200/fafafa/9ca3af?text=Versand" alt="Kostenloser Versand"></div>
           <div class="kw-gift-lock">
             <div class="kw-gift-lock-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
             <div class="kw-gift-unlock-msg"></div>
           </div>
           <span class="kw-gift-info">i</span>
         </div>
-        <div class="kw-gift-label">[Gift 3 Name]</div>
+        <div class="kw-gift-label">Kostenloser Versand</div>
       </div>
 
       <div class="kw-gift" data-gift="3">
         <div class="kw-gift-card">
-          <div class="kw-gift-tag"><span class="strike">[$xx.xx]</span>FREE</div>
-          <div class="kw-gift-img"><img src="https://placehold.co/200x200/fafafa/9ca3af?text=Gift+4" alt="[Gift 4]"></div>
+          <div class="kw-gift-tag">GRATIS</div>
+          <div class="kw-gift-img"><img src="https://placehold.co/200x200/fafafa/9ca3af?text=90+Tage" alt="90-Tage-Garantie"></div>
           <div class="kw-gift-lock">
             <div class="kw-gift-lock-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
             <div class="kw-gift-unlock-msg"></div>
           </div>
           <span class="kw-gift-info">i</span>
         </div>
-        <div class="kw-gift-label">[Gift 4 Name]</div>
+        <div class="kw-gift-label">90-Tage-Garantie</div>
       </div>
     </div>
 
     <div class="kw-claim" id="kwClaim"></div>
   </div>
 
-  <!-- SOLD OUT (visual cue) -->
-  <button class="kw-sold" type="button" disabled aria-disabled="true">
-    <span class="kw-sold-label"><span class="kw-sold-dot"></span>Currently Sold Out</span>
-    <span class="kw-sold-price"><span class="strike" id="kwSoldStrike">[$xx.xx]</span></span>
-  </button>
-
-  <!-- PRE-ORDER CTA -->
+  <!-- CTA -->
   <a href="#" class="kw-cta" id="kwCta">
-    <span class="kw-cta-label" id="kwCtaLabel">[Pre-Order Now]</span>
+    <span class="kw-cta-label" id="kwCtaLabel">In den Warenkorb</span>
     <span class="kw-cta-total">
-      <span class="kw-cta-total-label">Pre-Order Price</span>
+      <span class="kw-cta-total-label">Gesamt</span>
       <span class="kw-cta-total-row">
-        <span class="kw-cta-total-strike" id="kwCtaStrike">[$xx.xx]</span>
-        <span class="kw-cta-total-price" id="kwCtaPrice">[$xx.xx]</span>
+        <span class="kw-cta-total-strike" id="kwCtaStrike">[€xx,xx]</span>
+        <span class="kw-cta-total-price" id="kwCtaPrice">[€xx,xx]</span>
       </span>
     </span>
   </a>
 
-  <div class="kw-pre-note">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-    Reserve yours &middot; Estimated arrival date <span id="kwFlag" aria-hidden="true" style="margin-right:6px;font-size:14px;line-height:1;"></span><strong id="kwShipDate">&mdash;</strong>
-  </div>
-
-  <div class="kw-stock"><span class="kw-stock-dot"></span>Low stock remaining &mdash; lock yours in</div>
-
 </div>
 
-<!-- GIFT EXPLAINER MODAL -->
+<!-- GESCHENK-MODAL -->
 <div class="kw-giftmodal-backdrop" id="kwGiftModal" role="dialog" aria-modal="true" aria-labelledby="kwGiftModalTitle" aria-hidden="true">
   <div class="kw-giftmodal" role="document">
-    <button type="button" class="kw-giftmodal-close" id="kwGiftModalClose" aria-label="Close">&times;</button>
+    <button type="button" class="kw-giftmodal-close" id="kwGiftModalClose" aria-label="Schließen">&times;</button>
     <div class="kw-giftmodal-hero">
-      <span class="kw-giftmodal-tag" id="kwGiftModalTag">FREE BONUS</span>
+      <span class="kw-giftmodal-tag" id="kwGiftModalTag">GRATIS-GESCHENK</span>
       <div class="kw-giftmodal-img"><img id="kwGiftModalImg" src="" alt=""></div>
       <h3 class="kw-giftmodal-title" id="kwGiftModalTitle"></h3>
     </div>
@@ -354,54 +305,51 @@
 <canvas id="kwConfetti"></canvas>
 <div class="kw-toast" id="kwToast" role="alert" aria-live="polite">
   <div class="kw-toast-icon">&#127881;</div>
-  <div class="kw-toast-title">Best Value Unlocked!</div>
+  <div class="kw-toast-title">Alle Geschenke freigeschaltet!</div>
 </div>
 
 <script>(function(){
 'use strict';
 
-/* ====== EDIT YOUR PRODUCT DATA HERE ====== */
+/* ====== DEINE PRODUKTDATEN HIER BEARBEITEN ====== */
 var PLANS = {
-  '1': { url:'[checkout link offer 1]', name:'Offer 1', price:'[$xx.xx]', strike:'[$xx.xx]', perUnit:'[$ per unit]', bill:'Single unit · one-time', total:'[$xx.xx]', totalStrike:'[$xx.xx]', label:'Pre-Order Offer 1' },
-  '2': { url:'[checkout link offer 2]', name:'Offer 2', price:'[$xxx.xx]', strike:'[$xxx.xx]', perUnit:'[$ per unit]', bill:'Bundle · one-time', total:'[$xxx.xx]', totalStrike:'[$xxx.xx]', label:'Pre-Order Offer 2' }
+  '1': { url:'[Checkout-Link Einzelflasche]', name:'Einzelflasche', price:'[€xx,xx]', strike:'[€xx,xx]', perUnit:'[€ pro Flasche]', bill:'Einzelflasche · einmalig', total:'[€xx,xx]', totalStrike:'[€xx,xx]', label:'In den Warenkorb' },
+  '2': { url:'[Checkout-Link Haarfülle-Programm]', name:'Haarfülle-Programm', price:'[€xxx,xx]', strike:'[€xxx,xx]', perUnit:'[€ pro Flasche]', bill:'Spar-Set · einmalig', total:'[€xxx,xx]', totalStrike:'[€xxx,xx]', label:'In den Warenkorb' }
 };
 
-/* Gift content shown in the explainer modal */
+/* Geschenk-Inhalte für das Erklär-Modal */
 var GIFT_DATA = {
-  '0': { tag:'<span class="strike">[$x.xx]</span>FREE', img:'https://placehold.co/300x300/fafafa/9ca3af?text=Gift+1', title:'[Gift 1 Title]', sub:'[Short value statement for gift 1.]',
-    sections:[{ type:'feats', items:['[Feature line one]','[Feature line two]','[Feature line three]'] }] },
-  '1': { tag:'<span class="strike">[$xx.xx]</span>FREE', img:'https://placehold.co/300x300/fafafa/9ca3af?text=Gift+2', title:'[Gift 2 Title]', sub:'[Short value statement for gift 2.]',
-    sections:[{ h:"What's inside", type:'rows', items:[
-      { name:'[Item A]', desc:'[Short blurb.]' },
-      { name:'[Item B]', desc:'[Short blurb.]' },
-      { name:'[Item C]', desc:'[Short blurb.]' }
-    ]}], foot:'[Delivery / unlock note]' },
-  '2': { tag:'<span class="strike">[$xx.xx]</span>FREE', img:'https://placehold.co/300x300/fafafa/9ca3af?text=Gift+3', title:'[Gift 3 Title]', sub:'[Short value statement for gift 3.]',
-    sections:[{ type:'feats', items:['[Spec one]','[Spec two]','[Spec three]','[Spec four]'] }], foot:'[Ships with your order]' },
-  '3': { tag:'<span class="strike">[$xx.xx]</span>FREE', img:'https://placehold.co/300x300/fafafa/9ca3af?text=Gift+4', title:'[Gift 4 Title]', sub:'[Short value statement for gift 4.]',
-    sections:[{ h:'[Section heading]', type:'rows', items:[
-      { name:'[Active 1]', dose:'[Xmg]', desc:'[What it does.]' },
-      { name:'[Active 2]', dose:'[Xmg]', desc:'[What it does.]' }
-    ]}], foot:'[Ships with your order]' }
+  '0': { tag:'<span class="strike">10€</span>GRATIS', img:'https://placehold.co/300x300/fafafa/9ca3af?text=10€', title:'10€ Rabatt', sub:'Spare sofort 10€ auf deine Bestellung.',
+    sections:[{ type:'feats', items:['Wird automatisch im Warenkorb abgezogen','Gilt für deine gesamte Erstbestellung','Kein Gutscheincode nötig'] }] },
+  '1': { tag:'<span class="strike">19,95€</span>GRATIS', img:'https://placehold.co/300x300/fafafa/9ca3af?text=Guide', title:'Digitaler Haarpflege-Guide', sub:'Dein kompletter Routine-Guide für volleres Haar.',
+    sections:[{ h:'Das ist enthalten', type:'rows', items:[
+      { name:'Tägliche Anwendungsroutine', desc:'Schritt-für-Schritt-Anleitung.' },
+      { name:'Ernährungs-Tipps', desc:'Was dein Haar von innen stärkt.' },
+      { name:'Häufige Fehler', desc:'Was du vermeiden solltest.' }
+    ]}], foot:'Sofort per E-Mail nach dem Kauf' },
+  '2': { tag:'<span class="strike">6,95€</span>GRATIS', img:'https://placehold.co/300x300/fafafa/9ca3af?text=Versand', title:'Kostenloser Versand', sub:'Schneller, kostenloser Versand deiner Bestellung.',
+    sections:[{ type:'feats', items:['Kostenlose Lieferung','Versand innerhalb von 24 Stunden','Sendungsverfolgung inklusive'] }], foot:'Wird mit deiner Bestellung versandt' },
+  '3': { tag:'GRATIS', img:'https://placehold.co/300x300/fafafa/9ca3af?text=90+Tage', title:'90-Tage-Garantie', sub:'Teste RASEEL 90 Tage – ganz ohne Risiko.',
+    sections:[{ type:'feats', items:['Volle Geld-zurück-Garantie','Keine Rücksendekosten','Keine Formulare, keine Anrufe'] }], foot:'Gilt automatisch für deine Bestellung' }
 };
 
-/* Plan-dependent info-pill text */
-function infoQtyText(plan){ return plan === '2' ? '[Qty for Offer 2 — bundle]' : '[Qty for Offer 1 — single]'; }
-
-/* Bonus gift unlock rules. Offer 1 unlocks first 2 gifts; Offer 2 unlocks all four. */
-var GIFT_VALUES = [9.95, 29.99, 34.99, 39.99];
-var MAX_VALUE = 114.92;
+/* Geschenk-Freischaltregeln. Einzelflasche schaltet die ersten 2 frei; Programm alle vier. */
+var GIFT_VALUES = [10, 19.95, 6.95, 0];
+var MAX_VALUE = 36.90;
 function isUnlocked(i, plan){
   if(i === 0) return true;
   if(i === 1) return true;
   return plan === '2';
 }
 function unlockMessage(i, plan){
-  if(plan !== '2' && (i === 2 || i === 3)) return 'Upgrade to Offer 2';
+  if(plan !== '2' && (i === 2 || i === 3)) return 'Zum Haarfülle-Programm';
   return '';
 }
 
-/* ====================== ENGINE (no need to edit below) ====================== */
+/* Geldbetrag im deutschen Format */
+function eur(n){ return n.toFixed(2).replace('.', ',') + '€'; }
+
+/* ====================== ENGINE (unten nichts ändern) ====================== */
 var selectedPlan = '1', wasMaxed = false;
 
 var cards = document.querySelectorAll('.kw-card[data-plan]');
@@ -413,14 +361,14 @@ var ctaStrike = document.getElementById('kwCtaStrike');
 var claim = document.getElementById('kwClaim');
 var toast = document.getElementById('kwToast');
 
-/* Confetti */
+/* Konfetti */
 var canvas = document.getElementById('kwConfetti');
 var ctx = canvas.getContext('2d');
 var pieces = [], running = false;
 function sizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 sizeCanvas(); window.addEventListener('resize', sizeCanvas);
 function fireConfetti(){
-  var colors = ['#ea580c','#fb923c','#16a34a','#f59e0b','#dc2626','#111827'];
+  var colors = ['#1f5048','#2e6b60','#c47c87','#e3b3bb','#163a34','#111827'];
   var cx = canvas.width/2, cy = canvas.height/3;
   for(var i=0;i<140;i++){
     var a = Math.random()*Math.PI*2, sp = 6+Math.random()*8;
@@ -460,11 +408,7 @@ function render(){
     document.querySelector('[data-bill-'+d+']').textContent = pp.bill;
   });
 
-  // Info pill (qty)
-  var qtyTxt = document.querySelector('#kwInfoQty .kw-info-qty-text');
-  if(qtyTxt) qtyTxt.textContent = infoQtyText(selectedPlan);
-
-  // Gifts
+  // Geschenke
   var claimedValue = 0;
   gifts.forEach(function(g, i){
     var open = isUnlocked(i, selectedPlan);
@@ -477,11 +421,11 @@ function render(){
   var upgradeValue = MAX_VALUE - claimedValue;
   var isMaxed = upgradeValue <= 0;
   if(!isMaxed){
-    claim.innerHTML = 'Claimed: <span class="val">$'+claimedValue.toFixed(2)+'</span> &middot; <strong>$'+upgradeValue.toFixed(2)+'</strong> more with <span class="kw-upgrade-link" id="kwUpgradeLink">Offer 2 &rarr;</span>';
+    claim.innerHTML = 'Gesichert: <span class="val">'+eur(claimedValue)+'</span> &middot; <strong>'+eur(upgradeValue)+'</strong> mehr mit dem <span class="kw-upgrade-link" id="kwUpgradeLink">Haarfülle-Programm &rarr;</span>';
     var link = document.getElementById('kwUpgradeLink');
     if(link) link.addEventListener('click', function(){ selectedPlan='2'; render(); });
   } else {
-    claim.innerHTML = '&#127881; All bonuses unlocked &mdash; <span class="val">$'+claimedValue.toFixed(2)+'</span> claimed.';
+    claim.innerHTML = '&#127881; Alle Geschenke freigeschaltet &mdash; <span class="val">'+eur(claimedValue)+'</span> gesichert.';
   }
 
   ctaLabel.textContent = p.label;
@@ -489,11 +433,7 @@ function render(){
   ctaStrike.textContent = p.totalStrike;
   cta.href = p.url;
 
-  // Sold-out tile mirrors the strike-through (original) price of the active plan
-  var soldStrike = document.getElementById('kwSoldStrike');
-  if(soldStrike) soldStrike.textContent = p.totalStrike;
-
-  // Confetti opens when Offer 2 is selected (best AOV)
+  // Konfetti, sobald das Programm (alle Geschenke) gewählt wird
   if(selectedPlan === '2' && isMaxed && !wasMaxed) celebrate();
   wasMaxed = isMaxed;
 }
@@ -504,31 +444,7 @@ cards.forEach(function(c){
 
 render();
 
-/* Dynamic arrival date — today + 15 days */
-(function(){
-  var el = document.getElementById('kwShipDate'); if(!el) return;
-  var d = new Date(); d.setDate(d.getDate() + 15);
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  el.textContent = months[d.getMonth()] + ' ' + d.getDate();
-})();
-
-/* Country flag from visitor IP */
-(function(){
-  var el = document.getElementById('kwFlag'); if(!el) return;
-  function flagEmoji(cc){
-    if(!cc || cc.length !== 2) return '';
-    var A = 0x1F1E6, base = 'A'.charCodeAt(0);
-    cc = cc.toUpperCase();
-    return String.fromCodePoint(A + cc.charCodeAt(0) - base) +
-           String.fromCodePoint(A + cc.charCodeAt(1) - base);
-  }
-  fetch('https://ipwho.is/?fields=country_code')
-    .then(function(r){ return r.json(); })
-    .then(function(d){ if(d && d.country_code) el.textContent = flagEmoji(d.country_code); })
-    .catch(function(){});
-})();
-
-/* Gift explainer modal */
+/* Geschenk-Erklär-Modal */
 (function(){
   var modal = document.getElementById('kwGiftModal'); if(!modal) return;
   var img = document.getElementById('kwGiftModalImg');
@@ -567,7 +483,7 @@ render();
 
   function open(k){
     var d = GIFT_DATA[k]; if(!d) return;
-    tag.innerHTML = d.tag || 'FREE BONUS';
+    tag.innerHTML = d.tag || 'GRATIS-GESCHENK';
     title.innerHTML = d.title;
     sub.innerHTML = d.sub;
     if(d.img){ img.src = d.img; img.alt = title.textContent; imgWrap.style.display = ''; } else { imgWrap.style.display = 'none'; }
