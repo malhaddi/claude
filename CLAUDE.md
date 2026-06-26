@@ -46,8 +46,8 @@ src/
     page.tsx            # "/" redirects to /instagram
     instagram/page.tsx  # Instagram Manager (functional board, see below)
     analytics/page.tsx  # Analytics dashboard (charts, see below)
-    calendar/page.tsx   # Remaining sections are still placeholders
-    competitors/page.tsx
+    calendar/page.tsx   # Content Calendar (month view, see below)
+    competitors/page.tsx # Remaining sections are still placeholders
     news/page.tsx
   components/
     layout/
@@ -61,6 +61,9 @@ src/
     analytics/
       analytics-dashboard.tsx # KPIs + line/bar charts + top posts (client)
       date-range-select.tsx   # 7/30/90-day range picker (client)
+    calendar/
+      content-calendar.tsx    # Month grid + day dialog (client)
+      platform-filter.tsx     # Per-platform toggle chips (client)
     page-shell.tsx      # Shared section header + placeholder feature cards
     ui/                 # shadcn/ui primitives (button, card, chart, ...)
   lib/
@@ -68,6 +71,7 @@ src/
     instagram.ts        # Post types, status/type metadata, seed data
     posts-store.ts      # localStorage-backed store (useSyncExternalStore)
     metricool.ts        # Analytics data layer + Metricool integration seam
+    calendar.ts         # Platforms, calendar events, month-grid helper
     utils.ts            # cn() helper
 public/                 # Static assets (currently empty)
 components.json         # shadcn/ui CLI config
@@ -140,6 +144,25 @@ shadcn `chart` wrapper in `components/ui/chart.tsx`).
   PRNG anchored to a fixed `AS_OF` date so server and client renders match
   (no hydration mismatch) and values don't jump between renders.
 
+## Content Calendar
+
+The `/calendar` section is a working month view of scheduled and published
+content.
+
+- **Month grid** (`content-calendar.tsx`): a 6×7 Monday-first grid built by
+  `buildMonthGrid` in `src/lib/calendar.ts`. All date math is done in **UTC**
+  (and "today" is the fixed `TODAY` constant) so the grid renders identically
+  on server and client. Leading/trailing days from adjacent months are dimmed.
+- **Events as colored chips:** each day shows up to 3 chips (then "+N more");
+  chip color encodes the **platform** (`platformMeta`), and status is shown by
+  icon + border — published = check / solid, scheduled = clock / dashed.
+  Clicking any chip or "+N more" opens a day-detail dialog listing all items.
+- **Platform filter** (`platform-filter.tsx`): toggle chips for Instagram,
+  YouTube, Facebook, LinkedIn, TikTok and X, plus an "All platforms" reset.
+  Filtering recomputes the per-day event map.
+- Data is seed-only (`seedEvents`); there is no backend or scheduling write
+  path yet.
+
 ## Key Decisions
 
 - **Global dark theme.** The app is dark-only for now: `className="dark"` is set
@@ -170,8 +193,9 @@ npm run lint    # ESLint (eslint-config-next)
 
 ## Status
 
-The **Instagram Manager** (board, add/delete, localStorage persistence) and the
-**Analytics** dashboard (charts + KPIs on sample data) are functional. Content
-Calendar, Competitor Tracker and News Consolidator are still placeholders.
-There is no backend yet: Instagram data is per-browser, and analytics runs on
-deterministic sample data until Metricool credentials are wired up.
+The **Instagram Manager** (board, add/delete, localStorage persistence), the
+**Analytics** dashboard (charts + KPIs on sample data) and the **Content
+Calendar** (month view, platform filter) are functional. Competitor Tracker and
+News Consolidator are still placeholders. There is no backend yet: Instagram
+data is per-browser, analytics runs on deterministic sample data until Metricool
+credentials are wired up, and the calendar is seed-only.
