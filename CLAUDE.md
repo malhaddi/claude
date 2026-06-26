@@ -31,6 +31,10 @@ section; the actual feature logic is intentionally stubbed.
 - **lucide-react** for icons. NOTE: the installed version (1.x) does **not**
   ship brand icons (e.g. `Instagram`), so the Instagram section uses `Camera`.
 - **tw-animate-css** for the animation utilities shadcn components expect.
+- **Recharts 3** for charts, wrapped by `components/ui/chart.tsx`. Recharts 3
+  reads `active`/`payload`/`verticalAlign` from context rather than props, so
+  the tooltip/legend content components use explicit local prop types instead
+  of `React.ComponentProps<typeof Tooltip/Legend>`.
 
 ## Folder Structure
 
@@ -41,8 +45,8 @@ src/
     globals.css         # Tailwind v4 + shadcn design tokens (light + .dark)
     page.tsx            # "/" redirects to /instagram
     instagram/page.tsx  # Instagram Manager (functional board, see below)
-    analytics/page.tsx  # Remaining sections are still placeholders
-    calendar/page.tsx
+    analytics/page.tsx  # Analytics dashboard (charts, see below)
+    calendar/page.tsx   # Remaining sections are still placeholders
     competitors/page.tsx
     news/page.tsx
   components/
@@ -54,12 +58,16 @@ src/
       instagram-manager.tsx  # Board: stats + 4 status columns (client)
       add-post-dialog.tsx    # Dialog form to add a post idea (client)
       post-card.tsx          # Single post card with delete (client)
+    analytics/
+      analytics-dashboard.tsx # KPIs + line/bar charts + top posts (client)
+      date-range-select.tsx   # 7/30/90-day range picker (client)
     page-shell.tsx      # Shared section header + placeholder feature cards
-    ui/                 # shadcn/ui primitives (button, card, badge, ...)
+    ui/                 # shadcn/ui primitives (button, card, chart, ...)
   lib/
     navigation.ts       # Single source of truth for the section list
     instagram.ts        # Post types, status/type metadata, seed data
     posts-store.ts      # localStorage-backed store (useSyncExternalStore)
+    metricool.ts        # Analytics data layer + Metricool integration seam
     utils.ts            # cn() helper
 public/                 # Static assets (currently empty)
 components.json         # shadcn/ui CLI config
@@ -110,6 +118,28 @@ placeholders).
   component state.
 - There is no backend yet — data is per-browser only.
 
+## Analytics
+
+The `/analytics` section is a working dashboard built on **Recharts** (via the
+shadcn `chart` wrapper in `components/ui/chart.tsx`).
+
+- **Charts:** an impressions-over-time line chart (one series per platform), a
+  follower-growth bar chart, and an engagement-rate line chart. KPI cards show
+  total impressions, average engagement rate and net follower growth, each with
+  a percentage delta vs. the previous equal-length period. A date-range picker
+  (7 / 30 / 90 days) drives everything.
+- **Data source — Metricool.** `src/lib/metricool.ts` is the data layer. The
+  intended source is the Metricool API, but it requires a private
+  `userToken` + `blogId` that must be fetched **server-side**, and no
+  credentials are configured in this environment. So `getAnalytics(range)`
+  currently returns **deterministic sample data** (seeded PRNG, fixed `AS_OF`
+  date) and the UI shows a "Sample data" badge. To go live, implement
+  `fetchMetricoolAnalytics` in a Server Component / route handler and read
+  `METRICOOL_USER_TOKEN` / `METRICOOL_USER_ID` / `METRICOOL_BLOG_ID` from env.
+- **Why sample data is deterministic:** the series are generated from a seeded
+  PRNG anchored to a fixed `AS_OF` date so server and client renders match
+  (no hydration mismatch) and values don't jump between renders.
+
 ## Key Decisions
 
 - **Global dark theme.** The app is dark-only for now: `className="dark"` is set
@@ -140,7 +170,8 @@ npm run lint    # ESLint (eslint-config-next)
 
 ## Status
 
-The **Instagram Manager** is functional (board, add/delete, localStorage
-persistence). Analytics, Content Calendar, Competitor Tracker and News
-Consolidator are still placeholders, and there is no backend or real Instagram
-API integration yet.
+The **Instagram Manager** (board, add/delete, localStorage persistence) and the
+**Analytics** dashboard (charts + KPIs on sample data) are functional. Content
+Calendar, Competitor Tracker and News Consolidator are still placeholders.
+There is no backend yet: Instagram data is per-browser, and analytics runs on
+deterministic sample data until Metricool credentials are wired up.
