@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { PageShell } from "@/components/page-shell";
 import { navItems } from "@/lib/navigation";
+import { InstagramManager } from "@/components/instagram/instagram-manager";
 
 const section = navItems.find((item) => item.href === "/instagram")!;
 
@@ -11,25 +11,26 @@ export const metadata: Metadata = {
 };
 
 export default function InstagramPage() {
+  const Icon = section.icon;
+
   return (
-    <PageShell
-      title={section.title}
-      description={section.description}
-      icon={section.icon}
-      features={[
-        {
-          title: "Post composer",
-          description: "Draft captions, attach media and preview the grid.",
-        },
-        {
-          title: "Scheduling queue",
-          description: "Queue posts, stories and reels for the right time.",
-        },
-        {
-          title: "Engagement inbox",
-          description: "Triage comments and DMs without leaving the dashboard.",
-        },
-      ]}
-    />
+    <div className="mx-auto w-full max-w-7xl px-6 py-8">
+      <header className="mb-8 flex items-start gap-4">
+        <div className="bg-accent text-accent-foreground flex size-12 shrink-0 items-center justify-center rounded-xl">
+          <Icon className="size-6" />
+        </div>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {section.title}
+          </h1>
+          <p className="text-muted-foreground max-w-2xl">
+            Plan scheduled posts, drafts, published content and the idea
+            backlog — all on one board.
+          </p>
+        </div>
+      </header>
+
+      <InstagramManager />
+    </div>
   );
 }

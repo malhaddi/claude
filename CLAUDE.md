@@ -40,8 +40,8 @@ src/
     layout.tsx          # Root layout: dark theme + global AppShell chrome
     globals.css         # Tailwind v4 + shadcn design tokens (light + .dark)
     page.tsx            # "/" redirects to /instagram
-    instagram/page.tsx  # One folder per section, each exports a page
-    analytics/page.tsx
+    instagram/page.tsx  # Instagram Manager (functional board, see below)
+    analytics/page.tsx  # Remaining sections are still placeholders
     calendar/page.tsx
     competitors/page.tsx
     news/page.tsx
@@ -50,10 +50,16 @@ src/
       app-shell.tsx     # Sidebar + mobile nav + <main> wrapper
       sidebar.tsx       # Persistent desktop sidebar (client, uses usePathname)
       mobile-nav.tsx    # Scrollable nav for small screens (client)
+    instagram/
+      instagram-manager.tsx  # Board: stats + 4 status columns (client)
+      add-post-dialog.tsx    # Dialog form to add a post idea (client)
+      post-card.tsx          # Single post card with delete (client)
     page-shell.tsx      # Shared section header + placeholder feature cards
     ui/                 # shadcn/ui primitives (button, card, badge, ...)
   lib/
     navigation.ts       # Single source of truth for the section list
+    instagram.ts        # Post types, status/type metadata, seed data
+    posts-store.ts      # localStorage-backed store (useSyncExternalStore)
     utils.ts            # cn() helper
 public/                 # Static assets (currently empty)
 components.json         # shadcn/ui CLI config
@@ -66,8 +72,12 @@ components.json         # shadcn/ui CLI config
   headers all read from it. To add a section: add an entry there **and** create
   a matching `src/app/<route>/page.tsx`.
 - **Server vs client components.** Pages and `PageShell` are server components.
-  Only components that need browser APIs are marked `"use client"` — currently
-  the sidebar and mobile nav (they call `usePathname` for active-link state).
+  Only components that need browser APIs are marked `"use client"` — the
+  sidebar/mobile nav (`usePathname`) and the Instagram board components (local
+  UI state + the localStorage store).
+- **No `setState` inside effects.** The `react-hooks/set-state-in-effect` lint
+  rule is enforced. Sync external/persisted state with `useSyncExternalStore`
+  (see `posts-store.ts`) and do resets in event handlers, not effects.
 - **Section pages** are thin: they look up their entry in `navItems`, export
   `metadata`, and render `<PageShell>` with placeholder `features`. Keep page
   files declarative and push shared markup into `PageShell`.
@@ -78,6 +88,27 @@ components.json         # shadcn/ui CLI config
 - **shadcn/ui components** follow upstream source exactly, including the
   `data-slot` attributes and `cva` variant APIs. Add new ones under
   `src/components/ui`.
+
+## Instagram Manager
+
+The `/instagram` section is a working board (the other sections are still
+placeholders).
+
+- **Data model** lives in `src/lib/instagram.ts`: a `Post` has a `caption`,
+  `type` (`image` | `carousel` | `reel` | `story`), `status` (`backlog` |
+  `draft` | `scheduled` | `published`) and an optional `scheduledDate`. The
+  `statusMeta` / `typeMeta` records hold the label, icon and accent classes for
+  each value — UI reads from these, so adding a status/type is a one-place edit.
+- **Board layout** (`instagram-manager.tsx`): a summary stat row plus one
+  column per status (`statusOrder`), each rendering `PostCard`s. Both the
+  toolbar "New post idea" button and a per-column "+" open the `AddPostDialog`
+  (the per-column variant pre-selects that column's status).
+- **Persistence** is client-side via `src/lib/posts-store.ts`, a localStorage
+  store consumed with `useSyncExternalStore`. `getServerSnapshot` returns the
+  seed data so SSR/first paint match before the client snapshot takes over.
+  Mutations (`addPost`, `deletePost`) go through the store, never local
+  component state.
+- There is no backend yet — data is per-browser only.
 
 ## Key Decisions
 
@@ -109,6 +140,7 @@ npm run lint    # ESLint (eslint-config-next)
 
 ## Status
 
-Scaffolding only. Every section renders its header and placeholder cards; none
-of the underlying integrations (Instagram API, analytics sources, calendar
-store, competitor/news ingestion) are implemented yet.
+The **Instagram Manager** is functional (board, add/delete, localStorage
+persistence). Analytics, Content Calendar, Competitor Tracker and News
+Consolidator are still placeholders, and there is no backend or real Instagram
+API integration yet.
