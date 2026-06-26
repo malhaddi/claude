@@ -35,6 +35,8 @@ section; the actual feature logic is intentionally stubbed.
   reads `active`/`payload`/`verticalAlign` from context rather than props, so
   the tooltip/legend content components use explicit local prop types instead
   of `React.ComponentProps<typeof Tooltip/Legend>`.
+- **fast-xml-parser** for parsing RSS/Atom feeds in the News Consolidator
+  (pure JS; networking is done separately with `fetch`).
 
 ## Folder Structure
 
@@ -48,7 +50,7 @@ src/
     analytics/page.tsx  # Analytics dashboard (charts, see below)
     calendar/page.tsx   # Content Calendar (month view, see below)
     competitors/page.tsx # Competitor Tracker (sortable table, see below)
-    news/page.tsx       # Remaining section is still a placeholder
+    news/page.tsx       # News Consolidator (RSS feed, async RSC, see below)
   components/
     layout/
       app-shell.tsx     # Sidebar + mobile nav + <main> wrapper
@@ -68,6 +70,8 @@ src/
       competitor-table.tsx    # Sortable table + detail dialog (client)
       add-competitor-dialog.tsx # Add-account form (client)
       sparkline.tsx           # Pure-SVG growth sparkline
+    news/
+      news-feed.tsx           # Card feed + topic filter (client)
     page-shell.tsx      # Shared section header + placeholder feature cards
     ui/                 # shadcn/ui primitives (button, card, chart, table, ...)
   lib/
@@ -77,6 +81,7 @@ src/
     metricool.ts        # Analytics data layer + Metricool integration seam
     calendar.ts         # Platforms, calendar events, month-grid helper
     competitors.ts      # Competitor types, store, sample-metric generator
+    news.ts             # RSS fetch + parse + topic categorization
     utils.ts            # cn() helper
 public/                 # Static assets (currently empty)
 components.json         # shadcn/ui CLI config
@@ -190,6 +195,30 @@ sortable table.
 - Platforms are shared with the calendar (`platformMeta` re-exported from
   `calendar.ts`): Instagram, YouTube, Facebook, LinkedIn, TikTok, X.
 
+## News Consolidator
+
+The `/news` section is a **real RSS aggregator** for the ecommerce /
+dropshipping niche.
+
+- **Server-side aggregation:** the page is an async Server Component that calls
+  `getNews()` (`src/lib/news.ts`). It fetches the `FEEDS` list with global
+  `fetch` (ISR, `revalidate: 1800`), parses RSS **and** Atom with
+  `fast-xml-parser`, strips HTML/CDATA, normalises each item (title, source,
+  date, summary) and tags a topic. Items are merged, sorted newest-first and
+  capped at 60.
+- **Topic filter** (`news-feed.tsx`): All / Tools / Research / Business with
+  per-topic counts. Topics are assigned by `categorize()` keyword heuristics
+  (defaulting to "business"); each card shows a color-coded topic badge, source,
+  date and summary, and links out to the article.
+- **Resilient by design:** each feed is fetched in its own try/catch, so a dead
+  feed is skipped. If **every** feed is unreachable, `getNews()` falls back to
+  bundled `sampleNews` and sets `usedSample`, which the UI surfaces as a "Sample
+  data" badge (vs. "Live feeds"). In this sandbox the network policy blocks the
+  feed hosts, so it runs on the sample; in an environment with outbound access
+  it serves live data with no code change. The parser is unit-tested against
+  RSS + Atom fixtures.
+- To change the niche, edit `FEEDS` (and optionally `TOPIC_KEYWORDS`).
+
 ## Key Decisions
 
 - **Global dark theme.** The app is dark-only for now: `className="dark"` is set
@@ -220,11 +249,14 @@ npm run lint    # ESLint (eslint-config-next)
 
 ## Status
 
-The **Instagram Manager** (board, add/delete, localStorage persistence), the
-**Analytics** dashboard (charts + KPIs on sample data), the **Content Calendar**
-(month view, platform filter) and the **Competitor Tracker** (sortable table,
-add/remove, sample metrics) are functional. News Consolidator is still a
-placeholder. There is no backend yet: Instagram and competitor data are
-per-browser, analytics runs on deterministic sample data until Metricool
-credentials are wired up, the calendar is seed-only, and competitor metrics are
-seeded samples until a public-data fetcher is implemented.
+All five sections are functional: **Instagram Manager** (board, add/delete,
+localStorage), **Analytics** (charts + KPIs on sample data), **Content
+Calendar** (month view, platform filter), **Competitor Tracker** (sortable
+table, add/remove, sample metrics) and **News Consolidator** (real RSS
+aggregation with sample fallback).
+
+There is no backend yet. Data sources by section: Instagram and competitors are
+per-browser (localStorage); analytics runs on deterministic sample data until
+Metricool credentials are wired up; the calendar is seed-only; competitor
+metrics are seeded samples until a public-data fetcher is implemented; and the
+news feed is live RSS where the network allows it, otherwise sample.
