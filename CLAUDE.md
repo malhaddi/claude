@@ -47,8 +47,8 @@ src/
     instagram/page.tsx  # Instagram Manager (functional board, see below)
     analytics/page.tsx  # Analytics dashboard (charts, see below)
     calendar/page.tsx   # Content Calendar (month view, see below)
-    competitors/page.tsx # Remaining sections are still placeholders
-    news/page.tsx
+    competitors/page.tsx # Competitor Tracker (sortable table, see below)
+    news/page.tsx       # Remaining section is still a placeholder
   components/
     layout/
       app-shell.tsx     # Sidebar + mobile nav + <main> wrapper
@@ -64,14 +64,19 @@ src/
     calendar/
       content-calendar.tsx    # Month grid + day dialog (client)
       platform-filter.tsx     # Per-platform toggle chips (client)
+    competitors/
+      competitor-table.tsx    # Sortable table + detail dialog (client)
+      add-competitor-dialog.tsx # Add-account form (client)
+      sparkline.tsx           # Pure-SVG growth sparkline
     page-shell.tsx      # Shared section header + placeholder feature cards
-    ui/                 # shadcn/ui primitives (button, card, chart, ...)
+    ui/                 # shadcn/ui primitives (button, card, chart, table, ...)
   lib/
     navigation.ts       # Single source of truth for the section list
     instagram.ts        # Post types, status/type metadata, seed data
     posts-store.ts      # localStorage-backed store (useSyncExternalStore)
     metricool.ts        # Analytics data layer + Metricool integration seam
     calendar.ts         # Platforms, calendar events, month-grid helper
+    competitors.ts      # Competitor types, store, sample-metric generator
     utils.ts            # cn() helper
 public/                 # Static assets (currently empty)
 components.json         # shadcn/ui CLI config
@@ -163,6 +168,28 @@ content.
 - Data is seed-only (`seedEvents`); there is no backend or scheduling write
   path yet.
 
+## Competitor Tracker
+
+The `/competitors` section tracks competitor accounts across networks in a
+sortable table.
+
+- **Table** (`competitor-table.tsx`): built on the shadcn `table` primitive.
+  Columns for followers, engagement rate, posts/week and 30-day growth are
+  click-to-sort (names default A→Z, numbers default high→low; clicking again
+  toggles direction). A pure-SVG `Sparkline` renders the growth trend per row.
+  Clicking a row opens a detail dialog with summary stats and recent posts.
+- **Add / remove** accounts via `add-competitor-dialog.tsx` (name, handle,
+  platform). State is persisted in localStorage through the store in
+  `src/lib/competitors.ts`, again via `useSyncExternalStore`.
+- **Data source — public data.** Metrics are meant to come from **publicly
+  available** sources (platform public APIs / oEmbed, the YouTube Data API,
+  RSS). Those aren't configured here, so `buildCompetitor` generates
+  deterministic **sample** metrics seeded by the handle (same handle ⇒ same
+  numbers) and the UI shows a "Sample data" badge. Wire real data by
+  implementing `fetchPublicProfile` server-side and merging into the store.
+- Platforms are shared with the calendar (`platformMeta` re-exported from
+  `calendar.ts`): Instagram, YouTube, Facebook, LinkedIn, TikTok, X.
+
 ## Key Decisions
 
 - **Global dark theme.** The app is dark-only for now: `className="dark"` is set
@@ -194,8 +221,10 @@ npm run lint    # ESLint (eslint-config-next)
 ## Status
 
 The **Instagram Manager** (board, add/delete, localStorage persistence), the
-**Analytics** dashboard (charts + KPIs on sample data) and the **Content
-Calendar** (month view, platform filter) are functional. Competitor Tracker and
-News Consolidator are still placeholders. There is no backend yet: Instagram
-data is per-browser, analytics runs on deterministic sample data until Metricool
-credentials are wired up, and the calendar is seed-only.
+**Analytics** dashboard (charts + KPIs on sample data), the **Content Calendar**
+(month view, platform filter) and the **Competitor Tracker** (sortable table,
+add/remove, sample metrics) are functional. News Consolidator is still a
+placeholder. There is no backend yet: Instagram and competitor data are
+per-browser, analytics runs on deterministic sample data until Metricool
+credentials are wired up, the calendar is seed-only, and competitor metrics are
+seeded samples until a public-data fetcher is implemented.
