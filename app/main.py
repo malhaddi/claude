@@ -16,14 +16,9 @@ def main(argv: list[str] | None = None) -> int:
     window = MainWindow()
     window.show()
 
-    # Open a file passed on the command line, if any.
-    if len(argv) > 1:
-        from app.core.document import PDFDocument
-
-        try:
-            window._load(PDFDocument.open(argv[1]))
-        except Exception:  # noqa: BLE001 — bad CLI path shouldn't crash startup
-            pass
+    # Open any files passed on the command line.
+    for path in argv[1:]:
+        window.load_path(path)
 
     return qt_app.exec()
 

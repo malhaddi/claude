@@ -4,21 +4,29 @@ A desktop PDF **reader and editor** for Windows, in the spirit of Foxit PDF
 Editor. Built with **Python + PySide6** (Qt 6 GUI) and **PyMuPDF** (the `fitz`
 rendering/editing engine).
 
-> **Status:** Phase 1 (reader core) complete. Editing features land in later
-> phases — see the roadmap below.
+> **Status:** Phases 1–2 complete (reader core + annotations, multi-document
+> tabs). Page operations and text editing land next — see the roadmap below.
 
 ## Features
 
 ### Phase 1 — Reader core ✅ (done)
 - Open and render PDFs (continuous, vertical scroll)
+- **Multiple PDFs open at once in tabs** (closable, reorderable)
 - Zoom in / out
 - Page thumbnails with click-to-navigate
 - Full-text search with on-page highlighting
 - Save / Save As (incremental save in place)
 
+### Phase 2 — Annotations ✅ (done)
+- **Highlight** and **underline** text (drag a box over it)
+- **Text box** — drag a box, type text (free-text annotation)
+- **Draw** — freehand ink
+- **Signature** — place a chosen PNG/JPG image (e.g. a scanned signature)
+- Per-tool **color picker**
+- **Undo** (Ctrl+Z) the last annotation
+- Tools live in an exclusive toolbar group; selection persists across tabs
+
 ### Roadmap
-- **Phase 2 — Annotations:** highlight, underline, text box, freehand + image
-  signature
 - **Phase 3 — Page operations:** insert blank page, insert pages from another
   PDF, reorder / delete / rotate
 - **Phase 4 — Edit existing text:** click a paragraph to turn it into an
@@ -65,9 +73,11 @@ app/
   core/            # PyMuPDF wrappers — no Qt imports (headless-testable)
     document.py    #   PDFDocument: open/render/search/save
   ui/              # PySide6 layer
-    main_window.py #   window, menu, toolbar, file/search/zoom wiring
-    page_view.py   #   scrollable, zoomable page surface + highlights
+    main_window.py #   tabbed shell: menu, toolbar, tools, file/search/zoom
+    document_tab.py#   one open PDF (thumbnails + page view)
+    page_view.py   #   zoomable page surface + interactive annotation tools
     thumbnail_panel.py
+    tools.py       #   editing Tool enum (select/highlight/.../signature)
     render_bridge.py  # PageImage -> QImage/QPixmap (only render path touching Qt)
   main.py          # QApplication bootstrap
 run.py             # launcher

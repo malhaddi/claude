@@ -54,3 +54,58 @@ def test_blank_document_and_save(tmp_path):
     assert out.exists()
     assert doc.is_dirty is False
     doc.close()
+
+
+def _annot_count(doc: PDFDocument, index: int) -> int:
+    return len(list(doc.fitz_doc[index].annots()))
+
+
+def test_annotations_add_and_persist(tmp_path):
+    p = tmp_path / "sample.pdf"
+    _make_sample(str(p))
+    doc = PDFDocument.open(str(p))
+
+    doc.add_highlight(0, (72, 60, 260, 90))
+    doc.add_underline(0, (72, 110, 320, 132))
+    doc.add_text_box(0, (72, 200, 320, 260), "hi there")
+    doc.add_ink(0, [[(80, 300), (160, 320), (240, 300)]])
+    assert _annot_count(doc, 0) == 4
+    assert doc.is_dirty is True
+
+    out = tmp_path / "annotated.pdf"
+    doc.save(str(out))
+    doc.close()
+
+    reopened = PDFDocument.open(str(out))
+    assert _annot_count(reopened, 0) == 4
+    reopened.close()
+
+
+def test_undo_removes_last_annotation(tmp_path):
+    p = tmp_path / "sample.pdf"
+    _make_sample(str(p))
+    doc = PDFDocument.open(str(p))
+    doc.add_highlight(0, (72, 60, 260, 90))
+    doc.add_underline(0, (72, 110, 320, 132))
+    assert _annot_count(doc, 0) == 2
+
+    assert doc.undo_last_annot() is True
+    assert _annot_count(doc, 0) == 1
+    assert doc.undo_last_annot() is True
+    assert _annot_count(doc, 0) == 0
+    assert doc.undo_last_annot() is False  # empty stack
+    doc.close()
+
+
+def test_add_image_marks_dirty(tmp_path):
+    p = tmp_path / "sample.pdf"
+    _make_sample(str(p))
+    sig = tmp_path / "sig.png"
+    pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 120, 50))
+    pix.clear_with(200)
+    pix.save(str(sig))
+
+    doc = PDFDocument.open(str(p))
+    doc.add_image(0, (400, 60, 520, 110), str(sig))
+    assert doc.is_dirty is True
+    doc.close()

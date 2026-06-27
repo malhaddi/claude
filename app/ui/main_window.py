@@ -1,58 +1,69 @@
-"""Main application window: menu, toolbar, thumbnails + page view, search bar.
+"""Main window: tabbed multi-document shell with reader + annotation tools.
 
-Phase 1 wires up open/save/zoom/search/navigation. The toolbar already has
-placeholder slots for the editing tools (annotate, signature, page ops, edit
-text) so later phases plug in without restructuring the window.
+Holds a QTabWidget of DocumentTabs (one open PDF each). The toolbar's tool
+buttons form an exclusive group that drives the active editing Tool on the
+current tab; the same tool/color selection is re-applied whenever you switch
+tabs so behaviour is consistent across documents.
 """
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtGui import QAction, QActionGroup, QColor, QKeySequence
 from PySide6.QtWidgets import (
+    QColorDialog,
     QFileDialog,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
     QMessageBox,
     QPushButton,
     QStatusBar,
+    QTabWidget,
     QToolBar,
-    QWidget,
 )
 
 from app.core.document import PDFDocument
-from app.ui.page_view import PageView
-from app.ui.thumbnail_panel import ThumbnailPanel
+from app.ui.document_tab import DocumentTab
+from app.ui.tools import Tool
 
-_NOT_IMPLEMENTED = "Coming in a later phase."
+_TOOL_BUTTONS = [
+    ("Select", Tool.SELECT),
+    ("Highlight", Tool.HIGHLIGHT),
+    ("Underline", Tool.UNDERLINE),
+    ("Text Box", Tool.TEXTBOX),
+    ("Draw", Tool.INK),
+    ("Signature", Tool.SIGNATURE),
+]
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("PDF Editor")
-        self.resize(1200, 850)
+        self.resize(1280, 880)
 
-        self._doc: PDFDocument | None = None
+        self._active_tool = Tool.SELECT
+        self._active_color = (0.85, 0.1, 0.1)
+        self._signature_path: str | None = None
+        self._tool_actions: dict[Tool, QAction] = {}
 
-        self._view = PageView()
-        self._thumbs = ThumbnailPanel()
-        self._thumbs.page_selected.connect(self._view.scroll_to_page)
-        self._view.page_changed.connect(self._on_page_changed)
-
-        central = QWidget()
-        layout = QHBoxLayout(central)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        layout.addWidget(self._thumbs)
-        layout.addWidget(self._view, stretch=1)
-        self.setCentralWidget(central)
+        self._tabs = QTabWidget()
+        self._tabs.setTabsClosable(True)
+        self._tabs.setMovable(True)
+        self._tabs.setDocumentMode(True)
+        self._tabs.tabCloseRequested.connect(self._close_tab)
+        self._tabs.currentChanged.connect(self._on_tab_changed)
+        self.setCentralWidget(self._tabs)
 
         self._build_menu()
         self._build_toolbar()
         self.setStatusBar(QStatusBar())
         self._update_title()
+
+    # ----- current tab helpers --------------------------------------------
+    def _current(self) -> DocumentTab | None:
+        w = self._tabs.currentWidget()
+        return w if isinstance(w, DocumentTab) else None
 
     # ----- chrome ----------------------------------------------------------
     def _build_menu(self) -> None:
@@ -61,11 +72,15 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self._act("&Save", QKeySequence.StandardKey.Save, self.save_file))
         file_menu.addAction(self._act("Save &As…", QKeySequence.StandardKey.SaveAs, self.save_file_as))
         file_menu.addSeparator()
+        file_menu.addAction(self._act("&Close Tab", QKeySequence.StandardKey.Close, self._close_current))
         file_menu.addAction(self._act("&Quit", QKeySequence.StandardKey.Quit, self.close))
 
+        edit_menu = self.menuBar().addMenu("&Edit")
+        edit_menu.addAction(self._act("&Undo", QKeySequence.StandardKey.Undo, self.undo))
+
         view_menu = self.menuBar().addMenu("&View")
-        view_menu.addAction(self._act("Zoom &In", QKeySequence.StandardKey.ZoomIn, self._view.zoom_in))
-        view_menu.addAction(self._act("Zoom &Out", QKeySequence.StandardKey.ZoomOut, self._view.zoom_out))
+        view_menu.addAction(self._act("Zoom &In", QKeySequence.StandardKey.ZoomIn, self._zoom_in))
+        view_menu.addAction(self._act("Zoom &Out", QKeySequence.StandardKey.ZoomOut, self._zoom_out))
 
     def _build_toolbar(self) -> None:
         bar = QToolBar("Main")
@@ -75,15 +90,33 @@ class MainWindow(QMainWindow):
         bar.addAction(self._act("Open", None, self.open_file))
         bar.addAction(self._act("Save", None, self.save_file))
         bar.addSeparator()
-        bar.addAction(self._act("Zoom +", None, self._view.zoom_in))
-        bar.addAction(self._act("Zoom −", None, self._view.zoom_out))
+        bar.addAction(self._act("Zoom +", None, self._zoom_in))
+        bar.addAction(self._act("Zoom −", None, self._zoom_out))
         bar.addSeparator()
 
-        # Placeholders for upcoming phases — visible so the roadmap is obvious.
-        for name in ("Highlight", "Text Box", "Signature", "Insert Page", "Edit Text"):
-            bar.addAction(self._act(name, None, lambda _=False, n=name: self._todo(n)))
+        # Exclusive group of editing tools.
+        group = QActionGroup(self)
+        group.setExclusive(True)
+        for label, tool in _TOOL_BUTTONS:
+            action = QAction(label, self)
+            action.setCheckable(True)
+            action.triggered.connect(lambda _=False, t=tool: self._select_tool(t))
+            group.addAction(action)
+            bar.addAction(action)
+            self._tool_actions[tool] = action
+        self._tool_actions[Tool.SELECT].setChecked(True)
 
+        bar.addAction(self._act("Color…", None, self._pick_color))
+        self._color_swatch = QLabel("  ■  ")
+        self._refresh_swatch()
+        bar.addWidget(self._color_swatch)
         bar.addSeparator()
+
+        # Editing actions that aren't persistent tools.
+        bar.addAction(self._act("Insert Page", None, lambda: self._todo("Insert Page")))
+        bar.addAction(self._act("Edit Text", None, lambda: self._todo("Edit Text")))
+        bar.addSeparator()
+
         self._search_box = QLineEdit()
         self._search_box.setPlaceholderText("Search…")
         self._search_box.setFixedWidth(220)
@@ -105,86 +138,203 @@ class MainWindow(QMainWindow):
 
     # ----- file ops --------------------------------------------------------
     def open_file(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(self, "Open PDF", "", "PDF files (*.pdf)")
-        if not path:
-            return
+        paths, _ = QFileDialog.getOpenFileNames(self, "Open PDF(s)", "", "PDF files (*.pdf)")
+        for path in paths:
+            self._open_path(path)
+
+    def _open_path(self, path: str) -> None:
         try:
-            self._load(PDFDocument.open(path))
-        except Exception as exc:  # noqa: BLE001 — surface any open error to the user
+            self._add_tab(PDFDocument.open(path))
+        except Exception as exc:  # noqa: BLE001
             QMessageBox.critical(self, "Open failed", str(exc))
 
-    def _load(self, doc: PDFDocument) -> None:
-        if self._doc is not None:
-            self._doc.close()
-        self._doc = doc
-        self._view.set_document(doc)
-        self._thumbs.set_document(doc)
-        self._update_title()
+    def _add_tab(self, doc: PDFDocument) -> None:
+        tab = DocumentTab(doc)
+        tab.page_changed.connect(self._on_page_changed)
+        tab.annotated.connect(self._on_annotated)
+        index = self._tabs.addTab(tab, tab.title)
+        self._tabs.setCurrentIndex(index)
+        # Apply current tool/color to the freshly opened document.
+        tab.set_color(self._active_color)
+        tab.set_signature_path(self._signature_path or "")
+        tab.set_tool(self._active_tool)
         self.statusBar().showMessage(f"{doc.page_count} page(s)", 4000)
 
     def save_file(self) -> None:
-        if self._doc is None:
+        tab = self._current()
+        if tab is None:
             return
-        if self._doc.path is None:
+        if tab.doc.path is None:
             self.save_file_as()
             return
         try:
-            self._doc.save()
+            tab.doc.save()
+            self._refresh_tab_title(tab)
             self.statusBar().showMessage("Saved", 3000)
-            self._update_title()
         except Exception as exc:  # noqa: BLE001
             QMessageBox.critical(self, "Save failed", str(exc))
 
     def save_file_as(self) -> None:
-        if self._doc is None:
+        tab = self._current()
+        if tab is None:
             return
         path, _ = QFileDialog.getSaveFileName(self, "Save PDF As", "", "PDF files (*.pdf)")
         if not path:
             return
         try:
-            self._doc.save(path)
+            tab.doc.save(path)
+            self._refresh_tab_title(tab)
             self.statusBar().showMessage("Saved", 3000)
-            self._update_title()
         except Exception as exc:  # noqa: BLE001
             QMessageBox.critical(self, "Save failed", str(exc))
 
-    # ----- search / nav ----------------------------------------------------
+    def _close_current(self) -> None:
+        if self._tabs.currentIndex() >= 0:
+            self._close_tab(self._tabs.currentIndex())
+
+    def _close_tab(self, index: int) -> None:
+        tab = self._tabs.widget(index)
+        if isinstance(tab, DocumentTab):
+            if tab.doc.is_dirty and not self._confirm_discard(tab):
+                return
+            tab.doc.close()
+        self._tabs.removeTab(index)
+        self._update_title()
+
+    def _confirm_discard(self, tab: DocumentTab) -> bool:
+        choice = QMessageBox.question(
+            self,
+            "Unsaved changes",
+            f"Save changes to {tab.title.lstrip('*')} before closing?",
+            QMessageBox.StandardButton.Save
+            | QMessageBox.StandardButton.Discard
+            | QMessageBox.StandardButton.Cancel,
+        )
+        if choice == QMessageBox.StandardButton.Cancel:
+            return False
+        if choice == QMessageBox.StandardButton.Save:
+            self._tabs.setCurrentWidget(tab)
+            self.save_file()
+        return True
+
+    # ----- tools / color ---------------------------------------------------
+    def _select_tool(self, tool: Tool) -> None:
+        self._active_tool = tool
+        if tool == Tool.SIGNATURE and not self._signature_path:
+            if not self._choose_signature():
+                # No image chosen; revert to Select.
+                self._active_tool = Tool.SELECT
+                self._tool_actions[Tool.SELECT].setChecked(True)
+                return
+        tab = self._current()
+        if tab is not None:
+            tab.set_tool(tool)
+
+    def _choose_signature(self) -> bool:
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Choose signature image", "", "Images (*.png *.jpg *.jpeg)"
+        )
+        if not path:
+            return False
+        self._signature_path = path
+        tab = self._current()
+        if tab is not None:
+            tab.set_signature_path(path)
+        return True
+
+    def _pick_color(self) -> None:
+        r, g, b = (int(c * 255) for c in self._active_color)
+        chosen = QColorDialog.getColor(QColor(r, g, b), self, "Annotation color")
+        if not chosen.isValid():
+            return
+        self._active_color = (chosen.redF(), chosen.greenF(), chosen.blueF())
+        self._refresh_swatch()
+        tab = self._current()
+        if tab is not None:
+            tab.set_color(self._active_color)
+
+    def _refresh_swatch(self) -> None:
+        r, g, b = (int(c * 255) for c in self._active_color)
+        self._color_swatch.setStyleSheet(f"color: rgb({r},{g},{b}); font-size: 18px;")
+
+    def undo(self) -> None:
+        tab = self._current()
+        if tab is None:
+            return
+        if tab.view.undo():
+            self.statusBar().showMessage("Undid last annotation", 2500)
+        else:
+            self.statusBar().showMessage("Nothing to undo", 2500)
+
+    # ----- zoom / search / nav --------------------------------------------
+    def _zoom_in(self) -> None:
+        tab = self._current()
+        if tab:
+            tab.view.zoom_in()
+
+    def _zoom_out(self) -> None:
+        tab = self._current()
+        if tab:
+            tab.view.zoom_out()
+
     def _run_search(self) -> None:
-        if self._doc is None:
+        tab = self._current()
+        if tab is None:
             return
         query = self._search_box.text().strip()
-        count = self._view.show_search_hits(query)
-        self.statusBar().showMessage(f"{count} match(es) for '{query}'" if query else "Cleared", 4000)
+        count = tab.view.show_search_hits(query)
+        self.statusBar().showMessage(
+            f"{count} match(es) for '{query}'" if query else "Cleared", 4000
+        )
+
+    # ----- signals ---------------------------------------------------------
+    def _on_tab_changed(self, _index: int) -> None:
+        tab = self._current()
+        if tab is not None:
+            tab.set_color(self._active_color)
+            tab.set_signature_path(self._signature_path or "")
+            tab.set_tool(self._active_tool)
+        self._update_title()
 
     def _on_page_changed(self, index: int) -> None:
-        if self._doc is not None:
-            self._page_label.setText(f"  Page {index + 1} / {self._doc.page_count}  ")
+        tab = self._current()
+        if tab is not None:
+            self._page_label.setText(f"  Page {index + 1} / {tab.doc.page_count}  ")
+
+    def _on_annotated(self) -> None:
+        tab = self._current()
+        if tab is not None:
+            self._refresh_tab_title(tab)
+
+    def _refresh_tab_title(self, tab: DocumentTab) -> None:
+        index = self._tabs.indexOf(tab)
+        if index >= 0:
+            self._tabs.setTabText(index, tab.title)
+        self._update_title()
 
     # ----- misc ------------------------------------------------------------
     def _todo(self, feature: str) -> None:
-        QMessageBox.information(self, feature, f"{feature}: {_NOT_IMPLEMENTED}")
+        QMessageBox.information(self, feature, f"{feature}: coming in a later phase.")
 
     def _update_title(self) -> None:
-        if self._doc is None:
+        tab = self._current()
+        if tab is None:
             self.setWindowTitle("PDF Editor")
             return
-        name = self._doc.path or "Untitled"
-        dirty = "*" if self._doc.is_dirty else ""
+        name = tab.doc.path or "Untitled"
+        dirty = "*" if tab.doc.is_dirty else ""
         self.setWindowTitle(f"{dirty}{name} — PDF Editor")
 
+    def load_path(self, path: str) -> None:
+        """Public entry used by the bootstrap to open a CLI-supplied file."""
+        self._open_path(path)
+
     def closeEvent(self, event):  # noqa: N802
-        if self._doc is not None and self._doc.is_dirty:
-            choice = QMessageBox.question(
-                self,
-                "Unsaved changes",
-                "You have unsaved changes. Save before closing?",
-                QMessageBox.StandardButton.Save
-                | QMessageBox.StandardButton.Discard
-                | QMessageBox.StandardButton.Cancel,
-            )
-            if choice == QMessageBox.StandardButton.Save:
-                self.save_file()
-            elif choice == QMessageBox.StandardButton.Cancel:
-                event.ignore()
-                return
+        for i in range(self._tabs.count()):
+            tab = self._tabs.widget(i)
+            if isinstance(tab, DocumentTab) and tab.doc.is_dirty:
+                self._tabs.setCurrentWidget(tab)
+                if not self._confirm_discard(tab):
+                    event.ignore()
+                    return
         event.accept()
