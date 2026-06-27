@@ -1,0 +1,7 @@
+# Runtime dependencies
+PySide6>=6.6        # Qt 6 GUI toolkit
+PyMuPDF>=1.24       # PDF rendering + editing engine (imported as `fitz`)
+
+# Dev / packaging (optional)
+# pytest>=8.0        # test runner:        pip install pytest
+# pyinstaller>=6.0   # Windows .exe build: see packaging/build_windows.md
