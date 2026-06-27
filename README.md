@@ -12,7 +12,9 @@ rendering/editing engine).
 ### Phase 1 — Reader core ✅ (done)
 - Open and render PDFs (continuous, vertical scroll)
 - **Multiple PDFs open at once in tabs** (closable, reorderable)
-- Zoom in / out
+- Zoom in / out — buttons, menu, or **Ctrl + mouse wheel**
+- **Select text to copy** — the default tool; drag over text to copy it to the
+  clipboard (text cursor)
 - Page thumbnails with click-to-navigate
 - Full-text search with on-page highlighting
 - Save / Save As (incremental save in place)
@@ -21,7 +23,9 @@ rendering/editing engine).
 - **Highlight** and **underline** text (drag a box over it)
 - **Text box** — drag a box, type text (free-text annotation)
 - **Draw** — freehand ink
-- **Signature** — place a chosen PNG/JPG image (e.g. a scanned signature)
+- **Signature** — place a chosen PNG/JPG image (e.g. a scanned signature);
+  **drag to reposition** it before committing (double-click / Enter to place,
+  Esc to cancel)
 - Per-tool **color picker**
 - **Undo** (Ctrl+Z) the last annotation
 - Tools live in an exclusive toolbar group; selection persists across tabs
@@ -37,7 +41,8 @@ rendering/editing engine).
   editable box in place, pre-filled with the text in a matching size.
 - Add or delete text freely; **Ctrl+Enter** (or click away) commits, **Esc**
   cancels. On commit the original paragraph is redacted and the new text is
-  written back, growing the box downward as needed so nothing clips.
+  written back, **anchored to the original baseline** so it stays in place, and
+  growing the box downward as needed so nothing clips.
 - See the limitations note below — this is best-effort, as in every PDF editor.
 
 #### A note on editing existing text

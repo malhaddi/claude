@@ -20,6 +20,7 @@ from app.ui.tools import Tool
 class DocumentTab(QWidget):
     page_changed = Signal(int)
     annotated = Signal()
+    text_selected = Signal(str)
 
     def __init__(self, doc: PDFDocument):
         super().__init__()
@@ -40,6 +41,7 @@ class DocumentTab(QWidget):
         self.thumbs.page_action.connect(self._on_page_action)
         self.view.page_changed.connect(self.page_changed)
         self.view.annotated.connect(self.annotated)
+        self.view.text_selected.connect(self.text_selected)
 
     # ----- convenience for the main window --------------------------------
     @property

@@ -152,6 +152,7 @@ class MainWindow(QMainWindow):
         tab = DocumentTab(doc)
         tab.page_changed.connect(self._on_page_changed)
         tab.annotated.connect(self._on_annotated)
+        tab.text_selected.connect(self._on_text_selected)
         index = self._tabs.addTab(tab, tab.title)
         self._tabs.setCurrentIndex(index)
         # Apply current tool/color to the freshly opened document.
@@ -167,6 +168,7 @@ class MainWindow(QMainWindow):
         if tab.doc.path is None:
             self.save_file_as()
             return
+        tab.view.flush_pending()
         try:
             tab.doc.save()
             self._refresh_tab_title(tab)
@@ -181,6 +183,7 @@ class MainWindow(QMainWindow):
         path, _ = QFileDialog.getSaveFileName(self, "Save PDF As", "", "PDF files (*.pdf)")
         if not path:
             return
+        tab.view.flush_pending()
         try:
             tab.doc.save(path)
             self._refresh_tab_title(tab)
@@ -312,6 +315,12 @@ class MainWindow(QMainWindow):
         tab = self._current()
         if tab is not None:
             self._refresh_tab_title(tab)
+
+    def _on_text_selected(self, text: str) -> None:
+        n = len(text)
+        self.statusBar().showMessage(
+            f"Copied {n} character(s) to clipboard" if n else "No text in selection", 3000
+        )
 
     def _refresh_tab_title(self, tab: DocumentTab) -> None:
         index = self._tabs.indexOf(tab)

@@ -137,9 +137,33 @@ def main() -> int:
     assert "Edited" in page_text and "inline" in page_text, "text edit not applied"
     assert "Hello Doc C" not in page_text, "original text not removed"
 
+    # New: text selection copies to the clipboard in SELECT mode.
+    win._select_tool(Tool.SELECT)
+    sel = win._current()
+    assert sel.view.tool == Tool.SELECT
+    line = next(b for b in sel.doc.get_text_blocks(0) if "searchable" in b.text)
+    sel.view.commit_selection(0, line.bbox)
+    assert "searchable" in QApplication.clipboard().text(), "selection not copied"
+
+    # New: signature is placed as a draggable item, then committed on demand.
+    win._signature_path = sig
+    sel.set_signature_path(sig)
+    win._select_tool(Tool.SIGNATURE)
+    sel.view.commit_rect(0, (400, 60, 520, 110))   # drops a draggable signature
+    assert sel.view._sig_item is not None, "signature item not created"
+    sel.view._sig_item.move(120, 200)              # simulate dragging it
+    sel.view._commit_signature()                   # bake into the PDF
+    assert sel.view._sig_item is None, "signature not committed"
+    assert sel.doc.is_dirty is True
+
+    # New: Ctrl+wheel zoom path changes the zoom level.
+    before = sel.view.zoom
+    sel.view.zoom_in()
+    assert sel.view.zoom > before, "zoom did not increase"
+
     app.processEvents()
-    print("GUI smoke test passed: tabs, zoom, search, annotations, undo, "
-          "page ops, inline text edit, save all OK")
+    print("GUI smoke test passed: tabs, zoom, search, annotations, undo, page "
+          "ops, inline text edit, text selection, draggable signature, save all OK")
     return 0
 
 

@@ -242,3 +242,32 @@ def test_replace_text_block(tmp_path):
     assert "Second paragraph stays untouched." in text  # other block intact
     assert doc.is_dirty is True
     doc.close()
+
+
+def test_replace_text_block_preserves_baseline(tmp_path):
+    p = tmp_path / "para.pdf"
+    _make_paragraphs(str(p))
+    doc = PDFDocument.open(str(p))
+    block = doc.get_text_blocks(0)[0]
+    original_baseline = block.first_baseline
+    doc.replace_text_block(
+        0, block.bbox, "New first line here.", block.fontsize,
+        block.color, block.fontname, block.first_baseline,
+    )
+    # The replacement's first line should sit on (near) the original baseline.
+    # Anchoring keeps it within a couple of points; without it, a mismatched
+    # substitute font could drift by most of a line.
+    new_block = next(b for b in doc.get_text_blocks(0) if b.text.startswith("New first line"))
+    assert abs(new_block.first_baseline - original_baseline) < 3.0
+    doc.close()
+
+
+def test_get_text_in_rect(tmp_path):
+    p = tmp_path / "para.pdf"
+    _make_paragraphs(str(p))
+    doc = PDFDocument.open(str(p))
+    block = doc.get_text_blocks(0)[0]
+    selected = doc.get_text_in_rect(0, block.bbox)
+    assert "quick brown fox" in selected
+    assert doc.get_text_in_rect(0, (500, 500, 560, 560)) == ""  # empty area
+    doc.close()
