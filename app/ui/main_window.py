@@ -33,6 +33,7 @@ _TOOL_BUTTONS = [
     ("Text Box", Tool.TEXTBOX),
     ("Draw", Tool.INK),
     ("Signature", Tool.SIGNATURE),
+    ("Edit Text", Tool.EDIT_TEXT),
 ]
 
 
@@ -114,7 +115,6 @@ class MainWindow(QMainWindow):
 
         # Editing actions that aren't persistent tools.
         bar.addAction(self._act("Insert Page", None, self._insert_blank_page))
-        bar.addAction(self._act("Edit Text", None, lambda: self._todo("Edit Text")))
         bar.addSeparator()
 
         self._search_box = QLineEdit()
@@ -320,9 +320,6 @@ class MainWindow(QMainWindow):
         self._update_title()
 
     # ----- misc ------------------------------------------------------------
-    def _todo(self, feature: str) -> None:
-        QMessageBox.information(self, feature, f"{feature}: coming in a later phase.")
-
     def _update_title(self) -> None:
         tab = self._current()
         if tab is None:

@@ -4,8 +4,8 @@ A desktop PDF **reader and editor** for Windows, in the spirit of Foxit PDF
 Editor. Built with **Python + PySide6** (Qt 6 GUI) and **PyMuPDF** (the `fitz`
 rendering/editing engine).
 
-> **Status:** Phases 1–3 complete (reader core, annotations, multi-document
-> tabs, page operations). Text editing lands next — see the roadmap below.
+> **Status:** Phases 1–4 complete — reader core, annotations, multi-document
+> tabs, page operations, and click-to-edit existing text.
 
 ## Features
 
@@ -32,19 +32,28 @@ rendering/editing engine).
 - **Rotate** left / right, **delete**, and **reorder** (move up/down)
 - All available from the right-click menu on any page thumbnail
 
-### Roadmap
-- **Phase 4 — Edit existing text:** click a paragraph to turn it into an
-  editable text box (extract → edit → redact-and-rewrite). This is the hardest
-  feature; see the note below.
+### Phase 4 — Edit existing text ✅ (done)
+- Pick the **Edit Text** tool, then **click any paragraph** — it becomes an
+  editable box in place, pre-filled with the text in a matching size.
+- Add or delete text freely; **Ctrl+Enter** (or click away) commits, **Esc**
+  cancels. On commit the original paragraph is redacted and the new text is
+  written back, growing the box downward as needed so nothing clips.
+- See the limitations note below — this is best-effort, as in every PDF editor.
 
 #### A note on editing existing text
 True text editing in PDF is genuinely hard — PDFs store positioned glyphs, not
 flowing paragraphs. Our approach: use PyMuPDF's structured text
-(`get_text("rawdict")`) to group lines into paragraphs, let you edit one in an
-overlay box, then redact the original region and re-draw the new text. This
-works well for ordinary paragraphs; perfect font matching and complex layouts
-(justified columns, tables, text around images) are best-effort, the same
-limitation every PDF editor has.
+(`get_text("dict")`) to group lines into paragraphs, let you edit one in an
+overlay box, then redact the original region and re-draw the new text. Known
+best-effort limitations (shared by every PDF editor):
+
+- **Font matching:** embedded subset fonts usually can't be reused, so edited
+  text is re-drawn in the closest base-14 face (Helvetica / Times / Courier),
+  which may look slightly different from untouched text.
+- **Reflow & layout:** works well for ordinary paragraphs; justified columns,
+  tables, and text wrapped around images won't always reflow perfectly.
+- **Rotated pages:** in-place editing assumes an unrotated page; editing text
+  on a rotated page is not yet aligned.
 
 ## Run from source
 
@@ -75,13 +84,13 @@ python -m pytest
 ```
 app/
   core/            # PyMuPDF wrappers — no Qt imports (headless-testable)
-    document.py    #   PDFDocument: open/render/search/save
+    document.py    #   PDFDocument: render/search/annotate/page-ops/text-edit
   ui/              # PySide6 layer
     main_window.py #   tabbed shell: menu, toolbar, tools, file/search/zoom
-    document_tab.py#   one open PDF (thumbnails + page view)
-    page_view.py   #   zoomable page surface + interactive annotation tools
-    thumbnail_panel.py
-    tools.py       #   editing Tool enum (select/highlight/.../signature)
+    document_tab.py#   one open PDF (thumbnails + page view + page ops)
+    page_view.py   #   page surface: annotation tools + inline text editor
+    thumbnail_panel.py  # thumbnails + right-click page-operations menu
+    tools.py       #   editing Tool enum (select/highlight/.../edit-text)
     render_bridge.py  # PageImage -> QImage/QPixmap (only render path touching Qt)
   main.py          # QApplication bootstrap
 run.py             # launcher

@@ -192,3 +192,53 @@ def test_page_op_clears_undo_stack(tmp_path):
     doc.insert_blank_page(0)          # structural change clears undo
     assert doc.undo_last_annot() is False
     doc.close()
+
+
+# ----- Phase 4: text editing ----------------------------------------------
+def _make_paragraphs(path: str) -> None:
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((72, 100), "The quick brown fox jumps over the lazy dog.", fontsize=14)
+    page.insert_text((72, 140), "Second paragraph stays untouched.", fontsize=11)
+    doc.save(path)
+    doc.close()
+
+
+def test_get_text_blocks(tmp_path):
+    p = tmp_path / "para.pdf"
+    _make_paragraphs(str(p))
+    doc = PDFDocument.open(str(p))
+    blocks = doc.get_text_blocks(0)
+    assert len(blocks) == 2
+    first = blocks[0]
+    assert "quick brown fox" in first.text
+    assert first.fontsize == 14.0
+    assert len(first.bbox) == 4
+    doc.close()
+
+
+def test_text_block_at_hit_and_miss(tmp_path):
+    p = tmp_path / "para.pdf"
+    _make_paragraphs(str(p))
+    doc = PDFDocument.open(str(p))
+    hit = doc.text_block_at(0, 120, 100)
+    assert hit is not None and "quick" in hit.text
+    assert doc.text_block_at(0, 500, 500) is None  # empty area
+    doc.close()
+
+
+def test_replace_text_block(tmp_path):
+    p = tmp_path / "para.pdf"
+    _make_paragraphs(str(p))
+    doc = PDFDocument.open(str(p))
+    block = doc.get_text_blocks(0)[0]
+    doc.replace_text_block(
+        0, block.bbox, "Replaced with entirely different words now.",
+        block.fontsize, block.color, block.fontname,
+    )
+    text = doc.page_text(0)
+    assert "Replaced with entirely different" in text
+    assert "quick brown fox" not in text          # original removed
+    assert "Second paragraph stays untouched." in text  # other block intact
+    assert doc.is_dirty is True
+    doc.close()

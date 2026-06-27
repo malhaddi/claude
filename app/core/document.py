@@ -6,7 +6,75 @@ calls here means the Qt layer never touches the raw library, and later phases
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import fitz  # PyMuPDF
+
+# Map a font name reported by PyMuPDF to a base-14 standard font we can always
+# render with. Embedded subset fonts usually aren't reusable, so edited text
+# falls back to the closest standard face (a known, accepted limitation).
+_BASE14 = {
+    (False, False): "helv", (True, False): "hebo",
+    (False, True): "heit", (True, True): "hebi",
+}
+_BASE14_SERIF = {
+    (False, False): "tiro", (True, False): "tibo",
+    (False, True): "tiit", (True, True): "tibi",
+}
+_BASE14_MONO = {
+    (False, False): "cour", (True, False): "cobo",
+    (False, True): "coit", (True, True): "cobi",
+}
+
+
+def _base14_for(fontname: str) -> str:
+    name = (fontname or "").lower()
+    bold = "bold" in name or "black" in name or "heavy" in name
+    italic = "italic" in name or "oblique" in name
+    if any(k in name for k in ("courier", "mono", "consol")):
+        return _BASE14_MONO[(bold, italic)]
+    if any(k in name for k in ("times", "serif", "georgia", "roman", "minion")):
+        return _BASE14_SERIF[(bold, italic)]
+    return _BASE14[(bold, italic)]
+
+
+def _int_to_rgb(color: int) -> tuple[float, float, float]:
+    return (((color >> 16) & 255) / 255, ((color >> 8) & 255) / 255, (color & 255) / 255)
+
+
+def _measure_height(text: str, fontname: str, fontsize: float, width: float) -> float:
+    """Estimate the height a wrapped paragraph needs inside a given width."""
+    line_h = fontsize * 1.4  # generous leading so insert_textbox won't overflow
+    lines = 0
+    for paragraph in text.split("\n"):
+        words = paragraph.split(" ")
+        cur = ""
+        count = 1
+        for word in words:
+            trial = (cur + " " + word).strip()
+            if fitz.get_text_length(trial, fontname=fontname, fontsize=fontsize) <= width:
+                cur = trial
+            else:
+                count += 1
+                cur = word
+        lines += count
+    return max(1, lines) * line_h
+
+
+@dataclass
+class TextBlock:
+    """An extracted paragraph: its bbox plus dominant font/size/color."""
+
+    page_index: int
+    bbox: tuple[float, float, float, float]
+    text: str
+    fontsize: float
+    color: tuple[float, float, float]
+    fontname: str
+
+    def contains(self, x: float, y: float) -> bool:
+        x0, y0, x1, y1 = self.bbox
+        return x0 <= x <= x1 and y0 <= y <= y1
 
 
 class PDFDocument:
@@ -75,6 +143,82 @@ class PDFDocument:
 
     def page_text(self, index: int) -> str:
         return self._doc[index].get_text("text")
+
+    # ----- text editing (Phase 4) -----------------------------------------
+    def get_text_blocks(self, index: int) -> list[TextBlock]:
+        """Group a page's text into paragraph blocks with dominant style."""
+        page = self._doc[index]
+        data = page.get_text("dict")
+        blocks: list[TextBlock] = []
+        for block in data.get("blocks", []):
+            if block.get("type", 0) != 0:  # 0 == text block; skip images
+                continue
+            lines: list[str] = []
+            sizes: list[float] = []
+            fonts: dict[str, int] = {}
+            colors: dict[int, int] = {}
+            for line in block.get("lines", []):
+                spans = line.get("spans", [])
+                if not spans:
+                    continue
+                lines.append("".join(s["text"] for s in spans))
+                for s in spans:
+                    sizes.append(round(s["size"], 1))
+                    fonts[s["font"]] = fonts.get(s["font"], 0) + len(s["text"])
+                    colors[s["color"]] = colors.get(s["color"], 0) + len(s["text"])
+            text = "\n".join(lines).strip("\n")
+            if not text.strip():
+                continue
+            size = max(set(sizes), key=sizes.count) if sizes else 11.0
+            font = max(fonts, key=fonts.get) if fonts else "helv"
+            color_int = max(colors, key=colors.get) if colors else 0
+            blocks.append(
+                TextBlock(index, tuple(block["bbox"]), text, size,
+                          _int_to_rgb(color_int), font)
+            )
+        return blocks
+
+    def text_block_at(self, index: int, x: float, y: float) -> TextBlock | None:
+        """Return the paragraph block under a point (PDF coords), if any."""
+        for block in self.get_text_blocks(index):
+            if block.contains(x, y):
+                return block
+        return None
+
+    def replace_text_block(
+        self, index: int, bbox, new_text: str, fontsize: float,
+        color=(0.0, 0.0, 0.0), fontname: str | None = None,
+    ) -> None:
+        """Redact the original paragraph region and write `new_text` in place.
+
+        The new text is rendered in the closest base-14 font; the box is grown
+        downward if needed so the replacement does not clip.
+        """
+        page = self._doc[index]
+        rect = fitz.Rect(bbox)
+
+        page.add_redact_annot(rect)
+        try:
+            page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_NONE)
+        except TypeError:  # older PyMuPDF without the images kwarg
+            page.apply_redactions()
+
+        face = _base14_for(fontname or "helv")
+        # Grow the box to the estimated height plus one line of slack, since
+        # insert_textbox wraps slightly more aggressively than our estimate.
+        # If it still reports overflow, keep extending downward and retry.
+        needed = _measure_height(new_text, face, fontsize, max(rect.width, 1.0))
+        bottom = rect.y0 + needed + fontsize * 1.4
+        max_bottom = page.rect.height - 2
+        while True:
+            target = fitz.Rect(rect.x0, rect.y0, rect.x1, min(bottom, max_bottom))
+            leftover = page.insert_textbox(
+                target, new_text, fontname=face, fontsize=fontsize, color=color, align=0
+            )
+            if leftover >= 0 or bottom >= max_bottom:
+                break
+            bottom += -leftover + fontsize * 1.4  # extend by the shortfall + slack
+        self._structural_change()
 
     # ----- annotations (Phase 2) ------------------------------------------
     def add_highlight(self, index: int, rect, color=(1.0, 0.85, 0.0)) -> None:

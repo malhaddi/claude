@@ -12,18 +12,52 @@ pixmap (no centering offset): pdf_coord = widget_coord / zoom.
 from __future__ import annotations
 
 from PySide6.QtCore import QPoint, QRect, Qt, Signal
-from PySide6.QtGui import QColor, QPainter, QPen, QPixmap
+from PySide6.QtGui import QColor, QFont, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QInputDialog,
     QLabel,
+    QPlainTextEdit,
     QScrollArea,
     QVBoxLayout,
     QWidget,
 )
 
-from app.core.document import PDFDocument
+from app.core.document import PDFDocument, TextBlock
 from app.ui.render_bridge import page_image_to_pixmap
 from app.ui.tools import Tool
+
+
+class InlineTextEditor(QPlainTextEdit):
+    """Editable overlay placed over a paragraph for in-place text editing.
+
+    Ctrl+Enter (or losing focus) commits; Escape cancels.
+    """
+
+    commit = Signal()
+    cancel = Signal()
+
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+        self.setStyleSheet(
+            "QPlainTextEdit { background: #fffbe6; border: 1px solid #2864dc; padding: 0; }"
+        )
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
+    def keyPressEvent(self, event):  # noqa: N802
+        key = event.key()
+        ctrl = event.modifiers() & Qt.KeyboardModifier.ControlModifier
+        if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and ctrl:
+            self.commit.emit()
+            return
+        if key == Qt.Key.Key_Escape:
+            self.cancel.emit()
+            return
+        super().keyPressEvent(event)
+
+    def focusOutEvent(self, event):  # noqa: N802
+        super().focusOutEvent(event)
+        self.commit.emit()
 
 
 class PageLabel(QLabel):
@@ -57,6 +91,9 @@ class PageLabel(QLabel):
             return
         tool = self._view.tool
         pos = event.position().toPoint()
+        if tool == Tool.EDIT_TEXT:
+            self._view.begin_text_edit(self, pos.x() / self._zoom, pos.y() / self._zoom)
+            return
         if tool == Tool.INK:
             self._ink_points = [pos]
         elif tool.is_rect_drag:
@@ -153,6 +190,11 @@ class PageView(QScrollArea):
         self._color = (0.85, 0.1, 0.1)  # default annotation color (RGB 0..1)
         self._signature_path: str | None = None
 
+        # Inline text-edit state.
+        self._editor: InlineTextEditor | None = None
+        self._editor_block: TextBlock | None = None
+        self._editor_label: PageLabel | None = None
+
         self.verticalScrollBar().valueChanged.connect(self._emit_visible_page)
 
     # ----- document --------------------------------------------------------
@@ -187,8 +229,15 @@ class PageView(QScrollArea):
         return self._tool
 
     def set_tool(self, tool: Tool) -> None:
+        if tool != Tool.EDIT_TEXT:
+            self._finish_text_edit(commit=True)
         self._tool = tool
-        cursor = Qt.CursorShape.CrossCursor if tool != Tool.SELECT else Qt.CursorShape.ArrowCursor
+        if tool == Tool.SELECT:
+            cursor = Qt.CursorShape.ArrowCursor
+        elif tool == Tool.EDIT_TEXT:
+            cursor = Qt.CursorShape.IBeamCursor
+        else:
+            cursor = Qt.CursorShape.CrossCursor
         for label in self._labels:
             label.setCursor(cursor)
 
@@ -256,6 +305,55 @@ class PageView(QScrollArea):
         self._doc.add_ink(index, strokes, self._color)
         self._after_change(index)
 
+    # ----- inline text editing (Phase 4) ----------------------------------
+    def begin_text_edit(self, label: "PageLabel", x: float, y: float) -> None:
+        if self._doc is None:
+            return
+        # Commit any currently-open editor before starting a new one.
+        if self._editor is not None:
+            self._finish_text_edit(commit=True)
+        block = self._doc.text_block_at(label.index, x, y)
+        if block is None:
+            return
+
+        editor = InlineTextEditor(label)
+        z = self._zoom
+        x0, y0, x1, y1 = block.bbox
+        editor.setGeometry(
+            int(x0 * z), int(y0 * z),
+            max(48, int((x1 - x0) * z)), max(24, int((y1 - y0) * z) + 8),
+        )
+        font = QFont()
+        font.setPixelSize(max(6, int(block.fontsize * z)))
+        editor.setFont(font)
+        editor.setPlainText(block.text)
+        editor.commit.connect(lambda: self._finish_text_edit(commit=True))
+        editor.cancel.connect(lambda: self._finish_text_edit(commit=False))
+
+        self._editor = editor
+        self._editor_block = block
+        self._editor_label = label
+        editor.show()
+        editor.setFocus()
+        editor.selectAll()
+
+    def _finish_text_edit(self, commit: bool) -> None:
+        if self._editor is None:
+            return
+        editor, block, label = self._editor, self._editor_block, self._editor_label
+        # Clear state first so the focus-out triggered by deletion is a no-op.
+        self._editor = self._editor_block = self._editor_label = None
+
+        new_text = editor.toPlainText()
+        editor.deleteLater()
+        if commit and block is not None and label is not None and new_text != block.text:
+            self._doc.replace_text_block(
+                label.index, block.bbox, new_text,
+                block.fontsize, block.color, block.fontname,
+            )
+            self._render_page(label.index)
+            self.annotated.emit()
+
     def undo(self) -> bool:
         if self._doc is None or not self._doc.undo_last_annot():
             return False
@@ -270,6 +368,7 @@ class PageView(QScrollArea):
         self.annotated.emit()
 
     def _rebuild(self) -> None:
+        self._finish_text_edit(commit=False)  # drop any editor on a stale label
         while self._layout.count():
             item = self._layout.takeAt(0)
             if item.widget():

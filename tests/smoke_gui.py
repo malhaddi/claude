@@ -35,6 +35,11 @@ def _make_sample(path: str, label: str) -> None:
     doc.close()
 
 
+def _center(bbox) -> tuple[float, float]:
+    x0, y0, x1, y1 = bbox
+    return (x0 + x1) / 2, (y0 + y1) / 2
+
+
 def _make_signature(path: str) -> None:
     pix = fitz.Pixmap(fitz.csRGB, fitz.IRect(0, 0, 200, 80))
     pix.clear_with(255)
@@ -113,9 +118,28 @@ def main() -> int:
     win._insert_blank_page()
     assert ptab.doc.page_count == start_pages + 1, "toolbar insert failed"
 
+    # Phase 4: inline text editing on a fresh, unrotated document.
+    c = os.path.join(tmp, "c.pdf")
+    _make_sample(c, "Doc C")
+    win.load_path(c)
+    win._select_tool(Tool.EDIT_TEXT)
+    etab = win._current()
+    assert etab.view.tool == Tool.EDIT_TEXT
+    first = etab.doc.get_text_blocks(0)[0]
+    label = etab.view._labels[0]
+    etab.view.begin_text_edit(label, *_center(first.bbox))
+    assert etab.view._editor is not None, "inline editor did not open"
+    etab.view._editor.setPlainText("Edited heading text via inline editor")
+    etab.view._finish_text_edit(commit=True)
+    assert etab.view._editor is None, "editor not cleared after commit"
+    # Text may wrap (narrow box), so check for the words rather than spacing.
+    page_text = etab.doc.page_text(0)
+    assert "Edited" in page_text and "inline" in page_text, "text edit not applied"
+    assert "Hello Doc C" not in page_text, "original text not removed"
+
     app.processEvents()
     print("GUI smoke test passed: tabs, zoom, search, annotations, undo, "
-          "page ops, save all OK")
+          "page ops, inline text edit, save all OK")
     return 0
 
 

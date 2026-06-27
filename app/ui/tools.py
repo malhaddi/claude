@@ -11,6 +11,7 @@ class Tool(Enum):
     TEXTBOX = auto()     # drag a box, then type text
     INK = auto()         # freehand drawing
     SIGNATURE = auto()   # drag a box to place a chosen image
+    EDIT_TEXT = auto()   # click a paragraph to edit its text in place
 
     @property
     def is_rect_drag(self) -> bool:
