@@ -17,8 +17,21 @@ import tempfile
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import fitz  # noqa: E402
-from PySide6.QtCore import Qt  # noqa: E402
+from PySide6.QtCore import QEvent, QPointF, Qt  # noqa: E402
+from PySide6.QtGui import QMouseEvent  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
+
+
+def _simulate_drag(label, x0, y0, x1, y1):
+    """Drive a real press→move→release through a PageLabel's event handlers."""
+    lb, nb = Qt.MouseButton.LeftButton, Qt.MouseButton.NoButton
+    nomod = Qt.KeyboardModifier.NoModifier
+    label.mousePressEvent(
+        QMouseEvent(QEvent.Type.MouseButtonPress, QPointF(x0, y0), lb, lb, nomod))
+    label.mouseMoveEvent(
+        QMouseEvent(QEvent.Type.MouseMove, QPointF(x1, y1), nb, lb, nomod))
+    label.mouseReleaseEvent(
+        QMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(x1, y1), lb, lb, nomod))
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -157,6 +170,22 @@ def main() -> int:
     after = len(list(sel.doc.fitz_doc[0].annots()))
     assert after == before + 1, "highlight on selected text did not add an annotation"
 
+    # Critical: drive the REAL mouse-event handlers (not just commit_*), since
+    # that path is what the running app uses. Simulate a drag over the line.
+    win._select_tool(Tool.SELECT)
+    QApplication.clipboard().setText("")  # clear
+    z = sel.view.zoom
+    lbl = sel.view._labels[0]
+    _simulate_drag(lbl, (x0 + 1) * z, mid * z, (x1 - 1) * z, mid * z)
+    assert "searchable" in QApplication.clipboard().text(), \
+        "real mouse-drag selection did not copy text"
+
+    n0 = len(list(sel.doc.fitz_doc[0].annots()))
+    win._select_tool(Tool.UNDERLINE)
+    _simulate_drag(lbl, (x0 + 1) * z, mid * z, (x1 - 1) * z, mid * z)
+    assert len(list(sel.doc.fitz_doc[0].annots())) == n0 + 1, \
+        "real mouse-drag underline did not add an annotation"
+
     # New: signature is placed as a draggable item, then committed on demand.
     win._signature_path = sig
     sel.set_signature_path(sig)
@@ -175,8 +204,8 @@ def main() -> int:
 
     app.processEvents()
     print("GUI smoke test passed: tabs, zoom, search, annotations, undo, page "
-          "ops, inline text edit, text selection + highlight-on-selection, "
-          "draggable signature, save all OK")
+          "ops, inline text edit, text selection + highlight-on-selection "
+          "(incl. real mouse-drag events), draggable signature, save all OK")
     return 0
 
 

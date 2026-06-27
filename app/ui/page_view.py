@@ -192,6 +192,15 @@ class PageLabel(QLabel):
         self._drag_start = self._drag_cur = None
         self._ink_points = []
 
+    def wheelEvent(self, event):  # noqa: N802
+        # The page label is the direct target of the wheel; handle Ctrl+wheel
+        # zoom here so it works regardless of scroll-area event routing.
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self._view.zoom_by_wheel(event.angleDelta().y())
+            event.accept()
+        else:
+            event.ignore()  # let the scroll area scroll normally
+
     def _pdf_rect(self, a: QPoint, b: QPoint):
         x0, x1 = sorted((a.x(), b.x()))
         y0, y1 = sorted((a.y(), b.y()))
@@ -283,14 +292,16 @@ class PageView(QScrollArea):
         self.viewport().installEventFilter(self)
 
     # ----- zoom on Ctrl+wheel ---------------------------------------------
+    def zoom_by_wheel(self, delta: int) -> None:
+        if delta > 0:
+            self.zoom_in()
+        elif delta < 0:
+            self.zoom_out()
+
     def eventFilter(self, obj, event):  # noqa: N802
         if obj is self.viewport() and event.type() == QEvent.Type.Wheel:
             if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-                delta = event.angleDelta().y()
-                if delta > 0:
-                    self.zoom_in()
-                elif delta < 0:
-                    self.zoom_out()
+                self.zoom_by_wheel(event.angleDelta().y())
                 return True  # consume: don't also scroll
         return super().eventFilter(obj, event)
 
