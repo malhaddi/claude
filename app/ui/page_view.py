@@ -154,22 +154,31 @@ class PageLabel(QLabel):
         if tool == Tool.EDIT_TEXT:
             self._view.begin_text_edit(self, pos.x() / self._zoom, pos.y() / self._zoom)
             return
+        z = self._zoom
         if tool == Tool.INK:
             self._ink_points = [pos]
-        elif tool.is_rect_drag or tool.is_text_select:
+        elif tool.is_text_select:
             self._drag_start = pos
             self._drag_cur = pos
-            if tool.is_text_select:
-                self._view.clear_selections()
+            self._view.begin_text_drag(self.index, (pos.x() / z, pos.y() / z))
+        elif tool.is_rect_drag:
+            self._drag_start = pos
+            self._drag_cur = pos
         self.update()
 
     def mouseMoveEvent(self, event):  # noqa: N802
         tool = self._view.tool
         pos = event.position().toPoint()
+        z = self._zoom
         if tool == Tool.INK and self._ink_points:
             self._ink_points.append(pos)
             self.update()
-        elif (tool.is_rect_drag or tool.is_text_select) and self._drag_start is not None:
+        elif tool.is_text_select and self._drag_start is not None:
+            self._drag_cur = pos
+            p0 = (self._drag_start.x() / z, self._drag_start.y() / z)
+            p1 = (pos.x() / z, pos.y() / z)
+            self._view.update_text_drag(self.index, p0, p1)  # live highlight
+        elif tool.is_rect_drag and self._drag_start is not None:
             self._drag_cur = pos
             self.update()
 
@@ -234,8 +243,10 @@ class PageLabel(QLabel):
                     int((x1 - x0) * self._zoom), int((y1 - y0) * self._zoom),
                 )
 
-        # In-progress rubber-band rectangle.
-        if self._drag_start is not None and self._drag_cur is not None:
+        # In-progress rubber-band rectangle (rectangle tools only; text
+        # selection shows live word highlights instead, not a box).
+        if (self._view.tool.is_rect_drag
+                and self._drag_start is not None and self._drag_cur is not None):
             painter.setBrush(QColor(80, 140, 255, 50))
             painter.setPen(QPen(QColor(40, 100, 220), 1, Qt.PenStyle.DashLine))
             painter.drawRect(QRect(self._drag_start, self._drag_cur).normalized())
@@ -285,6 +296,9 @@ class PageView(QScrollArea):
         # Pending (uncommitted, draggable) signature placement.
         self._sig_item: SignatureItem | None = None
         self._sig_label: PageLabel | None = None
+
+        # Cached words for the active text-selection drag.
+        self._drag_words = None
 
         self.verticalScrollBar().valueChanged.connect(self._emit_visible_page)
         # Catch wheel events on the viewport so Ctrl+wheel zooms (a wheelEvent
@@ -413,21 +427,39 @@ class PageView(QScrollArea):
         for label in self._labels:
             label.set_selection(None, self._zoom)
 
-    def commit_text_drag(self, index: int, p0, p1) -> None:
-        """Select text between two points; then act per the active tool."""
+    def begin_text_drag(self, index: int, p0) -> None:
+        """Start a text-selection drag; cache the page's words for the drag."""
         if self._doc is None:
             return
-        rects, text = self._doc.select_text(index, p0, p1)
+        self._drag_words = self._doc.get_words(index)
+        self.clear_selections()
+
+    def update_text_drag(self, index: int, p0, p1) -> None:
+        """Live-highlight the words currently selected during the drag."""
+        if self._doc is None:
+            return
+        rects, _ = self._doc.select_text(index, p0, p1, self._drag_words)
+        self.clear_selections()
+        self._labels[index].set_selection(rects, self._zoom)
+
+    def commit_text_drag(self, index: int, p0, p1) -> None:
+        """Finalize the selection: copy, or annotate, per the active tool."""
+        if self._doc is None:
+            return
+        rects, text = self._doc.select_text(index, p0, p1, self._drag_words)
+        self._drag_words = None
         if not rects:
             return
         tool = self._tool
         if tool == Tool.HIGHLIGHT:
+            self.clear_selections()
             self._doc.add_highlight(index, rects, self._color)
             self._after_change(index)
         elif tool == Tool.UNDERLINE:
+            self.clear_selections()
             self._doc.add_underline(index, rects, self._color)
             self._after_change(index)
-        else:  # SELECT — show selection and copy to clipboard
+        else:  # SELECT — keep selection visible and copy to clipboard
             self.clear_selections()
             self._labels[index].set_selection(rects, self._zoom)
             if text:
