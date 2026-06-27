@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import fitz
+import pytest
 
 from app.core.document import PDFDocument
 
@@ -108,4 +109,86 @@ def test_add_image_marks_dirty(tmp_path):
     doc = PDFDocument.open(str(p))
     doc.add_image(0, (400, 60, 520, 110), str(sig))
     assert doc.is_dirty is True
+    doc.close()
+
+
+# ----- Phase 3: page operations -------------------------------------------
+def _make_labelled(path: str, letters: str) -> None:
+    doc = fitz.open()
+    for ch in letters:
+        doc.new_page().insert_text((72, 72), ch, fontsize=40)
+    doc.save(path)
+    doc.close()
+
+
+def _labels(doc: PDFDocument) -> list[str]:
+    return [doc.fitz_doc[i].get_text("text").strip() for i in range(doc.page_count)]
+
+
+def test_insert_blank_page(tmp_path):
+    p = tmp_path / "abc.pdf"
+    _make_labelled(str(p), "ABC")
+    doc = PDFDocument.open(str(p))
+    doc.insert_blank_page(1)  # blank becomes index 1
+    assert doc.page_count == 4
+    assert _labels(doc) == ["A", "", "B", "C"]
+    doc.close()
+
+
+def test_insert_pdf_pages(tmp_path):
+    a = tmp_path / "a.pdf"
+    b = tmp_path / "b.pdf"
+    _make_labelled(str(a), "AB")
+    _make_labelled(str(b), "XY")
+    doc = PDFDocument.open(str(a))
+    added = doc.insert_pdf_pages(1, str(b))  # insert X,Y starting at index 1
+    assert added == 2
+    assert _labels(doc) == ["A", "X", "Y", "B"]
+    doc.close()
+
+
+def test_delete_page_and_guard(tmp_path):
+    p = tmp_path / "abc.pdf"
+    _make_labelled(str(p), "ABC")
+    doc = PDFDocument.open(str(p))
+    doc.delete_page(1)
+    assert _labels(doc) == ["A", "C"]
+    doc.delete_page(0)
+    assert _labels(doc) == ["C"]
+    with pytest.raises(ValueError):  # cannot delete the only page
+        doc.delete_page(0)
+    doc.close()
+
+
+def test_rotate_page_is_relative(tmp_path):
+    p = tmp_path / "a.pdf"
+    _make_labelled(str(p), "A")
+    doc = PDFDocument.open(str(p))
+    doc.rotate_page(0, 90)
+    assert doc.fitz_doc[0].rotation == 90
+    doc.rotate_page(0, 90)
+    assert doc.fitz_doc[0].rotation == 180
+    doc.rotate_page(0, -270)
+    assert doc.fitz_doc[0].rotation == 270
+    doc.close()
+
+
+def test_move_page_both_directions(tmp_path):
+    p = tmp_path / "abcd.pdf"
+    _make_labelled(str(p), "ABCD")
+    doc = PDFDocument.open(str(p))
+    doc.move_page(0, 2)  # A down to index 2
+    assert _labels(doc) == ["B", "C", "A", "D"]
+    doc.move_page(3, 0)  # D up to index 0
+    assert _labels(doc) == ["D", "B", "C", "A"]
+    doc.close()
+
+
+def test_page_op_clears_undo_stack(tmp_path):
+    p = tmp_path / "abc.pdf"
+    _make_labelled(str(p), "ABC")
+    doc = PDFDocument.open(str(p))
+    doc.add_highlight(0, (60, 60, 100, 100))
+    doc.insert_blank_page(0)          # structural change clears undo
+    assert doc.undo_last_annot() is False
     doc.close()

@@ -85,21 +85,37 @@ def main() -> int:
     n_after = len(list(tab.doc.fitz_doc[0].annots()))
     assert n_after == n_before - 1, "undo did not remove one annotation"
 
+    # Save the annotated document and confirm the annotations persisted.
+    out = os.path.join(tmp, "out.pdf")
+    tab.doc.save(out)
+    assert os.path.exists(out), "save failed"
+    reopened = fitz.open(out)
+    total_annots = sum(len(list(reopened[i].annots())) for i in range(reopened.page_count))
+    assert total_annots >= 3, "annotations did not persist"
+    reopened.close()
+
     # Switch tab and confirm tool state re-applies without error.
     win._tabs.setCurrentIndex(0)
     win._select_tool(Tool.HIGHLIGHT)
     assert win._current().view.tool == Tool.HIGHLIGHT
 
-    # Save the annotated document.
-    out = os.path.join(tmp, "out.pdf")
-    tab.doc.save(out)
-    assert os.path.exists(out), "save failed"
-    reopened = fitz.open(out)
-    assert len(list(reopened[0].annots())) >= 3, "annotations did not persist"
-    reopened.close()
+    # Phase 3: page operations via the tab handler + toolbar action.
+    ptab = win._current()
+    start_pages = ptab.doc.page_count
+    ptab._on_page_action("insert_blank_after", 0)
+    assert ptab.doc.page_count == start_pages + 1, "insert blank failed"
+    assert ptab.thumbs.count() == ptab.doc.page_count, "thumbnails out of sync"
+    ptab._on_page_action("rotate_cw", 0)
+    assert ptab.doc.fitz_doc[0].rotation == 90
+    ptab._on_page_action("move_down", 0)
+    ptab._on_page_action("delete", 0)
+    assert ptab.doc.page_count == start_pages, "delete failed"
+    win._insert_blank_page()
+    assert ptab.doc.page_count == start_pages + 1, "toolbar insert failed"
 
     app.processEvents()
-    print("GUI smoke test passed: tabs, zoom, search, annotations, undo, save all OK")
+    print("GUI smoke test passed: tabs, zoom, search, annotations, undo, "
+          "page ops, save all OK")
     return 0
 
 

@@ -113,7 +113,7 @@ class MainWindow(QMainWindow):
         bar.addSeparator()
 
         # Editing actions that aren't persistent tools.
-        bar.addAction(self._act("Insert Page", None, lambda: self._todo("Insert Page")))
+        bar.addAction(self._act("Insert Page", None, self._insert_blank_page))
         bar.addAction(self._act("Edit Text", None, lambda: self._todo("Edit Text")))
         bar.addSeparator()
 
@@ -256,6 +256,13 @@ class MainWindow(QMainWindow):
     def _refresh_swatch(self) -> None:
         r, g, b = (int(c * 255) for c in self._active_color)
         self._color_swatch.setStyleSheet(f"color: rgb({r},{g},{b}); font-size: 18px;")
+
+    def _insert_blank_page(self) -> None:
+        tab = self._current()
+        if tab is None:
+            return
+        tab.insert_blank_after_current()
+        self.statusBar().showMessage("Inserted blank page", 2500)
 
     def undo(self) -> None:
         tab = self._current()

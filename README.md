@@ -4,8 +4,8 @@ A desktop PDF **reader and editor** for Windows, in the spirit of Foxit PDF
 Editor. Built with **Python + PySide6** (Qt 6 GUI) and **PyMuPDF** (the `fitz`
 rendering/editing engine).
 
-> **Status:** Phases 1–2 complete (reader core + annotations, multi-document
-> tabs). Page operations and text editing land next — see the roadmap below.
+> **Status:** Phases 1–3 complete (reader core, annotations, multi-document
+> tabs, page operations). Text editing lands next — see the roadmap below.
 
 ## Features
 
@@ -26,9 +26,13 @@ rendering/editing engine).
 - **Undo** (Ctrl+Z) the last annotation
 - Tools live in an exclusive toolbar group; selection persists across tabs
 
+### Phase 3 — Page operations ✅ (done)
+- **Insert blank page** (toolbar button, or before/after via thumbnail menu)
+- **Insert pages from another PDF**
+- **Rotate** left / right, **delete**, and **reorder** (move up/down)
+- All available from the right-click menu on any page thumbnail
+
 ### Roadmap
-- **Phase 3 — Page operations:** insert blank page, insert pages from another
-  PDF, reorder / delete / rotate
 - **Phase 4 — Edit existing text:** click a paragraph to turn it into an
   editable text box (extract → edit → redact-and-rewrite). This is the hardest
   feature; see the note below.

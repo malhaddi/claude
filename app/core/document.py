@@ -137,6 +137,63 @@ class PDFDocument:
         self._undo_stack.append((index, annot.xref))
         self.mark_dirty()
 
+    # ----- page operations (Phase 3) --------------------------------------
+    # These change page indices, so they invalidate the annotation undo stack
+    # (which is keyed by page index). Undo of page ops themselves is not
+    # supported yet.
+    def insert_blank_page(self, index: int, width: float | None = None,
+                          height: float | None = None) -> None:
+        """Insert a blank page so it becomes page number `index`.
+
+        Size defaults to a neighbouring page, else US Letter (612x792 pt).
+        """
+        if width is None or height is None:
+            if self.page_count:
+                ref = max(0, min(index, self.page_count - 1))
+                rect = self._doc[ref].rect
+                width, height = rect.width, rect.height
+            else:
+                width, height = 612.0, 792.0
+        self._doc.new_page(pno=index, width=width, height=height)
+        self._structural_change()
+
+    def insert_pdf_pages(self, index: int, other_path: str) -> int:
+        """Insert all pages of another PDF starting at `index`. Returns count."""
+        src = fitz.open(other_path)
+        try:
+            added = src.page_count
+            self._doc.insert_pdf(src, start_at=index)
+        finally:
+            src.close()
+        self._structural_change()
+        return added
+
+    def delete_page(self, index: int) -> None:
+        if self.page_count <= 1:
+            raise ValueError("Cannot delete the only page.")
+        self._doc.delete_page(index)
+        self._structural_change()
+
+    def rotate_page(self, index: int, degrees: int) -> None:
+        """Rotate a page by a relative multiple of 90 degrees."""
+        page = self._doc[index]
+        page.set_rotation((page.rotation + degrees) % 360)
+        self._structural_change()
+
+    def move_page(self, from_index: int, to_index: int) -> None:
+        """Move the page at from_index so it lands at to_index."""
+        if from_index == to_index:
+            return
+        # PyMuPDF's move_page(pno, to) inserts *before* position `to`; when
+        # moving downward we must account for the source page's removal.
+        target = to_index if to_index < from_index else to_index + 1
+        self._doc.move_page(from_index, target)
+        self._structural_change()
+
+    def _structural_change(self) -> None:
+        self._undo_stack.clear()
+        self.mark_dirty()
+
     # ----- saving ----------------------------------------------------------
     def save(self, path: str | None = None) -> str:
         """Save in place (incremental) or to a new path."""

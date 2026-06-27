@@ -165,6 +165,22 @@ class PageView(QScrollArea):
     def document(self) -> PDFDocument | None:
         return self._doc
 
+    def reload(self, scroll_to: int | None = None) -> None:
+        """Rebuild the page set (after structural changes) at current zoom."""
+        self._rebuild()
+        if scroll_to is not None:
+            self.scroll_to_page(scroll_to)
+
+    def current_page(self) -> int:
+        """Index of the top-most visible page (0 if empty)."""
+        if not self._labels:
+            return 0
+        viewport_top = self.verticalScrollBar().value()
+        for label in self._labels:
+            if label.y() + label.height() >= viewport_top:
+                return label.index
+        return 0
+
     # ----- tool / color state ---------------------------------------------
     @property
     def tool(self) -> Tool:
