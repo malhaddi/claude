@@ -15,5 +15,10 @@ class Tool(Enum):
 
     @property
     def is_rect_drag(self) -> bool:
-        """Tools driven by dragging a rectangle (vs. freehand or none)."""
-        return self in (Tool.HIGHLIGHT, Tool.UNDERLINE, Tool.TEXTBOX, Tool.SIGNATURE)
+        """Tools that drop something into an arbitrary dragged rectangle."""
+        return self in (Tool.TEXTBOX, Tool.SIGNATURE)
+
+    @property
+    def is_text_select(self) -> bool:
+        """Tools driven by selecting actual text (drag from word to word)."""
+        return self in (Tool.SELECT, Tool.HIGHLIGHT, Tool.UNDERLINE)

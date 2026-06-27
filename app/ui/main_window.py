@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
     QToolBar,
 )
 
+from app._version import __version__
 from app.core.document import PDFDocument
 from app.ui.document_tab import DocumentTab
 from app.ui.tools import Tool
@@ -40,7 +41,7 @@ _TOOL_BUTTONS = [
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("PDF Editor")
+        self.setWindowTitle(f"PDF Editor v{__version__}")
         self.resize(1280, 880)
 
         self._active_tool = Tool.SELECT
@@ -82,6 +83,9 @@ class MainWindow(QMainWindow):
         view_menu = self.menuBar().addMenu("&View")
         view_menu.addAction(self._act("Zoom &In", QKeySequence.StandardKey.ZoomIn, self._zoom_in))
         view_menu.addAction(self._act("Zoom &Out", QKeySequence.StandardKey.ZoomOut, self._zoom_out))
+
+        help_menu = self.menuBar().addMenu("&Help")
+        help_menu.addAction(self._act("&About", None, self._show_about))
 
     def _build_toolbar(self) -> None:
         bar = QToolBar("Main")
@@ -152,6 +156,7 @@ class MainWindow(QMainWindow):
         tab = DocumentTab(doc)
         tab.page_changed.connect(self._on_page_changed)
         tab.annotated.connect(self._on_annotated)
+        tab.text_selected.connect(self._on_text_selected)
         index = self._tabs.addTab(tab, tab.title)
         self._tabs.setCurrentIndex(index)
         # Apply current tool/color to the freshly opened document.
@@ -167,6 +172,7 @@ class MainWindow(QMainWindow):
         if tab.doc.path is None:
             self.save_file_as()
             return
+        tab.view.flush_pending()
         try:
             tab.doc.save()
             self._refresh_tab_title(tab)
@@ -181,6 +187,7 @@ class MainWindow(QMainWindow):
         path, _ = QFileDialog.getSaveFileName(self, "Save PDF As", "", "PDF files (*.pdf)")
         if not path:
             return
+        tab.view.flush_pending()
         try:
             tab.doc.save(path)
             self._refresh_tab_title(tab)
@@ -313,6 +320,12 @@ class MainWindow(QMainWindow):
         if tab is not None:
             self._refresh_tab_title(tab)
 
+    def _on_text_selected(self, text: str) -> None:
+        n = len(text)
+        self.statusBar().showMessage(
+            f"Copied {n} character(s) to clipboard" if n else "No text in selection", 3000
+        )
+
     def _refresh_tab_title(self, tab: DocumentTab) -> None:
         index = self._tabs.indexOf(tab)
         if index >= 0:
@@ -320,14 +333,25 @@ class MainWindow(QMainWindow):
         self._update_title()
 
     # ----- misc ------------------------------------------------------------
+    def _show_about(self) -> None:
+        QMessageBox.about(
+            self,
+            "About PDF Editor",
+            f"<b>PDF Editor</b><br>Version {__version__}<br><br>"
+            "Default tool selects text (I-beam cursor); Highlight/Underline act "
+            "on the selected text; Ctrl + mouse wheel zooms.<br><br>"
+            "If this version number looks old, download the latest build from "
+            "the repository's Actions tab.",
+        )
+
     def _update_title(self) -> None:
         tab = self._current()
         if tab is None:
-            self.setWindowTitle("PDF Editor")
+            self.setWindowTitle(f"PDF Editor v{__version__}")
             return
         name = tab.doc.path or "Untitled"
         dirty = "*" if tab.doc.is_dirty else ""
-        self.setWindowTitle(f"{dirty}{name} — PDF Editor")
+        self.setWindowTitle(f"{dirty}{name} — PDF Editor v{__version__}")
 
     def load_path(self, path: str) -> None:
         """Public entry used by the bootstrap to open a CLI-supplied file."""

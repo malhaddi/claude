@@ -71,6 +71,7 @@ class TextBlock:
     fontsize: float
     color: tuple[float, float, float]
     fontname: str
+    first_baseline: float  # y of the first line's text baseline (for re-alignment)
 
     def contains(self, x: float, y: float) -> bool:
         x0, y0, x1, y1 = self.bbox
@@ -157,11 +158,14 @@ class PDFDocument:
             sizes: list[float] = []
             fonts: dict[str, int] = {}
             colors: dict[int, int] = {}
+            first_baseline: float | None = None
             for line in block.get("lines", []):
                 spans = line.get("spans", [])
                 if not spans:
                     continue
                 lines.append("".join(s["text"] for s in spans))
+                if first_baseline is None:
+                    first_baseline = spans[0]["origin"][1]
                 for s in spans:
                     sizes.append(round(s["size"], 1))
                     fonts[s["font"]] = fonts.get(s["font"], 0) + len(s["text"])
@@ -172,11 +176,16 @@ class PDFDocument:
             size = max(set(sizes), key=sizes.count) if sizes else 11.0
             font = max(fonts, key=fonts.get) if fonts else "helv"
             color_int = max(colors, key=colors.get) if colors else 0
+            bbox = tuple(block["bbox"])
             blocks.append(
-                TextBlock(index, tuple(block["bbox"]), text, size,
-                          _int_to_rgb(color_int), font)
+                TextBlock(index, bbox, text, size, _int_to_rgb(color_int), font,
+                          first_baseline if first_baseline is not None else bbox[1])
             )
         return blocks
+
+    def get_text_in_rect(self, index: int, rect) -> str:
+        """Return the text contained in a rectangle (for selection/copy)."""
+        return self._doc[index].get_textbox(fitz.Rect(rect)).strip()
 
     def text_block_at(self, index: int, x: float, y: float) -> TextBlock | None:
         """Return the paragraph block under a point (PDF coords), if any."""
@@ -188,11 +197,15 @@ class PDFDocument:
     def replace_text_block(
         self, index: int, bbox, new_text: str, fontsize: float,
         color=(0.0, 0.0, 0.0), fontname: str | None = None,
+        first_baseline: float | None = None,
     ) -> None:
         """Redact the original paragraph region and write `new_text` in place.
 
-        The new text is rendered in the closest base-14 font; the box is grown
-        downward if needed so the replacement does not clip.
+        The new text is rendered in the closest base-14 font. The insertion box
+        top is anchored so the first line's baseline matches the original text's
+        baseline (font-ascender aware), keeping the replacement in place even
+        when the substitute font's metrics differ. The box grows downward and
+        retries if the text would overflow.
         """
         page = self._doc[index]
         rect = fitz.Rect(bbox)
@@ -204,14 +217,17 @@ class PDFDocument:
             page.apply_redactions()
 
         face = _base14_for(fontname or "helv")
-        # Grow the box to the estimated height plus one line of slack, since
-        # insert_textbox wraps slightly more aggressively than our estimate.
-        # If it still reports overflow, keep extending downward and retry.
+        # Anchor the box top so the first baseline lands on the original one.
+        if first_baseline is not None:
+            ascender = fitz.Font(face).ascender
+            top = first_baseline - ascender * fontsize
+        else:
+            top = rect.y0
         needed = _measure_height(new_text, face, fontsize, max(rect.width, 1.0))
-        bottom = rect.y0 + needed + fontsize * 1.4
+        bottom = top + needed + fontsize * 1.4
         max_bottom = page.rect.height - 2
         while True:
-            target = fitz.Rect(rect.x0, rect.y0, rect.x1, min(bottom, max_bottom))
+            target = fitz.Rect(rect.x0, top, rect.x1, min(bottom, max_bottom))
             leftover = page.insert_textbox(
                 target, new_text, fontname=face, fontsize=fontsize, color=color, align=0
             )
@@ -220,18 +236,56 @@ class PDFDocument:
             bottom += -leftover + fontsize * 1.4  # extend by the shortfall + slack
         self._structural_change()
 
-    # ----- annotations (Phase 2) ------------------------------------------
-    def add_highlight(self, index: int, rect, color=(1.0, 0.85, 0.0)) -> None:
-        """Highlight the text under a rectangle (PDF-point coords)."""
+    # ----- text selection (for select / highlight / underline) ------------
+    def select_text(self, index: int, p0, p1) -> tuple[list, str]:
+        """Select words between two points in reading order.
+
+        Returns (rects, text): per-word rectangles to draw/annotate, and the
+        selected text. This mirrors how a normal reader selects text — from the
+        word nearest p0 to the word nearest p1, following reading order — rather
+        than a raw rectangle.
+        """
         page = self._doc[index]
-        annot = page.add_highlight_annot(fitz.Rect(rect))
+        words = page.get_text("words")  # x0,y0,x1,y1,word,block,line,word_no
+        if not words:
+            return [], ""
+        words.sort(key=lambda w: (w[5], w[6], w[7]))  # block, line, word index
+
+        def nearest(point) -> int:
+            px, py = point
+            best_i, best_d = 0, None
+            for i, w in enumerate(words):
+                cx, cy = (w[0] + w[2]) / 2, (w[1] + w[3]) / 2
+                d = (cx - px) ** 2 + (cy - py) ** 2
+                if best_d is None or d < best_d:
+                    best_i, best_d = i, d
+            return best_i
+
+        i0, i1 = sorted((nearest(p0), nearest(p1)))
+        chosen = words[i0:i1 + 1]
+        rects = [(w[0], w[1], w[2], w[3]) for w in chosen]
+        text = " ".join(w[4] for w in chosen)
+        return rects, text
+
+    # ----- annotations (Phase 2) ------------------------------------------
+    @staticmethod
+    def _as_quads(rects):
+        """Accept a single rect or a list of rects; return quad(s) for annots."""
+        if rects and isinstance(rects[0], (list, tuple)):
+            return [fitz.Rect(r).quad for r in rects]
+        return [fitz.Rect(rects).quad]
+
+    def add_highlight(self, index: int, rects, color=(1.0, 0.85, 0.0)) -> None:
+        """Highlight selected text (one rect per word, or a single rect)."""
+        page = self._doc[index]
+        annot = page.add_highlight_annot(self._as_quads(rects))
         annot.set_colors(stroke=color)
         annot.update()
         self._track(index, annot)
 
-    def add_underline(self, index: int, rect, color=(0.85, 0.1, 0.1)) -> None:
+    def add_underline(self, index: int, rects, color=(0.85, 0.1, 0.1)) -> None:
         page = self._doc[index]
-        annot = page.add_underline_annot(fitz.Rect(rect))
+        annot = page.add_underline_annot(self._as_quads(rects))
         annot.set_colors(stroke=color)
         annot.update()
         self._track(index, annot)

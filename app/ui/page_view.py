@@ -11,9 +11,10 @@ pixmap (no centering offset): pdf_coord = widget_coord / zoom.
 """
 from __future__ import annotations
 
-from PySide6.QtCore import QPoint, QRect, Qt, Signal
+from PySide6.QtCore import QEvent, QPoint, QRect, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
+    QApplication,
     QInputDialog,
     QLabel,
     QPlainTextEdit,
@@ -25,6 +26,59 @@ from PySide6.QtWidgets import (
 from app.core.document import PDFDocument, TextBlock
 from app.ui.render_bridge import page_image_to_pixmap
 from app.ui.tools import Tool
+
+
+class SignatureItem(QLabel):
+    """A placed signature image that can be dragged before it is committed.
+
+    Drag to reposition; Enter / double-click commits it into the PDF; Esc
+    cancels. It lives as a child of a PageLabel so its coordinates are in that
+    page's pixel space.
+    """
+
+    commit = Signal()
+    cancel = Signal()
+
+    def __init__(self, parent: QWidget, pixmap: QPixmap):
+        super().__init__(parent)
+        self.setPixmap(pixmap)
+        self.setScaledContents(True)
+        self.setStyleSheet("border: 1px dashed #2864dc; background: transparent;")
+        self.setCursor(Qt.CursorShape.SizeAllCursor)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setToolTip("Drag to move • double-click or Enter to place • Esc to cancel")
+        self._press: QPoint | None = None
+
+    def mousePressEvent(self, event):  # noqa: N802
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._press = event.position().toPoint()
+
+    def mouseMoveEvent(self, event):  # noqa: N802
+        if self._press is None:
+            return
+        delta = event.position().toPoint() - self._press
+        new_pos = self.pos() + delta
+        parent = self.parentWidget()
+        if parent is not None:  # keep the item within the page
+            max_x = max(0, parent.width() - self.width())
+            max_y = max(0, parent.height() - self.height())
+            new_pos.setX(max(0, min(new_pos.x(), max_x)))
+            new_pos.setY(max(0, min(new_pos.y(), max_y)))
+        self.move(new_pos)
+
+    def mouseReleaseEvent(self, event):  # noqa: N802
+        self._press = None
+
+    def mouseDoubleClickEvent(self, event):  # noqa: N802
+        self.commit.emit()
+
+    def keyPressEvent(self, event):  # noqa: N802
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.commit.emit()
+        elif event.key() == Qt.Key.Key_Escape:
+            self.cancel.emit()
+        else:
+            super().keyPressEvent(event)
 
 
 class InlineTextEditor(QPlainTextEdit):
@@ -68,6 +122,7 @@ class PageLabel(QLabel):
         self.index = index
         self._view = view
         self._highlights: list[tuple[float, float, float, float]] = []
+        self._selection: tuple[float, float, float, float] | None = None
         self._zoom = 1.0
         # In-progress interaction (widget coords).
         self._drag_start: QPoint | None = None
@@ -79,6 +134,11 @@ class PageLabel(QLabel):
 
     def set_highlights(self, rects, zoom: float) -> None:
         self._highlights = rects
+        self._zoom = zoom
+        self.update()
+
+    def set_selection(self, rects, zoom: float) -> None:
+        self._selection = rects  # list of word rects, or None
         self._zoom = zoom
         self.update()
 
@@ -96,9 +156,11 @@ class PageLabel(QLabel):
             return
         if tool == Tool.INK:
             self._ink_points = [pos]
-        elif tool.is_rect_drag:
+        elif tool.is_rect_drag or tool.is_text_select:
             self._drag_start = pos
             self._drag_cur = pos
+            if tool.is_text_select:
+                self._view.clear_selections()
         self.update()
 
     def mouseMoveEvent(self, event):  # noqa: N802
@@ -107,7 +169,7 @@ class PageLabel(QLabel):
         if tool == Tool.INK and self._ink_points:
             self._ink_points.append(pos)
             self.update()
-        elif tool.is_rect_drag and self._drag_start is not None:
+        elif (tool.is_rect_drag or tool.is_text_select) and self._drag_start is not None:
             self._drag_cur = pos
             self.update()
 
@@ -115,15 +177,29 @@ class PageLabel(QLabel):
         if event.button() != Qt.MouseButton.LeftButton:
             return
         tool = self._view.tool
+        z = self._zoom
         if tool == Tool.INK and len(self._ink_points) > 1:
-            pts = [(p.x() / self._zoom, p.y() / self._zoom) for p in self._ink_points]
+            pts = [(p.x() / z, p.y() / z) for p in self._ink_points]
             self._view.commit_ink(self.index, [pts])
+        elif tool.is_text_select and self._drag_start and self._drag_cur:
+            p0 = (self._drag_start.x() / z, self._drag_start.y() / z)
+            p1 = (self._drag_cur.x() / z, self._drag_cur.y() / z)
+            self._view.commit_text_drag(self.index, p0, p1)
         elif tool.is_rect_drag and self._drag_start and self._drag_cur:
             rect = self._pdf_rect(self._drag_start, self._drag_cur)
             if rect is not None:
                 self._view.commit_rect(self.index, rect)
         self._drag_start = self._drag_cur = None
         self._ink_points = []
+
+    def wheelEvent(self, event):  # noqa: N802
+        # The page label is the direct target of the wheel; handle Ctrl+wheel
+        # zoom here so it works regardless of scroll-area event routing.
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self._view.zoom_by_wheel(event.angleDelta().y())
+            event.accept()
+        else:
+            event.ignore()  # let the scroll area scroll normally
 
     def _pdf_rect(self, a: QPoint, b: QPoint):
         x0, x1 = sorted((a.x(), b.x()))
@@ -148,6 +224,16 @@ class PageLabel(QLabel):
                     int((x1 - x0) * self._zoom), int((y1 - y0) * self._zoom),
                 )
 
+        # Committed text selection (per-word rects, kept until the next click).
+        if self._selection:
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QColor(60, 120, 230, 70))
+            for x0, y0, x1, y1 in self._selection:
+                painter.drawRect(
+                    int(x0 * self._zoom), int(y0 * self._zoom),
+                    int((x1 - x0) * self._zoom), int((y1 - y0) * self._zoom),
+                )
+
         # In-progress rubber-band rectangle.
         if self._drag_start is not None and self._drag_cur is not None:
             painter.setBrush(QColor(80, 140, 255, 50))
@@ -167,6 +253,7 @@ class PageView(QScrollArea):
 
     page_changed = Signal(int)
     annotated = Signal()  # emitted after any annotation is committed
+    text_selected = Signal(str)  # emitted with copied text after a selection
 
     def __init__(self):
         super().__init__()
@@ -195,7 +282,28 @@ class PageView(QScrollArea):
         self._editor_block: TextBlock | None = None
         self._editor_label: PageLabel | None = None
 
+        # Pending (uncommitted, draggable) signature placement.
+        self._sig_item: SignatureItem | None = None
+        self._sig_label: PageLabel | None = None
+
         self.verticalScrollBar().valueChanged.connect(self._emit_visible_page)
+        # Catch wheel events on the viewport so Ctrl+wheel zooms (a wheelEvent
+        # override on a QScrollArea is consumed by the viewport for scrolling).
+        self.viewport().installEventFilter(self)
+
+    # ----- zoom on Ctrl+wheel ---------------------------------------------
+    def zoom_by_wheel(self, delta: int) -> None:
+        if delta > 0:
+            self.zoom_in()
+        elif delta < 0:
+            self.zoom_out()
+
+    def eventFilter(self, obj, event):  # noqa: N802
+        if obj is self.viewport() and event.type() == QEvent.Type.Wheel:
+            if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                self.zoom_by_wheel(event.angleDelta().y())
+                return True  # consume: don't also scroll
+        return super().eventFilter(obj, event)
 
     # ----- document --------------------------------------------------------
     def set_document(self, doc: PDFDocument) -> None:
@@ -231,13 +339,13 @@ class PageView(QScrollArea):
     def set_tool(self, tool: Tool) -> None:
         if tool != Tool.EDIT_TEXT:
             self._finish_text_edit(commit=True)
+        self._commit_signature()  # bake any pending signature when switching tools
         self._tool = tool
-        if tool == Tool.SELECT:
-            cursor = Qt.CursorShape.ArrowCursor
-        elif tool == Tool.EDIT_TEXT:
+        if tool.is_text_select or tool == Tool.EDIT_TEXT:
             cursor = Qt.CursorShape.IBeamCursor
         else:
             cursor = Qt.CursorShape.CrossCursor
+        self.viewport().setCursor(cursor)
         for label in self._labels:
             label.setCursor(cursor)
 
@@ -282,19 +390,14 @@ class PageView(QScrollArea):
         if self._doc is None:
             return
         tool = self._tool
-        if tool == Tool.HIGHLIGHT:
-            self._doc.add_highlight(index, rect, self._color)
-        elif tool == Tool.UNDERLINE:
-            self._doc.add_underline(index, rect, self._color)
-        elif tool == Tool.TEXTBOX:
+        if tool == Tool.TEXTBOX:
             text, ok = QInputDialog.getMultiLineText(self, "Text Box", "Enter text:")
             if not ok or not text.strip():
                 return
             self._doc.add_text_box(index, rect, text, color=self._color)
         elif tool == Tool.SIGNATURE:
-            if not self._signature_path:
-                return
-            self._doc.add_image(index, rect, self._signature_path)
+            self._place_signature(index, rect)
+            return
         else:
             return
         self._after_change(index)
@@ -304,6 +407,81 @@ class PageView(QScrollArea):
             return
         self._doc.add_ink(index, strokes, self._color)
         self._after_change(index)
+
+    # ----- text selection: select / highlight / underline -----------------
+    def clear_selections(self) -> None:
+        for label in self._labels:
+            label.set_selection(None, self._zoom)
+
+    def commit_text_drag(self, index: int, p0, p1) -> None:
+        """Select text between two points; then act per the active tool."""
+        if self._doc is None:
+            return
+        rects, text = self._doc.select_text(index, p0, p1)
+        if not rects:
+            return
+        tool = self._tool
+        if tool == Tool.HIGHLIGHT:
+            self._doc.add_highlight(index, rects, self._color)
+            self._after_change(index)
+        elif tool == Tool.UNDERLINE:
+            self._doc.add_underline(index, rects, self._color)
+            self._after_change(index)
+        else:  # SELECT — show selection and copy to clipboard
+            self.clear_selections()
+            self._labels[index].set_selection(rects, self._zoom)
+            if text:
+                QApplication.clipboard().setText(text)
+            self.text_selected.emit(text)
+
+    # ----- signature placement (draggable before commit) ------------------
+    def _place_signature(self, index: int, rect) -> None:
+        if not self._signature_path:
+            return
+        self._commit_signature()  # bake any previous pending signature first
+        label = self._labels[index]
+        pixmap = QPixmap(self._signature_path)
+        if pixmap.isNull():
+            return
+        z = self._zoom
+        x0, y0, x1, y1 = rect
+        item = SignatureItem(label, pixmap)
+        item.setGeometry(
+            int(x0 * z), int(y0 * z),
+            max(24, int((x1 - x0) * z)), max(12, int((y1 - y0) * z)),
+        )
+        item.commit.connect(self._commit_signature)
+        item.cancel.connect(self._cancel_signature)
+        self._sig_item = item
+        self._sig_label = label
+        item.show()
+        item.setFocus()
+
+    def _commit_signature(self) -> None:
+        if self._sig_item is None:
+            return
+        item, label = self._sig_item, self._sig_label
+        self._sig_item = self._sig_label = None
+        geo = item.geometry()
+        z = self._zoom
+        rect = (geo.x() / z, geo.y() / z, (geo.x() + geo.width()) / z,
+                (geo.y() + geo.height()) / z)
+        item.deleteLater()
+        if label is not None and self._signature_path:
+            self._doc.add_image(label.index, rect, self._signature_path)
+            self._render_page(label.index)
+            self.annotated.emit()
+
+    def _cancel_signature(self) -> None:
+        if self._sig_item is None:
+            return
+        self._sig_item.deleteLater()
+        self._sig_item = self._sig_label = None
+
+    def flush_pending(self) -> None:
+        """Commit any open editor / pending signature (e.g. before saving)."""
+        self._finish_text_edit(commit=True)
+        self._commit_signature()
 
     # ----- inline text editing (Phase 4) ----------------------------------
     def begin_text_edit(self, label: "PageLabel", x: float, y: float) -> None:
@@ -349,7 +527,7 @@ class PageView(QScrollArea):
         if commit and block is not None and label is not None and new_text != block.text:
             self._doc.replace_text_block(
                 label.index, block.bbox, new_text,
-                block.fontsize, block.color, block.fontname,
+                block.fontsize, block.color, block.fontname, block.first_baseline,
             )
             self._render_page(label.index)
             self.annotated.emit()
@@ -369,6 +547,7 @@ class PageView(QScrollArea):
 
     def _rebuild(self) -> None:
         self._finish_text_edit(commit=False)  # drop any editor on a stale label
+        self._cancel_signature()              # drop any pending signature too
         while self._layout.count():
             item = self._layout.takeAt(0)
             if item.widget():

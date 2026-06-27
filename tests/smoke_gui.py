@@ -17,7 +17,21 @@ import tempfile
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import fitz  # noqa: E402
+from PySide6.QtCore import QEvent, QPointF, Qt  # noqa: E402
+from PySide6.QtGui import QMouseEvent  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
+
+
+def _simulate_drag(label, x0, y0, x1, y1):
+    """Drive a real press→move→release through a PageLabel's event handlers."""
+    lb, nb = Qt.MouseButton.LeftButton, Qt.MouseButton.NoButton
+    nomod = Qt.KeyboardModifier.NoModifier
+    label.mousePressEvent(
+        QMouseEvent(QEvent.Type.MouseButtonPress, QPointF(x0, y0), lb, lb, nomod))
+    label.mouseMoveEvent(
+        QMouseEvent(QEvent.Type.MouseMove, QPointF(x1, y1), nb, lb, nomod))
+    label.mouseReleaseEvent(
+        QMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(x1, y1), lb, lb, nomod))
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -137,9 +151,61 @@ def main() -> int:
     assert "Edited" in page_text and "inline" in page_text, "text edit not applied"
     assert "Hello Doc C" not in page_text, "original text not removed"
 
+    # New: SELECT is a text cursor and drag-selecting copies the text.
+    win._select_tool(Tool.SELECT)
+    sel = win._current()
+    assert sel.view.tool == Tool.SELECT
+    assert sel.view._labels[0].cursor().shape() == Qt.CursorShape.IBeamCursor, \
+        "SELECT tool should show a text (I-beam) cursor"
+    line = next(b for b in sel.doc.get_text_blocks(0) if "searchable" in b.text)
+    x0, y0, x1, y1 = line.bbox
+    mid = (y0 + y1) / 2
+    sel.view.commit_text_drag(0, (x0 + 1, mid), (x1 - 1, mid))
+    assert "searchable" in QApplication.clipboard().text(), "selection not copied"
+
+    # New: highlight/underline act on the selected text (one annot per drag).
+    before = len(list(sel.doc.fitz_doc[0].annots()))
+    win._select_tool(Tool.HIGHLIGHT)
+    sel.view.commit_text_drag(0, (x0 + 1, mid), (x1 - 1, mid))
+    after = len(list(sel.doc.fitz_doc[0].annots()))
+    assert after == before + 1, "highlight on selected text did not add an annotation"
+
+    # Critical: drive the REAL mouse-event handlers (not just commit_*), since
+    # that path is what the running app uses. Simulate a drag over the line.
+    win._select_tool(Tool.SELECT)
+    QApplication.clipboard().setText("")  # clear
+    z = sel.view.zoom
+    lbl = sel.view._labels[0]
+    _simulate_drag(lbl, (x0 + 1) * z, mid * z, (x1 - 1) * z, mid * z)
+    assert "searchable" in QApplication.clipboard().text(), \
+        "real mouse-drag selection did not copy text"
+
+    n0 = len(list(sel.doc.fitz_doc[0].annots()))
+    win._select_tool(Tool.UNDERLINE)
+    _simulate_drag(lbl, (x0 + 1) * z, mid * z, (x1 - 1) * z, mid * z)
+    assert len(list(sel.doc.fitz_doc[0].annots())) == n0 + 1, \
+        "real mouse-drag underline did not add an annotation"
+
+    # New: signature is placed as a draggable item, then committed on demand.
+    win._signature_path = sig
+    sel.set_signature_path(sig)
+    win._select_tool(Tool.SIGNATURE)
+    sel.view.commit_rect(0, (400, 60, 520, 110))   # drops a draggable signature
+    assert sel.view._sig_item is not None, "signature item not created"
+    sel.view._sig_item.move(120, 200)              # simulate dragging it
+    sel.view._commit_signature()                   # bake into the PDF
+    assert sel.view._sig_item is None, "signature not committed"
+    assert sel.doc.is_dirty is True
+
+    # New: Ctrl+wheel zoom path changes the zoom level.
+    before = sel.view.zoom
+    sel.view.zoom_in()
+    assert sel.view.zoom > before, "zoom did not increase"
+
     app.processEvents()
-    print("GUI smoke test passed: tabs, zoom, search, annotations, undo, "
-          "page ops, inline text edit, save all OK")
+    print("GUI smoke test passed: tabs, zoom, search, annotations, undo, page "
+          "ops, inline text edit, text selection + highlight-on-selection "
+          "(incl. real mouse-drag events), draggable signature, save all OK")
     return 0
 
 

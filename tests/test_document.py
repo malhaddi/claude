@@ -242,3 +242,68 @@ def test_replace_text_block(tmp_path):
     assert "Second paragraph stays untouched." in text  # other block intact
     assert doc.is_dirty is True
     doc.close()
+
+
+def test_replace_text_block_preserves_baseline(tmp_path):
+    p = tmp_path / "para.pdf"
+    _make_paragraphs(str(p))
+    doc = PDFDocument.open(str(p))
+    block = doc.get_text_blocks(0)[0]
+    original_baseline = block.first_baseline
+    doc.replace_text_block(
+        0, block.bbox, "New first line here.", block.fontsize,
+        block.color, block.fontname, block.first_baseline,
+    )
+    # The replacement's first line should sit on (near) the original baseline.
+    # Anchoring keeps it within a couple of points; without it, a mismatched
+    # substitute font could drift by most of a line.
+    new_block = next(b for b in doc.get_text_blocks(0) if b.text.startswith("New first line"))
+    assert abs(new_block.first_baseline - original_baseline) < 3.0
+    doc.close()
+
+
+def test_select_text_between_points(tmp_path):
+    p = tmp_path / "sel.pdf"
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((72, 100), "The quick brown fox jumps", fontsize=14)
+    doc.save(str(p))
+    doc.close()
+
+    d = PDFDocument.open(str(p))
+    rects, text = d.select_text(0, (74, 100), (200, 100))
+    assert "quick" in text and "brown" in text
+    assert len(rects) == len(text.split())  # one rect per selected word
+    # A single-word selection.
+    one_rects, one_text = d.select_text(0, (74, 100), (84, 100))
+    assert one_text == "The" and len(one_rects) == 1
+    d.close()
+
+
+def test_highlight_on_selected_words(tmp_path):
+    p = tmp_path / "sel.pdf"
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((72, 100), "Highlight these selected words please", fontsize=12)
+    doc.save(str(p))
+    doc.close()
+
+    d = PDFDocument.open(str(p))
+    rects, _ = d.select_text(0, (74, 100), (260, 100))
+    d.add_highlight(0, rects)            # list of word rects -> one multi-quad annot
+    page = d.fitz_doc[0]                 # hold the page ref so annots stay bound
+    annots = list(page.annots())
+    assert len(annots) == 1
+    assert annots[0].type[1] == "Highlight"
+    d.close()
+
+
+def test_get_text_in_rect(tmp_path):
+    p = tmp_path / "para.pdf"
+    _make_paragraphs(str(p))
+    doc = PDFDocument.open(str(p))
+    block = doc.get_text_blocks(0)[0]
+    selected = doc.get_text_in_rect(0, block.bbox)
+    assert "quick brown fox" in selected
+    assert doc.get_text_in_rect(0, (500, 500, 560, 560)) == ""  # empty area
+    doc.close()
