@@ -11,7 +11,7 @@ pixmap (no centering offset): pdf_coord = widget_coord / zoom.
 """
 from __future__ import annotations
 
-from PySide6.QtCore import QPoint, QRect, Qt, Signal
+from PySide6.QtCore import QEvent, QPoint, QRect, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
@@ -137,8 +137,8 @@ class PageLabel(QLabel):
         self._zoom = zoom
         self.update()
 
-    def set_selection(self, rect, zoom: float) -> None:
-        self._selection = rect
+    def set_selection(self, rects, zoom: float) -> None:
+        self._selection = rects  # list of word rects, or None
         self._zoom = zoom
         self.update()
 
@@ -156,10 +156,10 @@ class PageLabel(QLabel):
             return
         if tool == Tool.INK:
             self._ink_points = [pos]
-        elif tool.is_rect_drag or tool == Tool.SELECT:
+        elif tool.is_rect_drag or tool.is_text_select:
             self._drag_start = pos
             self._drag_cur = pos
-            if tool == Tool.SELECT:
+            if tool.is_text_select:
                 self._view.clear_selections()
         self.update()
 
@@ -169,7 +169,7 @@ class PageLabel(QLabel):
         if tool == Tool.INK and self._ink_points:
             self._ink_points.append(pos)
             self.update()
-        elif (tool.is_rect_drag or tool == Tool.SELECT) and self._drag_start is not None:
+        elif (tool.is_rect_drag or tool.is_text_select) and self._drag_start is not None:
             self._drag_cur = pos
             self.update()
 
@@ -177,13 +177,14 @@ class PageLabel(QLabel):
         if event.button() != Qt.MouseButton.LeftButton:
             return
         tool = self._view.tool
+        z = self._zoom
         if tool == Tool.INK and len(self._ink_points) > 1:
-            pts = [(p.x() / self._zoom, p.y() / self._zoom) for p in self._ink_points]
+            pts = [(p.x() / z, p.y() / z) for p in self._ink_points]
             self._view.commit_ink(self.index, [pts])
-        elif tool == Tool.SELECT and self._drag_start and self._drag_cur:
-            rect = self._pdf_rect(self._drag_start, self._drag_cur)
-            if rect is not None:
-                self._view.commit_selection(self.index, rect)
+        elif tool.is_text_select and self._drag_start and self._drag_cur:
+            p0 = (self._drag_start.x() / z, self._drag_start.y() / z)
+            p1 = (self._drag_cur.x() / z, self._drag_cur.y() / z)
+            self._view.commit_text_drag(self.index, p0, p1)
         elif tool.is_rect_drag and self._drag_start and self._drag_cur:
             rect = self._pdf_rect(self._drag_start, self._drag_cur)
             if rect is not None:
@@ -214,15 +215,15 @@ class PageLabel(QLabel):
                     int((x1 - x0) * self._zoom), int((y1 - y0) * self._zoom),
                 )
 
-        # Committed text selection (kept until the next click).
-        if self._selection is not None:
-            x0, y0, x1, y1 = self._selection
+        # Committed text selection (per-word rects, kept until the next click).
+        if self._selection:
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QColor(60, 120, 230, 70))
-            painter.drawRect(
-                int(x0 * self._zoom), int(y0 * self._zoom),
-                int((x1 - x0) * self._zoom), int((y1 - y0) * self._zoom),
-            )
+            for x0, y0, x1, y1 in self._selection:
+                painter.drawRect(
+                    int(x0 * self._zoom), int(y0 * self._zoom),
+                    int((x1 - x0) * self._zoom), int((y1 - y0) * self._zoom),
+                )
 
         # In-progress rubber-band rectangle.
         if self._drag_start is not None and self._drag_cur is not None:
@@ -277,18 +278,21 @@ class PageView(QScrollArea):
         self._sig_label: PageLabel | None = None
 
         self.verticalScrollBar().valueChanged.connect(self._emit_visible_page)
+        # Catch wheel events on the viewport so Ctrl+wheel zooms (a wheelEvent
+        # override on a QScrollArea is consumed by the viewport for scrolling).
+        self.viewport().installEventFilter(self)
 
     # ----- zoom on Ctrl+wheel ---------------------------------------------
-    def wheelEvent(self, event):  # noqa: N802
-        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            delta = event.angleDelta().y()
-            if delta > 0:
-                self.zoom_in()
-            elif delta < 0:
-                self.zoom_out()
-            event.accept()
-        else:
-            super().wheelEvent(event)
+    def eventFilter(self, obj, event):  # noqa: N802
+        if obj is self.viewport() and event.type() == QEvent.Type.Wheel:
+            if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                delta = event.angleDelta().y()
+                if delta > 0:
+                    self.zoom_in()
+                elif delta < 0:
+                    self.zoom_out()
+                return True  # consume: don't also scroll
+        return super().eventFilter(obj, event)
 
     # ----- document --------------------------------------------------------
     def set_document(self, doc: PDFDocument) -> None:
@@ -326,10 +330,11 @@ class PageView(QScrollArea):
             self._finish_text_edit(commit=True)
         self._commit_signature()  # bake any pending signature when switching tools
         self._tool = tool
-        if tool in (Tool.SELECT, Tool.EDIT_TEXT):
+        if tool.is_text_select or tool == Tool.EDIT_TEXT:
             cursor = Qt.CursorShape.IBeamCursor
         else:
             cursor = Qt.CursorShape.CrossCursor
+        self.viewport().setCursor(cursor)
         for label in self._labels:
             label.setCursor(cursor)
 
@@ -374,11 +379,7 @@ class PageView(QScrollArea):
         if self._doc is None:
             return
         tool = self._tool
-        if tool == Tool.HIGHLIGHT:
-            self._doc.add_highlight(index, rect, self._color)
-        elif tool == Tool.UNDERLINE:
-            self._doc.add_underline(index, rect, self._color)
-        elif tool == Tool.TEXTBOX:
+        if tool == Tool.TEXTBOX:
             text, ok = QInputDialog.getMultiLineText(self, "Text Box", "Enter text:")
             if not ok or not text.strip():
                 return
@@ -396,20 +397,31 @@ class PageView(QScrollArea):
         self._doc.add_ink(index, strokes, self._color)
         self._after_change(index)
 
-    # ----- selection / copy (SELECT tool) ---------------------------------
+    # ----- text selection: select / highlight / underline -----------------
     def clear_selections(self) -> None:
         for label in self._labels:
             label.set_selection(None, self._zoom)
 
-    def commit_selection(self, index: int, rect) -> None:
+    def commit_text_drag(self, index: int, p0, p1) -> None:
+        """Select text between two points; then act per the active tool."""
         if self._doc is None:
             return
-        text = self._doc.get_text_in_rect(index, rect)
-        self.clear_selections()
-        self._labels[index].set_selection(rect, self._zoom)
-        if text:
-            QApplication.clipboard().setText(text)
-        self.text_selected.emit(text)
+        rects, text = self._doc.select_text(index, p0, p1)
+        if not rects:
+            return
+        tool = self._tool
+        if tool == Tool.HIGHLIGHT:
+            self._doc.add_highlight(index, rects, self._color)
+            self._after_change(index)
+        elif tool == Tool.UNDERLINE:
+            self._doc.add_underline(index, rects, self._color)
+            self._after_change(index)
+        else:  # SELECT — show selection and copy to clipboard
+            self.clear_selections()
+            self._labels[index].set_selection(rects, self._zoom)
+            if text:
+                QApplication.clipboard().setText(text)
+            self.text_selected.emit(text)
 
     # ----- signature placement (draggable before commit) ------------------
     def _place_signature(self, index: int, rect) -> None:

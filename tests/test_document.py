@@ -262,6 +262,42 @@ def test_replace_text_block_preserves_baseline(tmp_path):
     doc.close()
 
 
+def test_select_text_between_points(tmp_path):
+    p = tmp_path / "sel.pdf"
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((72, 100), "The quick brown fox jumps", fontsize=14)
+    doc.save(str(p))
+    doc.close()
+
+    d = PDFDocument.open(str(p))
+    rects, text = d.select_text(0, (74, 100), (200, 100))
+    assert "quick" in text and "brown" in text
+    assert len(rects) == len(text.split())  # one rect per selected word
+    # A single-word selection.
+    one_rects, one_text = d.select_text(0, (74, 100), (84, 100))
+    assert one_text == "The" and len(one_rects) == 1
+    d.close()
+
+
+def test_highlight_on_selected_words(tmp_path):
+    p = tmp_path / "sel.pdf"
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((72, 100), "Highlight these selected words please", fontsize=12)
+    doc.save(str(p))
+    doc.close()
+
+    d = PDFDocument.open(str(p))
+    rects, _ = d.select_text(0, (74, 100), (260, 100))
+    d.add_highlight(0, rects)            # list of word rects -> one multi-quad annot
+    page = d.fitz_doc[0]                 # hold the page ref so annots stay bound
+    annots = list(page.annots())
+    assert len(annots) == 1
+    assert annots[0].type[1] == "Highlight"
+    d.close()
+
+
 def test_get_text_in_rect(tmp_path):
     p = tmp_path / "para.pdf"
     _make_paragraphs(str(p))

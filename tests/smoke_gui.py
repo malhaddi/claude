@@ -17,6 +17,7 @@ import tempfile
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import fitz  # noqa: E402
+from PySide6.QtCore import Qt  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -137,13 +138,24 @@ def main() -> int:
     assert "Edited" in page_text and "inline" in page_text, "text edit not applied"
     assert "Hello Doc C" not in page_text, "original text not removed"
 
-    # New: text selection copies to the clipboard in SELECT mode.
+    # New: SELECT is a text cursor and drag-selecting copies the text.
     win._select_tool(Tool.SELECT)
     sel = win._current()
     assert sel.view.tool == Tool.SELECT
+    assert sel.view._labels[0].cursor().shape() == Qt.CursorShape.IBeamCursor, \
+        "SELECT tool should show a text (I-beam) cursor"
     line = next(b for b in sel.doc.get_text_blocks(0) if "searchable" in b.text)
-    sel.view.commit_selection(0, line.bbox)
+    x0, y0, x1, y1 = line.bbox
+    mid = (y0 + y1) / 2
+    sel.view.commit_text_drag(0, (x0 + 1, mid), (x1 - 1, mid))
     assert "searchable" in QApplication.clipboard().text(), "selection not copied"
+
+    # New: highlight/underline act on the selected text (one annot per drag).
+    before = len(list(sel.doc.fitz_doc[0].annots()))
+    win._select_tool(Tool.HIGHLIGHT)
+    sel.view.commit_text_drag(0, (x0 + 1, mid), (x1 - 1, mid))
+    after = len(list(sel.doc.fitz_doc[0].annots()))
+    assert after == before + 1, "highlight on selected text did not add an annotation"
 
     # New: signature is placed as a draggable item, then committed on demand.
     win._signature_path = sig
@@ -163,7 +175,8 @@ def main() -> int:
 
     app.processEvents()
     print("GUI smoke test passed: tabs, zoom, search, annotations, undo, page "
-          "ops, inline text edit, text selection, draggable signature, save all OK")
+          "ops, inline text edit, text selection + highlight-on-selection, "
+          "draggable signature, save all OK")
     return 0
 
 

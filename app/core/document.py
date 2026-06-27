@@ -236,18 +236,56 @@ class PDFDocument:
             bottom += -leftover + fontsize * 1.4  # extend by the shortfall + slack
         self._structural_change()
 
-    # ----- annotations (Phase 2) ------------------------------------------
-    def add_highlight(self, index: int, rect, color=(1.0, 0.85, 0.0)) -> None:
-        """Highlight the text under a rectangle (PDF-point coords)."""
+    # ----- text selection (for select / highlight / underline) ------------
+    def select_text(self, index: int, p0, p1) -> tuple[list, str]:
+        """Select words between two points in reading order.
+
+        Returns (rects, text): per-word rectangles to draw/annotate, and the
+        selected text. This mirrors how a normal reader selects text — from the
+        word nearest p0 to the word nearest p1, following reading order — rather
+        than a raw rectangle.
+        """
         page = self._doc[index]
-        annot = page.add_highlight_annot(fitz.Rect(rect))
+        words = page.get_text("words")  # x0,y0,x1,y1,word,block,line,word_no
+        if not words:
+            return [], ""
+        words.sort(key=lambda w: (w[5], w[6], w[7]))  # block, line, word index
+
+        def nearest(point) -> int:
+            px, py = point
+            best_i, best_d = 0, None
+            for i, w in enumerate(words):
+                cx, cy = (w[0] + w[2]) / 2, (w[1] + w[3]) / 2
+                d = (cx - px) ** 2 + (cy - py) ** 2
+                if best_d is None or d < best_d:
+                    best_i, best_d = i, d
+            return best_i
+
+        i0, i1 = sorted((nearest(p0), nearest(p1)))
+        chosen = words[i0:i1 + 1]
+        rects = [(w[0], w[1], w[2], w[3]) for w in chosen]
+        text = " ".join(w[4] for w in chosen)
+        return rects, text
+
+    # ----- annotations (Phase 2) ------------------------------------------
+    @staticmethod
+    def _as_quads(rects):
+        """Accept a single rect or a list of rects; return quad(s) for annots."""
+        if rects and isinstance(rects[0], (list, tuple)):
+            return [fitz.Rect(r).quad for r in rects]
+        return [fitz.Rect(rects).quad]
+
+    def add_highlight(self, index: int, rects, color=(1.0, 0.85, 0.0)) -> None:
+        """Highlight selected text (one rect per word, or a single rect)."""
+        page = self._doc[index]
+        annot = page.add_highlight_annot(self._as_quads(rects))
         annot.set_colors(stroke=color)
         annot.update()
         self._track(index, annot)
 
-    def add_underline(self, index: int, rect, color=(0.85, 0.1, 0.1)) -> None:
+    def add_underline(self, index: int, rects, color=(0.85, 0.1, 0.1)) -> None:
         page = self._doc[index]
-        annot = page.add_underline_annot(fitz.Rect(rect))
+        annot = page.add_underline_annot(self._as_quads(rects))
         annot.set_colors(stroke=color)
         annot.update()
         self._track(index, annot)

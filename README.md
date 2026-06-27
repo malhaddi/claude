@@ -20,7 +20,8 @@ rendering/editing engine).
 - Save / Save As (incremental save in place)
 
 ### Phase 2 — Annotations ✅ (done)
-- **Highlight** and **underline** text (drag a box over it)
+- **Highlight** and **underline** — drag across the actual **text** (word-level
+  selection); the annotation snaps to the selected words, not an arbitrary box
 - **Text box** — drag a box, type text (free-text annotation)
 - **Draw** — freehand ink
 - **Signature** — place a chosen PNG/JPG image (e.g. a scanned signature);
