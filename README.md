@@ -64,11 +64,20 @@ pip install -r requirements.txt
 python run.py                     # or: python run.py path/to/file.pdf
 ```
 
-## Build a Windows executable
+## Get the Windows executable
 
-See [`packaging/build_windows.md`](packaging/build_windows.md). In short, on a
-Windows machine: `pip install pyinstaller` then run the documented PyInstaller
-command to get `dist\PDFEditor\PDFEditor.exe`.
+Two ways — see [`packaging/build_windows.md`](packaging/build_windows.md):
+
+- **No tools needed (recommended):** the **Build Windows EXE** GitHub Actions
+  workflow builds it on a Windows server on every push. Download the
+  `PDFEditor-windows` artifact from the Actions tab, unzip, and run
+  `PDFEditor.exe`.
+- **Locally on Windows:** double-click `packaging\build_windows.bat` (needs
+  Python 3.11+), which produces `dist\PDFEditor\PDFEditor.exe`.
+
+Both use `packaging/PDFEditor.spec`. PyInstaller builds for the OS it runs on,
+so the Windows `.exe` must come from Windows (the runner or a Windows PC), not a
+Linux/Mac box.
 
 ## Tests
 

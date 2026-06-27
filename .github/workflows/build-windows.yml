@@ -1,0 +1,54 @@
+name: Build Windows EXE
+
+# Builds a standalone Windows executable on a GitHub-hosted Windows runner.
+# Runs automatically on every push to the feature branch, and can be started
+# by hand from the Actions tab (workflow_dispatch). The finished build is
+# uploaded as a downloadable artifact — no local dev tools required.
+
+on:
+  push:
+    branches:
+      - claude/pdf-reader-editor-windows-jjk17y
+    paths:
+      - "app/**"
+      - "run.py"
+      - "requirements.txt"
+      - "packaging/**"
+      - ".github/workflows/build-windows.yml"
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build the executable (folder build)
+        run: pyinstaller --noconfirm --clean packaging/PDFEditor.spec
+
+      - name: Smoke-check the build exists
+        run: |
+          if (-not (Test-Path "dist/PDFEditor/PDFEditor.exe")) {
+            throw "PDFEditor.exe was not produced"
+          }
+          Get-ChildItem dist/PDFEditor | Select-Object Name, Length
+
+      - name: Upload the Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDFEditor-windows
+          path: dist/PDFEditor
+          if-no-files-found: error
