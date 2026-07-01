@@ -260,3 +260,10 @@ per-browser (localStorage); analytics runs on deterministic sample data until
 Metricool credentials are wired up; the calendar is seed-only; competitor
 metrics are seeded samples until a public-data fetcher is implemented; and the
 news feed is live RSS where the network allows it, otherwise sample.
+
+## Sibling Projects
+
+- `coachmatch/` — a **standalone** Next.js app (coach ↔ client matching
+  marketplace, French UI) with its own `package.json`, docs and Supabase
+  schema. It is not part of the Content Hub build; see `coachmatch/README.md`
+  and `coachmatch/CLAUDE.md` before working in that directory.
