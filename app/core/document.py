@@ -42,6 +42,30 @@ def _int_to_rgb(color: int) -> tuple[float, float, float]:
     return (((color >> 16) & 255) / 255, ((color >> 8) & 255) / 255, (color & 255) / 255)
 
 
+def _word_index_at(words, point) -> int:
+    """Index (in reading order) of the word at/closest to a point.
+
+    Prefers a word on the same text line as the point (its y within the word's
+    vertical span), then nearest by x — so selection follows the line under the
+    cursor instead of jumping to an arbitrary nearby word.
+    """
+    px, py = point
+    on_line = [
+        i for i, w in enumerate(words) if w[1] - 1.0 <= py <= w[3] + 1.0
+    ]
+    if on_line:
+        # Snap to the word the point is within, else nearest by horizontal edge.
+        for i in on_line:
+            if words[i][0] <= px <= words[i][2]:
+                return i
+        return min(on_line, key=lambda i: min(abs(words[i][0] - px), abs(words[i][2] - px)))
+    # No word on this line: fall back to the vertically-closest word.
+    return min(
+        range(len(words)),
+        key=lambda i: (abs((words[i][1] + words[i][3]) / 2 - py), abs(words[i][0] - px)),
+    )
+
+
 def _measure_height(text: str, fontname: str, fontsize: float, width: float) -> float:
     """Estimate the height a wrapped paragraph needs inside a given width."""
     line_h = fontsize * 1.4  # generous leading so insert_textbox won't overflow
@@ -237,31 +261,26 @@ class PDFDocument:
         self._structural_change()
 
     # ----- text selection (for select / highlight / underline) ------------
-    def select_text(self, index: int, p0, p1) -> tuple[list, str]:
-        """Select words between two points in reading order.
+    def get_words(self, index: int) -> list:
+        """Words in reading order: (x0, y0, x1, y1, word, block, line, word_no)."""
+        return self._doc[index].get_text("words", sort=True)
 
-        Returns (rects, text): per-word rectangles to draw/annotate, and the
-        selected text. This mirrors how a normal reader selects text — from the
-        word nearest p0 to the word nearest p1, following reading order — rather
-        than a raw rectangle.
+    def select_text(self, index: int, p0, p1, words=None) -> tuple[list, str]:
+        """Flowing text selection between two points (like a normal reader).
+
+        Picks the word at/near p0 and the word at/near p1 — preferring a word on
+        the same line as each point — then selects everything between them in
+        reading order. Returns (per-word rects, text). Pass `words` to reuse a
+        cached word list during a live drag.
         """
-        page = self._doc[index]
-        words = page.get_text("words")  # x0,y0,x1,y1,word,block,line,word_no
+        if words is None:
+            words = self.get_words(index)
         if not words:
             return [], ""
-        words.sort(key=lambda w: (w[5], w[6], w[7]))  # block, line, word index
-
-        def nearest(point) -> int:
-            px, py = point
-            best_i, best_d = 0, None
-            for i, w in enumerate(words):
-                cx, cy = (w[0] + w[2]) / 2, (w[1] + w[3]) / 2
-                d = (cx - px) ** 2 + (cy - py) ** 2
-                if best_d is None or d < best_d:
-                    best_i, best_d = i, d
-            return best_i
-
-        i0, i1 = sorted((nearest(p0), nearest(p1)))
+        i0 = _word_index_at(words, p0)
+        i1 = _word_index_at(words, p1)
+        if i0 > i1:
+            i0, i1 = i1, i0
         chosen = words[i0:i1 + 1]
         rects = [(w[0], w[1], w[2], w[3]) for w in chosen]
         text = " ".join(w[4] for w in chosen)
