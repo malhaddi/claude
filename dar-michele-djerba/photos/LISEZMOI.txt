@@ -3,7 +3,7 @@ Photos réelles de la page d'accueil : TOUTES EN PLACE ✔
   patio.jpg      → section « La maison » (vue de jour, gazon + parasols)
   galerie-1.jpg  → vue de nuit du patio (grande case)
   galerie-2.jpg  → passage voûté vers le patio
-  galerie-3.jpg  → piscine de jour (verticale)
+  galerie-3.jpg  → piscine, parasol bleu et vieille porte (carrée)
   galerie-4.jpg  → piscine sous le parasol bleu (case verticale)
   galerie-5.jpg  → piscine de nuit
   galerie-6.jpg  → panorama du patio (parasol olive, puits) — case large
@@ -13,7 +13,7 @@ bon nom, il s'affiche automatiquement) :
   chambre-double.jpg               → carte Chambre Double
   chambre-quadruple.jpg            → carte Chambre Quadruple
   chambre-quadruple-terrasse.jpg   → carte Chambre Quadruple avec Terrasse
-  petit-dejeuner.jpg               → section « Le petit-déjeuner au patio »
+  petit-dejeuner.jpg → table du petit-déjeuner (EN PLACE ✔)
 
 Conseil : ~1600px de large maximum, format .jpg.
 Astuce import sans ordinateur : uploader sur postimages.org, puis pousser
