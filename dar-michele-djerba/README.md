@@ -49,6 +49,19 @@ Tout est dans `index.html` :
 - **Forfait non-présentation (50 €)** : chercher `50 €` dans les clés `gar_4`, `faq1_a`, `faq2_a` et `f_terms` de chaque langue.
 - **Textes** : objet `I18N` (7 blocs de langue — fr, en, de, it, pl, ru, ar — mêmes clés partout).
 
+## Données factuelles — sources, et quoi valider avec la propriétaire
+
+| Donnée | Source | Statut |
+|---|---|---|
+| Téléphone +216 51 919 775 | Fiche Google Business de l'établissement | ✔ Vérifier avec elle que ce numéro EST sur WhatsApp avant la démo |
+| 4,5★ · 73 avis Google | Fiche Google Business (juillet 2026) | ✔ Recontrôler le jour de la mise en ligne |
+| 8,3 Booking / 8,5 couples | Page Booking.com de l'établissement | ✔ Recontrôler |
+| Avis affichés (13) | Vrais avis publics Google / Booking / Tripadvisor, repris fidèlement, source affichée sur chaque carte | ✔ Inattaquable — lui montrer, elle les reconnaîtra |
+| Noms des chambres (Double / Quadruple / avec Terrasse) | Types de chambres de sa page Booking | ✔ |
+| **Prix 45 / 65 / 75 €** | **Estimations — PAS vérifiés** | ⚠ À remplacer par ses vrais tarifs (2 min, chercher `data-price`) |
+| Maison de 1925, 3 chambres, 10 hôtes, piscine, rooftop, cuisine | Descriptifs publics (Booking, annuaires) | ✔ |
+| Conditions commerciales (aucun acompte, annulation gratuite, forfait 50 € no-show, réponse < 1 h) | **Propositions à co-valider avec la propriétaire avant mise en ligne** | ⚠ Sa décision — en faire un moment de co-construction |
+
 ## SEO — note importante
 
 La page est servie **en français dans le HTML** (le plus gros marché de Djerba) : c'est cette version que Google indexe. La traduction côté navigateur est parfaite pour l'expérience visiteur mais invisible pour Google. Si un jour le référencement en allemand/polonais devient prioritaire, générer des copies statiques `/de/`, `/pl/`… à partir du même objet `I18N` et ajouter alors les balises `hreflang`. Pour une maison de 3 chambres, la fiche **Google Business** et les avis comptent bien davantage.
