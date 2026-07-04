@@ -1,14 +1,26 @@
-Déposez ici les vraies photos (depuis la page Booking.com ou Facebook de Dar Michèle).
-Chaque fichier remplace automatiquement l'illustration correspondante du site — aucun code à modifier.
+Déposez ici les vraies photos — chaque fichier remplace automatiquement
+l'illustration correspondante du site, sans toucher au code.
 
-Noms de fichiers attendus (format .jpg) :
-  patio.jpg                        → grande image « La maison » (patio + piscine)
+═══ PLAN D'AFFECTATION DES 5 PHOTOS DÉJÀ FOURNIES (page d'accueil) ═══
+
+  patio.jpg      → vue de jour du patio prise d'en haut (gazon, parasols
+                   blancs, portes bleues) — grande image de la section
+                   « La maison »
+  galerie-1.jpg  → vue de nuit du patio prise d'en haut (piscine verte
+                   illuminée, terrasse bois, table d'hôtes) — grande case
+                   de la galerie
+  galerie-2.jpg  → l'entrée voûtée avec la vieille porte en bois et le tapis
+  galerie-4.jpg  → vue de jour sous le parasol bleu (escalier bleu) — case
+                   verticale de la galerie
+  galerie-6.jpg  → gros plan piscine de nuit (murs blancs éclairés) — case
+                   large en bas de la galerie
+
+═══ EMPLACEMENTS ENCORE EN ILLUSTRATION (à compléter plus tard) ═══
+
   chambre-double.jpg               → carte Chambre Double
   chambre-quadruple.jpg            → carte Chambre Quadruple
   chambre-quadruple-terrasse.jpg   → carte Chambre Quadruple avec Terrasse
   petit-dejeuner.jpg               → section « Le petit-déjeuner au patio »
-  galerie-1.jpg … galerie-6.jpg    → les 6 cases de la galerie
-    (galerie-1 et galerie-6 sont larges : préférez des photos horizontales ;
-     galerie-4 est haute : préférez une photo verticale)
+  galerie-3.jpg, galerie-5.jpg     → deux petites cases restantes de la galerie
 
-Conseil : redimensionnez à ~1600px de large maximum (photo de téléphone OK).
+Conseil : ~1600px de large maximum, format .jpg (photo de téléphone OK).
