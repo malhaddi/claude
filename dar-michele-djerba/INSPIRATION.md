@@ -39,5 +39,6 @@ Utile aussi comme **argumentaire de vente** pour d'autres prospects.
 
 - Standard du secteur : **acompte 30 %** (riads Marrakech, agriturismi, chambres d'hôtes françaises), non confirmé = chambre remise en vente, palier d'annulation 7-30 jours.
 - La « garantie carte » de Booking est largement illusoire pour les petits établissements (cartes virtuelles invalides, no-shows non recouvrables) ; **un acompte encaissé est une garantie plus forte**.
-- Solution tunisienne : **Konnect** (liens de paiement Visa/MC internationales, ~3 %, zéro fixe) ; fallbacks Wise/Revolut→RIB et Western Union ; **PayPal impossible en réception**, **Paymee à éviter** (fonds gelés depuis 2023).
-- Renverser l'objection en pitch : « Booking vous "garantit" avec une carte parfois morte et vous coûte 15-25 % dans tous les cas. Un acompte de 30 % déjà encaissé est une meilleure garantie — et il coûte 3 % une seule fois. »
+- Contexte tunisien : pas de PayPal en réception, pas de Wise/Revolut pour les résidents, et l'encaissement marchand de cartes étrangères est hors de portée (ou hors cadre légal) pour un particulier. Les passerelles locales (Konnect…) existent mais supposent un statut pro.
+- **Choix retenu pour Dar Michèle : zéro paiement en ligne.** Acompte 30 % par **Western Union / MoneyGram** (transfert d'espèces entre personnes, légal, réception gratuite en TND, code MTCN transmis sur WhatsApp comme preuve) ; solde en espèces à l'arrivée. Coût pour la maison : 0.
+- Renverser l'objection en pitch : « Booking vous "garantit" avec une carte parfois morte et vous coûte 15-25 % dans tous les cas. Un acompte de 30 % déjà retiré à la Poste est une garantie plus forte — et il coûte 0 dinar. »

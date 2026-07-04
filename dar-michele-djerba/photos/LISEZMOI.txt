@@ -1,0 +1,14 @@
+Déposez ici les vraies photos (depuis la page Booking.com ou Facebook de Dar Michèle).
+Chaque fichier remplace automatiquement l'illustration correspondante du site — aucun code à modifier.
+
+Noms de fichiers attendus (format .jpg) :
+  patio.jpg                        → grande image « La maison » (patio + piscine)
+  chambre-double.jpg               → carte Chambre Double
+  chambre-quadruple.jpg            → carte Chambre Quadruple
+  chambre-quadruple-terrasse.jpg   → carte Chambre Quadruple avec Terrasse
+  petit-dejeuner.jpg               → section « Le petit-déjeuner au patio »
+  galerie-1.jpg … galerie-6.jpg    → les 6 cases de la galerie
+    (galerie-1 et galerie-6 sont larges : préférez des photos horizontales ;
+     galerie-4 est haute : préférez une photo verticale)
+
+Conseil : redimensionnez à ~1600px de large maximum (photo de téléphone OK).

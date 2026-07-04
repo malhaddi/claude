@@ -271,6 +271,8 @@ body.menu-open .burger span:nth-child(3){transform:translateY(-7.5px) rotate(-45
 .ph{border-radius:var(--radius);overflow:hidden;position:relative;display:block}
 .ph svg{width:100%;height:100%;display:block}
 .ph--arch{border-radius:var(--arch)}
+/* vraie photo : déposez le fichier dans photos/ — elle recouvre l'illustration automatiquement */
+.ph img.real{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
 
 /* ─────────────────────────  CHAMBRES  ───────────────────────── */
 #rooms{background:linear-gradient(180deg,var(--chaux) 0%,var(--chaux-2) 100%)}
@@ -346,9 +348,23 @@ body.menu-open .burger span:nth-child(3){transform:translateY(-7.5px) rotate(-45
 .rev-av{
   width:42px;height:42px;border-radius:50%;background:var(--terra);color:#fff;
   display:grid;place-items:center;font-weight:800;font-size:16px;flex:none;
+  border:2px solid rgba(255,255,255,.35);
 }
 .rev-who b{display:block;font-size:14px}
 .rev-who small{color:rgba(255,255,255,.65);font-size:12px}
+.rev-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rev-stars{color:#f5b942;font-size:15px;letter-spacing:2px}
+.rev-src{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:rgba(255,255,255,.85);
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);padding:5px 11px;border-radius:999px}
+.rev-src svg{flex:none}
+.rev-verified{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#9fd8a8}
+.rev-links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+.rev-links a{
+  display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:rgba(255,255,255,.85);
+  text-decoration:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+  padding:9px 18px;border-radius:999px;transition:background .2s;
+}
+.rev-links a:hover{background:rgba(255,255,255,.16)}
 .rev-cta{margin-top:40px;text-align:center}
 .score-row{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:26px}
 .score{
@@ -499,9 +515,11 @@ footer a:hover{color:#fff}
   .burger{display:block}
   .nav .btn-book-top{display:none}
   .brand-sub{display:none}
-  .brand-name{font-size:18px;white-space:nowrap}
-  .brand-mark{width:36px;height:36px;font-size:18px}
-  .lang button{padding:5px 7px;font-size:11px}
+  .brand-name{font-size:17px;white-space:nowrap}
+  .brand-mark{width:34px;height:34px;font-size:17px}
+  .lang{overflow-x:auto;max-width:52vw;scrollbar-width:none}
+  .lang::-webkit-scrollbar{display:none}
+  .lang button{padding:5px 6px;font-size:10.5px;flex:none}
   .nav{gap:8px}
 }
 @media (max-width:560px){
@@ -539,6 +557,7 @@ footer a:hover{color:#fff}
         <button data-lang="de" title="Deutsch">DE</button>
         <button data-lang="it" title="Italiano">IT</button>
         <button data-lang="pl" title="Polski">PL</button>
+        <button data-lang="ru" title="Русский">RU</button>
         <button data-lang="ar" title="العربية">ع</button>
       </nav>
       <a class="btn btn-primary btn-book-top" href="#book" data-i18n="nav_book">Réserver</a>
@@ -608,7 +627,7 @@ footer a:hover{color:#fff}
         </div>
         <div class="proof">
           <span class="proof-badge">0%</span>
-          <span><b data-i18n="proof_direct_b">Réservation directe</b><small data-i18n="proof_direct_s">sans commission, meilleur tarif</small></span>
+          <span><b data-i18n="proof_direct_b">0 % de commission</b><small data-i18n="proof_direct_s">en réservant en direct, au meilleur tarif</small></span>
         </div>
       </div>
     </div>
@@ -653,7 +672,7 @@ footer a:hover{color:#fff}
     </div>
     <div class="strip-item">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="14" rx="3" stroke="#fff" stroke-width="2"/><path d="M3 10h18" stroke="#fff" stroke-width="2"/><path d="M7 15h4" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-      <span data-i18n="strip_2">Acompte sécurisé en ligne — solde sur place</span>
+      <span data-i18n="strip_2">Sans paiement en ligne — acompte simple, solde sur place</span>
     </div>
     <div class="strip-item">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M8 10a4 4 0 1 1 8 0c0 3-4 4-4 7" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="20" r="1.4" fill="#fff"/></svg>
@@ -692,8 +711,9 @@ footer a:hover{color:#fff}
 
     <div class="house-visual reveal">
       <div class="year-stamp"><span><b>1925</b><span data-i18n="stamp">la maison</span></span></div>
-      <!-- PHOTO: remplacez ce <figure> par <img src="photos/patio.jpg" alt="Le patio et la piscine"> -->
+      <!-- PHOTO: déposez photos/patio.jpg — elle s'affiche automatiquement -->
       <figure class="ph ph--arch" style="aspect-ratio:.82">
+        <img class="real" src="photos/patio.jpg" alt="Le patio et la piscine de Dar Michèle" loading="lazy" onerror="this.remove()">
         <svg viewBox="0 0 400 490" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="skyp" x1="0" y1="0" x2="0" y2="1">
@@ -754,9 +774,10 @@ footer a:hover{color:#fff}
     </div>
 
     <div class="rooms-grid">
-      <!-- CHAMBRE 1 · PHOTO: remplacez le <figure> par <img src="photos/chambre-indigo.jpg" alt="..."> -->
+      <!-- CHAMBRE 1 · PHOTO: déposez photos/chambre-double.jpg — elle s'affiche automatiquement -->
       <article class="room reveal">
         <figure class="ph">
+          <img class="real" src="photos/chambre-double.jpg" alt="Chambre Double" loading="lazy" onerror="this.remove()">
           <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
             <rect width="400" height="300" fill="#eef4f5"/>
             <path d="M60 300V140a140 100 0 0 1 280 0v160Z" fill="#faf6ef"/>
@@ -776,13 +797,13 @@ footer a:hover{color:#fff}
           </svg>
         </figure>
         <div class="room-body">
-          <h3 class="room-name" data-i18n="room1_name">Chambre Indigo</h3>
-          <p class="room-desc" data-i18n="room1_desc">Voûtes blanchies, tête de lit indigo et petite terrasse sur le patio. La préférée des couples.</p>
+          <h3 class="room-name" data-i18n="room1_name">Chambre Double</h3>
+          <p class="room-desc" data-i18n="room1_desc">Un grand lit sous les voûtes blanchies à la chaux, la lumière douce du patio. Fraîche, simple, lumineuse — la préférée des couples.</p>
           <div class="chips">
             <span class="chip" data-i18n="chip_2p">2 pers.</span>
             <span class="chip" data-i18n="chip_ac">Climatisation</span>
             <span class="chip" data-i18n="chip_bath">SDB privée</span>
-            <span class="chip" data-i18n="chip_terr">Terrasse patio</span>
+            <span class="chip" data-i18n="chip_terr">Sur le patio</span>
           </div>
           <div class="room-foot">
             <div class="price">
@@ -794,9 +815,10 @@ footer a:hover{color:#fff}
         </div>
       </article>
 
-      <!-- CHAMBRE 2 · PHOTO: remplacez le <figure> par <img src="photos/chambre-safran.jpg" alt="..."> -->
+      <!-- CHAMBRE 2 · PHOTO: déposez photos/chambre-quadruple.jpg — elle s'affiche automatiquement -->
       <article class="room reveal">
         <figure class="ph">
+          <img class="real" src="photos/chambre-quadruple.jpg" alt="Chambre Quadruple" loading="lazy" onerror="this.remove()">
           <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
             <rect width="400" height="300" fill="#f6efe3"/>
             <path d="M60 300V140a140 100 0 0 1 280 0v160Z" fill="#faf6ef"/>
@@ -816,27 +838,28 @@ footer a:hover{color:#fff}
           </svg>
         </figure>
         <div class="room-body">
-          <h3 class="room-name" data-i18n="room2_name">Chambre Safran</h3>
-          <p class="room-desc" data-i18n="room2_desc">Tons chauds, artisanat local et lumière dorée du matin. Un lit double et un couchage d'appoint.</p>
+          <h3 class="room-name" data-i18n="room2_name">Chambre Quadruple</h3>
+          <p class="room-desc" data-i18n="room2_desc">Un lit double et deux lits simples, l'artisanat local en tons chauds : l'option idéale pour les familles et les petits groupes.</p>
           <div class="chips">
-            <span class="chip" data-i18n="chip_3p">2–3 pers.</span>
+            <span class="chip" data-i18n="chip_4p">4 pers.</span>
             <span class="chip" data-i18n="chip_ac">Climatisation</span>
             <span class="chip" data-i18n="chip_bath">SDB privée</span>
-            <span class="chip" data-i18n="chip_terr">Terrasse patio</span>
+            <span class="chip" data-i18n="chip_terr">Sur le patio</span>
           </div>
           <div class="room-foot">
             <div class="price">
               <small data-i18n="price_from">à partir de</small>
-              <b data-price="room2">55&nbsp;€</b> <span data-i18n="price_night">/ nuit</span>
+              <b data-price="room2">65&nbsp;€</b> <span data-i18n="price_night">/ nuit</span>
             </div>
             <a class="btn btn-primary" href="#book" data-room="room2_name" data-i18n="room_cta">Réserver</a>
           </div>
         </div>
       </article>
 
-      <!-- CHAMBRE 3 · PHOTO: remplacez le <figure> par <img src="photos/suite-olivier.jpg" alt="..."> -->
+      <!-- CHAMBRE 3 · PHOTO: déposez photos/chambre-quadruple-terrasse.jpg — elle s'affiche automatiquement -->
       <article class="room reveal">
         <figure class="ph">
+          <img class="real" src="photos/chambre-quadruple-terrasse.jpg" alt="Chambre Quadruple avec Terrasse" loading="lazy" onerror="this.remove()">
           <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
             <rect width="400" height="300" fill="#eef2e9"/>
             <path d="M60 300V140a140 100 0 0 1 280 0v160Z" fill="#faf6ef"/>
@@ -859,18 +882,18 @@ footer a:hover{color:#fff}
           </svg>
         </figure>
         <div class="room-body">
-          <h3 class="room-name" data-i18n="room3_name">Suite Olivier</h3>
-          <p class="room-desc" data-i18n="room3_desc">La plus spacieuse : idéale en famille ou entre amis, avec coin salon et couchages supplémentaires.</p>
+          <h3 class="room-name" data-i18n="room3_name">Chambre Quadruple avec Terrasse</h3>
+          <p class="room-desc" data-i18n="room3_desc">La même générosité, plus une terrasse privée au soleil pour prolonger les matins. La plus demandée — réservez tôt.</p>
           <div class="chips">
-            <span class="chip" data-i18n="chip_4p">3–4 pers.</span>
+            <span class="chip" data-i18n="chip_4p">4 pers.</span>
             <span class="chip" data-i18n="chip_ac">Climatisation</span>
             <span class="chip" data-i18n="chip_bath">SDB privée</span>
-            <span class="chip" data-i18n="chip_terr">Terrasse patio</span>
+            <span class="chip" data-i18n="chip_terrp">Terrasse privée</span>
           </div>
           <div class="room-foot">
             <div class="price">
               <small data-i18n="price_from">à partir de</small>
-              <b data-price="room3">70&nbsp;€</b> <span data-i18n="price_night">/ nuit</span>
+              <b data-price="room3">75&nbsp;€</b> <span data-i18n="price_night">/ nuit</span>
             </div>
             <a class="btn btn-primary" href="#book" data-room="room3_name" data-i18n="room_cta">Réserver</a>
           </div>
@@ -896,13 +919,13 @@ footer a:hover{color:#fff}
       <h2 class="section-title" data-i18n="gal_title">La maison en un regard</h2>
     </div>
     <div class="gallery reveal">
-      <!-- PHOTOS: remplacez chaque <figure> par <img src="photos/....jpg" alt="..."> -->
-      <figure class="ph"><svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="400" fill="#bfe0ea"/><rect y="180" width="600" height="220" fill="#faf6ef"/><g fill="#1b4a5e"><path d="M80 400V270a45 45 0 0 1 90 0v130Z"/><path d="M250 400V270a45 45 0 0 1 90 0v130Z"/><path d="M420 400V270a45 45 0 0 1 90 0v130Z"/></g><path d="M0 180h600v14H0z" fill="#e7d9bf"/><circle cx="500" cy="80" r="40" fill="#ffd98f"/><path d="M40 180c30 24 45 62 42 106" stroke="#7a5540" stroke-width="5" fill="none"/><g fill="#c94f7c"><circle cx="52" cy="210" r="10"/><circle cx="70" cy="235" r="12"/><circle cx="58" cy="262" r="9"/></g></svg></figure>
-      <figure class="ph"><svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#2f7f9d"/><path d="M0 60c30-10 60 10 90 0s60 10 90 0 60 10 90 0 40 8 30 0v140H0Z" fill="#5fb0c9"/><path d="M30 110c20-8 40 8 60 0s40 8 60 0 40 8 60 0 40 8 60 0" stroke="#bfe6f0" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="250" cy="40" r="22" fill="#ffd98f" opacity=".9"/></svg></figure>
-      <figure class="ph"><svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#f6efe3"/><rect x="40" y="90" width="220" height="14" rx="7" fill="#8a6a4f"/><rect x="60" y="104" width="10" height="60" fill="#8a6a4f"/><rect x="230" y="104" width="10" height="60" fill="#8a6a4f"/><circle cx="105" cy="72" r="20" fill="#fff" stroke="#e7d9bf" stroke-width="4"/><path d="M100 66c4-6 12-4 10 4" stroke="#c26a45" stroke-width="3" fill="none"/><rect x="150" y="52" width="26" height="38" rx="6" fill="#c9a45c"/><rect x="156" y="44" width="14" height="10" rx="3" fill="#9a7b5c"/><circle cx="215" cy="76" r="14" fill="#c94f7c" opacity=".8"/><path d="M60 30c14 8 28 8 42 0M190 24c14 8 28 8 42 0" stroke="#94a06b" stroke-width="4" fill="none" stroke-linecap="round"/></svg></figure>
-      <figure class="ph"><svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="400" fill="#e9f2f0"/><path d="M40 400V150a110 110 0 0 1 220 0v250Z" fill="#faf6ef"/><path d="M60 400V158a90 90 0 0 1 180 0v242Z" fill="#1b4a5e"/><path d="M150 400V70" stroke="#123646" stroke-width="3"/><g fill="#c9a45c"><circle cx="110" cy="180" r="5"/><circle cx="110" cy="230" r="5"/><circle cx="110" cy="280" r="5"/><circle cx="190" cy="180" r="5"/><circle cx="190" cy="230" r="5"/><circle cx="190" cy="280" r="5"/></g></svg></figure>
-      <figure class="ph"><svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#f3ecdf"/><path d="M0 130h300v70H0z" fill="#e7d9bf"/><path d="M60 130V90a25 25 0 0 1 50 0v40Z" fill="#c26a45" opacity=".85"/><path d="M190 130V90a25 25 0 0 1 50 0v40Z" fill="#7c7f52" opacity=".85"/><path d="M140 60c-14-2-22-10-24-22 8 10 17 13 24 12-5-9-3-19 3-25-1 10 2 18 9 23 7-5 10-13 9-23 6 6 8 16 3 25 7 1 16-2 24-12-2 12-10 20-24 22Z" fill="#94a06b"/><path d="M152 60v70" stroke="#7a5540" stroke-width="5"/></svg></figure>
-      <figure class="ph"><svg viewBox="0 0 600 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="200" fill="#cfe6ee"/><path d="M0 120h600v80H0z" fill="#8fc3d4"/><path d="M0 120c50-8 100 8 150 0s100 8 150 0 100 8 150 0 100 8 150 0" stroke="#fff" stroke-width="4" fill="none" opacity=".7"/><circle cx="90" cy="50" r="26" fill="#ffd98f"/><path d="M480 96c8-22 30-30 48-24-6-18 10-34 28-30" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M300 112l22-34 22 34c-14 8-30 8-44 0Z" fill="#faf6ef"/><path d="M322 78v34" stroke="#8a6a4f" stroke-width="4"/></svg></figure>
+      <!-- PHOTOS: déposez photos/galerie-1.jpg … galerie-6.jpg — elles s'affichent automatiquement -->
+      <figure class="ph"><img class="real" src="photos/galerie-1.jpg" alt="" loading="lazy" onerror="this.remove()"><svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="400" fill="#bfe0ea"/><rect y="180" width="600" height="220" fill="#faf6ef"/><g fill="#1b4a5e"><path d="M80 400V270a45 45 0 0 1 90 0v130Z"/><path d="M250 400V270a45 45 0 0 1 90 0v130Z"/><path d="M420 400V270a45 45 0 0 1 90 0v130Z"/></g><path d="M0 180h600v14H0z" fill="#e7d9bf"/><circle cx="500" cy="80" r="40" fill="#ffd98f"/><path d="M40 180c30 24 45 62 42 106" stroke="#7a5540" stroke-width="5" fill="none"/><g fill="#c94f7c"><circle cx="52" cy="210" r="10"/><circle cx="70" cy="235" r="12"/><circle cx="58" cy="262" r="9"/></g></svg></figure>
+      <figure class="ph"><img class="real" src="photos/galerie-2.jpg" alt="" loading="lazy" onerror="this.remove()"><svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#2f7f9d"/><path d="M0 60c30-10 60 10 90 0s60 10 90 0 60 10 90 0 40 8 30 0v140H0Z" fill="#5fb0c9"/><path d="M30 110c20-8 40 8 60 0s40 8 60 0 40 8 60 0 40 8 60 0" stroke="#bfe6f0" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="250" cy="40" r="22" fill="#ffd98f" opacity=".9"/></svg></figure>
+      <figure class="ph"><img class="real" src="photos/galerie-3.jpg" alt="" loading="lazy" onerror="this.remove()"><svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#f6efe3"/><rect x="40" y="90" width="220" height="14" rx="7" fill="#8a6a4f"/><rect x="60" y="104" width="10" height="60" fill="#8a6a4f"/><rect x="230" y="104" width="10" height="60" fill="#8a6a4f"/><circle cx="105" cy="72" r="20" fill="#fff" stroke="#e7d9bf" stroke-width="4"/><path d="M100 66c4-6 12-4 10 4" stroke="#c26a45" stroke-width="3" fill="none"/><rect x="150" y="52" width="26" height="38" rx="6" fill="#c9a45c"/><rect x="156" y="44" width="14" height="10" rx="3" fill="#9a7b5c"/><circle cx="215" cy="76" r="14" fill="#c94f7c" opacity=".8"/><path d="M60 30c14 8 28 8 42 0M190 24c14 8 28 8 42 0" stroke="#94a06b" stroke-width="4" fill="none" stroke-linecap="round"/></svg></figure>
+      <figure class="ph"><img class="real" src="photos/galerie-4.jpg" alt="" loading="lazy" onerror="this.remove()"><svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="400" fill="#e9f2f0"/><path d="M40 400V150a110 110 0 0 1 220 0v250Z" fill="#faf6ef"/><path d="M60 400V158a90 90 0 0 1 180 0v242Z" fill="#1b4a5e"/><path d="M150 400V70" stroke="#123646" stroke-width="3"/><g fill="#c9a45c"><circle cx="110" cy="180" r="5"/><circle cx="110" cy="230" r="5"/><circle cx="110" cy="280" r="5"/><circle cx="190" cy="180" r="5"/><circle cx="190" cy="230" r="5"/><circle cx="190" cy="280" r="5"/></g></svg></figure>
+      <figure class="ph"><img class="real" src="photos/galerie-5.jpg" alt="" loading="lazy" onerror="this.remove()"><svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#f3ecdf"/><path d="M0 130h300v70H0z" fill="#e7d9bf"/><path d="M60 130V90a25 25 0 0 1 50 0v40Z" fill="#c26a45" opacity=".85"/><path d="M190 130V90a25 25 0 0 1 50 0v40Z" fill="#7c7f52" opacity=".85"/><path d="M140 60c-14-2-22-10-24-22 8 10 17 13 24 12-5-9-3-19 3-25-1 10 2 18 9 23 7-5 10-13 9-23 6 6 8 16 3 25 7 1 16-2 24-12-2 12-10 20-24 22Z" fill="#94a06b"/><path d="M152 60v70" stroke="#7a5540" stroke-width="5"/></svg></figure>
+      <figure class="ph"><img class="real" src="photos/galerie-6.jpg" alt="" loading="lazy" onerror="this.remove()"><svg viewBox="0 0 600 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="200" fill="#cfe6ee"/><path d="M0 120h600v80H0z" fill="#8fc3d4"/><path d="M0 120c50-8 100 8 150 0s100 8 150 0 100 8 150 0 100 8 150 0" stroke="#fff" stroke-width="4" fill="none" opacity=".7"/><circle cx="90" cy="50" r="26" fill="#ffd98f"/><path d="M480 96c8-22 30-30 48-24-6-18 10-34 28-30" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M300 112l22-34 22 34c-14 8-30 8-44 0Z" fill="#faf6ef"/><path d="M322 78v34" stroke="#8a6a4f" stroke-width="4"/></svg></figure>
     </div>
   </div>
 </section>
@@ -911,8 +934,9 @@ footer a:hover{color:#fff}
 <section id="table" style="background:var(--chaux-2)">
   <div class="container exp-grid">
     <div class="reveal">
-      <!-- PHOTO: remplacez par <img src="photos/petit-dejeuner.jpg"> -->
+      <!-- PHOTO: déposez photos/petit-dejeuner.jpg — elle s'affiche automatiquement -->
       <figure class="ph ph--arch" style="aspect-ratio:.85;box-shadow:var(--shadow)">
+        <img class="real" src="photos/petit-dejeuner.jpg" alt="Le petit-déjeuner au patio" loading="lazy" onerror="this.remove()">
         <svg viewBox="0 0 400 470" xmlns="http://www.w3.org/2000/svg">
           <rect width="400" height="470" fill="#f6efe3"/>
           <rect y="0" width="400" height="80" fill="#e9f2f0"/>
@@ -957,8 +981,8 @@ footer a:hover{color:#fff}
     </div>
     <div class="reveal">
       <span class="kicker" data-i18n="table_kicker">La table & les environs</span>
-      <h2 class="section-title" data-i18n="table_title">Le petit-déjeuner de Naïma, puis Djerba</h2>
-      <p class="section-sub" style="margin-bottom:8px" data-i18n="table_sub">Chaque matin, Naïma dresse la table au patio : confitures maison, pain frais, thé à la menthe et douceurs djerbiennes. Ensuite, l'île vous attend.</p>
+      <h2 class="section-title" data-i18n="table_title">Le petit-déjeuner au patio, puis l'île</h2>
+      <p class="section-sub" style="margin-bottom:8px" data-i18n="table_sub">Chaque matin, la table est dressée au bord de la piscine : confitures maison, pain frais, thé à la menthe et douceurs djerbiennes. Ensuite, Djerba vous attend.</p>
       <div class="exp-list">
         <div class="exp"><span class="exp-num">1</span><span><b data-i18n="exp1_b">Le souk de Houmt Souk</b><small data-i18n="exp1_s">poteries, épices, poissonniers et cafés — à 5 minutes à pied</small></span></div>
         <div class="exp"><span class="exp-num">2</span><span><b data-i18n="exp2_b">Djerbahood, le village street-art</b><small data-i18n="exp2_s">250 œuvres à ciel ouvert à Erriadh — à 15 minutes</small></span></div>
@@ -983,20 +1007,59 @@ footer a:hover{color:#fff}
     </div>
     <div class="rev-grid">
       <div class="rev reveal">
+        <div class="rev-head">
+          <span class="rev-stars">★★★★★</span>
+          <span class="rev-src">
+            <svg width="13" height="13" viewBox="0 0 24 24"><circle cx="8" cy="13" r="6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16" cy="13" r="6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="8" cy="13" r="2" fill="#fff"/><circle cx="16" cy="13" r="2" fill="#fff"/><path d="M2 8c3-3 17-3 20 0" stroke="#fff" stroke-width="2" fill="none"/></svg>
+            Tripadvisor
+          </span>
+        </div>
         <p class="rev-quote" data-i18n="rev1_q">Un coin de paradis, très calme, charmant et relaxant. La cour, la piscine et le rooftop sont magnifiques.</p>
-        <div class="rev-who"><span class="rev-av">S</span><span><b data-i18n="rev1_n">Sophie</b><small data-i18n="rev1_w">France · sur Tripadvisor</small></span></div>
+        <div class="rev-who">
+          <span class="rev-av">S</span>
+          <span><b data-i18n="rev1_n">Sophie</b><small data-i18n="rev1_w">France · sur Tripadvisor</small></span>
+        </div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
       </div>
       <div class="rev reveal">
+        <div class="rev-head">
+          <span class="rev-stars">★★★★★</span>
+          <span class="rev-src">
+            <svg width="13" height="13" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#fff"/><path d="M7 5h5a4 4 0 0 1 2.6 7 4.2 4.2 0 0 1-2.3 7.8H7Zm3.2 5.6h1.5a1.5 1.5 0 0 0 0-3h-1.5Zm0 6.6h1.9a1.7 1.7 0 0 0 0-3.4h-1.9Z" fill="#1b4a5e"/><circle cx="17.6" cy="17.8" r="1.7" fill="#1b4a5e"/></svg>
+            Booking.com
+          </span>
+        </div>
         <p class="rev-quote" data-i18n="rev2_q">Chaque chambre a du caractère, la maison se visite comme un petit musée. Literie très confortable et tout est impeccable.</p>
-        <div class="rev-who"><span class="rev-av">M</span><span><b data-i18n="rev2_n">Marco</b><small data-i18n="rev2_w">Italie · sur Booking.com</small></span></div>
+        <div class="rev-who">
+          <span class="rev-av" style="background:var(--sea)">M</span>
+          <span><b data-i18n="rev2_n">Marco</b><small data-i18n="rev2_w">Italie · sur Booking.com</small></span>
+        </div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
       </div>
       <div class="rev reveal">
-        <p class="rev-quote" data-i18n="rev3_q">Les confitures maison du petit-déjeuner sont délicieuses, et Naïma est d'une gentillesse rare. On reviendra.</p>
-        <div class="rev-who"><span class="rev-av">A</span><span><b data-i18n="rev3_n">Anna</b><small data-i18n="rev3_w">Allemagne · sur Booking.com</small></span></div>
+        <div class="rev-head">
+          <span class="rev-stars">★★★★★</span>
+          <span class="rev-src">
+            <svg width="13" height="13" viewBox="0 0 24 24"><path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2a9.8 9.8 0 0 0 3-7.4Z" fill="#4285F4"/><path d="M12 22a9.6 9.6 0 0 0 6.6-2.4l-3.2-2.5a6 6 0 0 1-9-3.2H3.1v2.6A10 10 0 0 0 12 22Z" fill="#34A853"/><path d="M6.4 13.9a6 6 0 0 1 0-3.8V7.5H3.1a10 10 0 0 0 0 9Z" fill="#FBBC05"/><path d="M12 6a5.4 5.4 0 0 1 3.8 1.5L18.7 4.6A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.9 5.5l3.3 2.6A6 6 0 0 1 12 6Z" fill="#EA4335"/></svg>
+            Google
+          </span>
+        </div>
+        <p class="rev-quote" data-i18n="rev3_q">Les confitures maison du petit-déjeuner sont délicieuses et l'accueil est d'une gentillesse rare. On reviendra.</p>
+        <div class="rev-who">
+          <span class="rev-av" style="background:var(--olive)">A</span>
+          <span><b data-i18n="rev3_n">Anna</b><small data-i18n="rev3_w">Allemagne · sur Google</small></span>
+        </div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
       </div>
     </div>
     <div class="rev-cta reveal">
       <a class="btn btn-light" href="https://www.google.com/maps/search/?api=1&query=Dar+Mich%C3%A8le+Djerba+Houmt+Souk" target="_blank" rel="noopener" data-i18n="rev_cta">Lire les 73 avis sur Google</a>
+      <div class="rev-links">
+        <span style="align-self:center;font-size:12.5px;color:rgba(255,255,255,.55);font-weight:700;letter-spacing:.08em;text-transform:uppercase" data-i18n="rev_follow">Retrouvez-nous sur</span>
+        <a href="https://www.booking.com/hotel/tn/darb-michele-djerba-djerba1.html" target="_blank" rel="noopener">Booking.com</a>
+        <a href="https://www.tripadvisor.com/Hotel_Review-g1187636-d23210027-Reviews-Dar_Michele-Houmt_Souk_Djerba_Island_Medenine_Governorate.html" target="_blank" rel="noopener">Tripadvisor</a>
+        <a href="https://www.facebook.com/DarMichello/" target="_blank" rel="noopener">Facebook</a>
+      </div>
     </div>
   </div>
 </section>
@@ -1024,14 +1087,14 @@ footer a:hover{color:#fff}
             <span class="step-n">2</span>
             <span>
               <b data-i18n="step2_b">Confirmez avec un acompte de 30 %</b>
-              <p data-i18n="step2_p">Vous recevez un lien de paiement sécurisé (Visa / Mastercard) ou nos coordonnées pour un virement. Dès réception, votre chambre est bloquée fermement et vous recevez une confirmation écrite avec reçu.</p>
+              <p data-i18n="step2_p">Aucun paiement en ligne : envoyez l'acompte via Western Union ou MoneyGram — depuis leur application ou en agence, en quelques minutes — puis transmettez-nous le code de transfert sur WhatsApp. Dès vérification, votre chambre est bloquée fermement et vous recevez une confirmation écrite.</p>
             </span>
           </div>
           <div class="step">
             <span class="step-n">3</span>
             <span>
               <b data-i18n="step3_b">Payez le solde à l'arrivée</b>
-              <p data-i18n="step3_p">Le reste se règle sur place, en espèces (€ ou DT) ou par carte. Pas de frais cachés — le prix confirmé est le prix payé.</p>
+              <p data-i18n="step3_p">Le reste se règle sur place, en espèces (€ ou DT). Pas de frais cachés — le prix confirmé est le prix payé, taxe de séjour incluse.</p>
             </span>
           </div>
         </div>
@@ -1043,17 +1106,15 @@ footer a:hover{color:#fff}
           </h3>
           <ul>
             <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_1"><b>Votre chambre est garantie</b> : une fois l'acompte reçu, elle est retirée de la vente partout. Personne ne peut vous la prendre.</span></li>
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_2"><b>Annulation souple</b> : remboursement intégral de l'acompte jusqu'à 7 jours avant l'arrivée. Moins de 7 jours : l'acompte reste acquis à la maison.</span></li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_2"><b>Annulation souple</b> : jusqu'à 7 jours avant l'arrivée, l'acompte est reporté sans frais sur de nouvelles dates (valable 12 mois) ou remboursé. Moins de 7 jours : il reste acquis à la maison.</span></li>
             <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_3"><b>Confirmation écrite + reçu</b> pour chaque paiement, envoyés sur WhatsApp et par e-mail.</span></li>
             <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_4"><b>Meilleur tarif garanti</b> : si vous trouvez moins cher pour les mêmes dates sur une plateforme, nous alignons le prix — et vous gardez les avantages du direct.</span></li>
           </ul>
           <div class="paylogos">
-            <span class="paylogo">Visa</span>
-            <span class="paylogo">Mastercard</span>
-            <span class="paylogo" data-i18n="pay_link">Lien de paiement sécurisé</span>
-            <span class="paylogo" data-i18n="pay_transfer">Virement bancaire</span>
-            <span class="paylogo">Wise</span>
             <span class="paylogo">Western Union</span>
+            <span class="paylogo">MoneyGram</span>
+            <span class="paylogo" data-i18n="pay_cash">Solde en espèces — € ou DT</span>
+            <span class="paylogo" data-i18n="pay_noweb">Aucun paiement en ligne</span>
           </div>
         </div>
       </div>
@@ -1087,9 +1148,9 @@ footer a:hover{color:#fff}
             <div class="fgroup">
               <label for="f-room" data-i18n="f_room">Chambre</label>
               <select id="f-room">
-                <option value="room1_name" data-i18n="room1_name">Chambre Indigo</option>
-                <option value="room2_name" data-i18n="room2_name">Chambre Safran</option>
-                <option value="room3_name" data-i18n="room3_name">Suite Olivier</option>
+                <option value="room1_name" data-i18n="room1_name">Chambre Double</option>
+                <option value="room2_name" data-i18n="room2_name">Chambre Quadruple</option>
+                <option value="room3_name" data-i18n="room3_name">Chambre Quadruple avec Terrasse</option>
                 <option value="f_room_any" data-i18n="f_room_any">Peu importe / conseillez-moi</option>
               </select>
             </div>
@@ -1193,20 +1254,20 @@ footer a:hover{color:#fff}
     </div>
     <div class="faq-list reveal">
       <details>
-        <summary data-i18n="faq1_q">Comment fonctionne l'acompte ? Est-ce sécurisé ?</summary>
-        <p class="faq-a" data-i18n="faq1_a">Après confirmation de la disponibilité, nous vous envoyons un lien de paiement sécurisé qui accepte les cartes Visa et Mastercard internationales — vous payez comme sur n'importe quel site marchand, et vous recevez immédiatement un reçu. Si vous préférez, un virement bancaire (ou Wise / Western Union) est possible. L'acompte est de 30 % ; le solde se règle à l'arrivée.</p>
+        <summary data-i18n="faq1_q">Comment confirmer ma réservation sans payer en ligne ?</summary>
+        <p class="faq-a" data-i18n="faq1_a">C'est très simple et sans aucune carte bancaire : une fois vos dates confirmées par écrit, vous envoyez un acompte de 30 % via Western Union ou MoneyGram — depuis leur application, leur site ou l'une de leurs milliers d'agences en Europe, en quelques minutes. Vous nous transmettez ensuite le code de transfert sur WhatsApp : nous vérifions, votre chambre est bloquée fermement et vous recevez immédiatement votre confirmation écrite. Le solde se règle à l'arrivée.</p>
       </details>
       <details>
         <summary data-i18n="faq2_q">Et si je dois annuler ?</summary>
-        <p class="faq-a" data-i18n="faq2_a">Jusqu'à 7 jours avant votre arrivée, l'acompte vous est intégralement remboursé, sans justification. À moins de 7 jours, il reste acquis à la maison — c'est ce qui nous permet de bloquer fermement votre chambre. En cas de force majeure (vol annulé…), écrivez-nous : nous proposons en priorité un report de dates.</p>
+        <p class="faq-a" data-i18n="faq2_a">Jusqu'à 7 jours avant votre arrivée, votre acompte est reporté sans frais sur de nouvelles dates (valable 12 mois) ou remboursé. À moins de 7 jours, il reste acquis à la maison — c'est ce qui nous permet de bloquer fermement votre chambre. En cas de force majeure (vol annulé…), écrivez-nous : nous trouvons toujours une solution.</p>
       </details>
       <details>
         <summary data-i18n="faq3_q">Quels moyens de paiement acceptez-vous sur place ?</summary>
-        <p class="faq-a" data-i18n="faq3_a">Espèces en dinars tunisiens ou en euros, et carte bancaire. Le tarif confirmé lors de la réservation est définitif : aucun frais supplémentaire ne s'ajoute sur place (taxe de séjour incluse).</p>
+        <p class="faq-a" data-i18n="faq3_a">Le solde se règle à l'arrivée, en espèces : euros ou dinars tunisiens, comme vous préférez. Le tarif confirmé lors de la réservation est définitif — aucun frais supplémentaire ne s'ajoute sur place (taxe de séjour incluse) et un reçu écrit vous est remis.</p>
       </details>
       <details>
         <summary data-i18n="faq4_q">Le petit-déjeuner est-il inclus ? Peut-on dîner sur place ?</summary>
-        <p class="faq-a" data-i18n="faq4_a">Le petit-déjeuner maison de Naïma est servi chaque matin au patio (confitures maison, pain frais, thé à la menthe). Sur demande la veille, un dîner tunisien peut être préparé. La cuisine équipée est aussi en libre accès pour nos hôtes.</p>
+        <p class="faq-a" data-i18n="faq4_a">Le petit-déjeuner maison est servi chaque matin au patio (confitures maison, pain frais, thé à la menthe). Sur demande la veille, un dîner tunisien peut être préparé. La cuisine équipée est aussi en libre accès pour nos hôtes.</p>
       </details>
       <details>
         <summary data-i18n="faq5_q">Proposez-vous un transfert depuis l'aéroport ?</summary>
@@ -1261,7 +1322,7 @@ const CONFIG = {
   whatsapp: "21651919775",          // numéro WhatsApp sans "+" ni espaces
   phone: "+216 51 919 775",
   defaultLang: "fr",
-  langs: ["fr","en","de","it","pl","ar"]
+  langs: ["fr","en","de","it","pl","ru","ar"]
 };
 
 /* ═══════════════════════════ TRADUCTIONS ═══════════════════════════ */
@@ -1276,10 +1337,10 @@ fr: {
   hero_sub:"Trois chambres de caractère autour d'un patio ombragé et de sa piscine, à cinq minutes à pied du souk de Houmt Souk. Tradition djerbienne, confort d'aujourd'hui.",
   hero_cta_wa:"Réserver sur WhatsApp", hero_cta_rooms:"Découvrir les chambres",
   proof_google:"73 avis Google", proof_booking_b:"Note Booking.com", proof_booking_s:"8.5 en couple",
-  proof_direct_b:"Réservation directe", proof_direct_s:"sans commission, meilleur tarif",
+  proof_direct_b:"0 % de commission", proof_direct_s:"en réservant en direct, au meilleur tarif",
   door_since:"Depuis 1925", stamp:"la maison",
   strip_1:"Meilleur tarif garanti en réservant en direct",
-  strip_2:"Acompte sécurisé en ligne — solde sur place",
+  strip_2:"Sans paiement en ligne — acompte simple, solde sur place",
   strip_3:"Réponse WhatsApp en moins d'une heure",
   house_kicker:"La maison", house_title:"Un siècle d'histoire, entre tradition et modernité",
   house_p1:"Fondée en 1925 dans le quartier paisible de Taourit, Dar Michèle est une authentique maison djerbienne restaurée avec passion. Chaque pièce a du caractère : voûtes blanchies à la chaux, portes anciennes, objets chinés — nos hôtes disent souvent que la maison se visite « comme un petit musée ».",
@@ -1290,15 +1351,15 @@ fr: {
   feat4_b:"Souk à 5 minutes", feat4_s:"le centre de Houmt Souk à pied, au calme",
   rooms_kicker:"Les chambres", rooms_title:"Trois chambres, trois caractères",
   rooms_sub:"Chacune ouvre sur le patio et la piscine. Toutes ont une salle de bain privée, la climatisation et le Wi-Fi. Jusqu'à 10 hôtes dans toute la maison.",
-  room1_name:"Chambre Indigo", room1_desc:"Voûtes blanchies, tête de lit indigo et petite terrasse sur le patio. La préférée des couples.",
-  room2_name:"Chambre Safran", room2_desc:"Tons chauds, artisanat local et lumière dorée du matin. Un lit double et un couchage d'appoint.",
-  room3_name:"Suite Olivier", room3_desc:"La plus spacieuse : idéale en famille ou entre amis, avec coin salon et couchages supplémentaires.",
-  chip_2p:"2 pers.", chip_3p:"2–3 pers.", chip_4p:"3–4 pers.", chip_ac:"Climatisation", chip_bath:"SDB privée", chip_terr:"Terrasse patio",
+  room1_name:"Chambre Double", room1_desc:"Un grand lit sous les voûtes blanchies à la chaux, la lumière douce du patio. Fraîche, simple, lumineuse — la préférée des couples.",
+  room2_name:"Chambre Quadruple", room2_desc:"Un lit double et deux lits simples, l'artisanat local en tons chauds : l'option idéale pour les familles et les petits groupes.",
+  room3_name:"Chambre Quadruple avec Terrasse", room3_desc:"La même générosité, plus une terrasse privée au soleil pour prolonger les matins. La plus demandée — réservez tôt.",
+  chip_2p:"2 pers.", chip_4p:"4 pers.", chip_ac:"Climatisation", chip_bath:"SDB privée", chip_terr:"Sur le patio", chip_terrp:"Terrasse privée",
   price_from:"à partir de", price_night:"/ nuit", room_cta:"Réserver",
   wh_title:"Privatisez toute la maison", wh_sub:"Les trois chambres, le patio, la piscine et le rooftop rien que pour vous — jusqu'à 10 personnes. Idéal pour les familles, les tribus d'amis et les anniversaires.", wh_cta:"Demander un devis",
   gal_kicker:"En images", gal_title:"La maison en un regard",
-  table_kicker:"La table & les environs", table_title:"Le petit-déjeuner de Naïma, puis Djerba",
-  table_sub:"Chaque matin, Naïma dresse la table au patio : confitures maison, pain frais, thé à la menthe et douceurs djerbiennes. Ensuite, l'île vous attend.",
+  table_kicker:"La table & les environs", table_title:"Le petit-déjeuner au patio, puis l'île",
+  table_sub:"Chaque matin, la table est dressée au bord de la piscine : confitures maison, pain frais, thé à la menthe et douceurs djerbiennes. Ensuite, Djerba vous attend.",
   exp1_b:"Le souk de Houmt Souk", exp1_s:"poteries, épices, poissonniers et cafés — à 5 minutes à pied",
   exp2_b:"Djerbahood, le village street-art", exp2_s:"250 œuvres à ciel ouvert à Erriadh — à 15 minutes",
   exp3_b:"Plages & île aux flamants roses", exp3_s:"sable blanc, eaux turquoise, sorties en boutre traditionnelle",
@@ -1309,23 +1370,23 @@ fr: {
   rev1_n:"Sophie", rev1_w:"France · sur Tripadvisor",
   rev2_q:"Chaque chambre a du caractère, la maison se visite comme un petit musée. Literie très confortable et tout est impeccable.",
   rev2_n:"Marco", rev2_w:"Italie · sur Booking.com",
-  rev3_q:"Les confitures maison du petit-déjeuner sont délicieuses, et Naïma est d'une gentillesse rare. On reviendra.",
-  rev3_n:"Anna", rev3_w:"Allemagne · sur Booking.com",
-  rev_cta:"Lire les 73 avis sur Google",
+  rev3_q:"Les confitures maison du petit-déjeuner sont délicieuses et l'accueil est d'une gentillesse rare. On reviendra.",
+  rev3_n:"Anna", rev3_w:"Allemagne · sur Google",
+  rev_cta:"Lire les 73 avis sur Google", rev_verified:"Séjour vérifié", rev_follow:"Retrouvez-nous sur",
   book_kicker:"Réservation directe", book_title:"Réservez en direct, simplement et en confiance",
   book_sub:"Pas de plateforme, pas de commission : vous réservez auprès de la maison, au meilleur tarif, avec une confirmation écrite et un acompte sécurisé.",
   step1_b:"Envoyez votre demande",
   step1_p:"Choisissez vos dates dans le formulaire — votre demande part sur WhatsApp. Nous confirmons la disponibilité et le tarif exact en moins d'une heure en journée.",
   step2_b:"Confirmez avec un acompte de 30 %",
-  step2_p:"Vous recevez un lien de paiement sécurisé (Visa / Mastercard) ou nos coordonnées pour un virement. Dès réception, votre chambre est bloquée fermement et vous recevez une confirmation écrite avec reçu.",
+  step2_p:"Aucun paiement en ligne : envoyez l'acompte via Western Union ou MoneyGram — depuis leur application ou en agence, en quelques minutes — puis transmettez-nous le code de transfert sur WhatsApp. Dès vérification, votre chambre est bloquée fermement et vous recevez une confirmation écrite.",
   step3_b:"Payez le solde à l'arrivée",
-  step3_p:"Le reste se règle sur place, en espèces (€ ou DT) ou par carte. Pas de frais cachés — le prix confirmé est le prix payé.",
+  step3_p:"Le reste se règle sur place, en espèces (€ ou DT). Pas de frais cachés — le prix confirmé est le prix payé, taxe de séjour incluse.",
   gar_title:"Notre garantie, dans les deux sens",
   gar_1:"<b>Votre chambre est garantie</b> : une fois l'acompte reçu, elle est retirée de la vente partout. Personne ne peut vous la prendre.",
-  gar_2:"<b>Annulation souple</b> : remboursement intégral de l'acompte jusqu'à 7 jours avant l'arrivée. Moins de 7 jours : l'acompte reste acquis à la maison.",
+  gar_2:"<b>Annulation souple</b> : jusqu'à 7 jours avant l'arrivée, l'acompte est reporté sans frais sur de nouvelles dates (valable 12 mois) ou remboursé. Moins de 7 jours : il reste acquis à la maison.",
   gar_3:"<b>Confirmation écrite + reçu</b> pour chaque paiement, envoyés sur WhatsApp et par e-mail.",
   gar_4:"<b>Meilleur tarif garanti</b> : si vous trouvez moins cher pour les mêmes dates sur une plateforme, nous alignons le prix — et vous gardez les avantages du direct.",
-  pay_link:"Lien de paiement sécurisé", pay_transfer:"Virement bancaire",
+  pay_cash:"Solde en espèces — € ou DT", pay_noweb:"Aucun paiement en ligne",
   form_title:"Demande de réservation", form_sub:"Sans engagement — nous confirmons d'abord la disponibilité et le tarif.",
   f_in:"Arrivée", f_out:"Départ", f_guests:"Voyageurs", f_room:"Chambre", f_room_any:"Peu importe / conseillez-moi",
   f_name:"Votre nom", f_name_ph:"Prénom et nom", f_msg:"Message (optionnel)", f_msg_ph:"Une question, une heure d'arrivée, un régime particulier…",
@@ -1340,14 +1401,14 @@ fr: {
   d3:"de l'aéroport international Djerba-Zarzis (DJE)", d4:"de Djerbahood et du village d'Erriadh",
   acc_maps:"Ouvrir dans Google Maps",
   faq_kicker:"Questions fréquentes", faq_title:"Tout ce qu'on nous demande",
-  faq1_q:"Comment fonctionne l'acompte ? Est-ce sécurisé ?",
-  faq1_a:"Après confirmation de la disponibilité, nous vous envoyons un lien de paiement sécurisé qui accepte les cartes Visa et Mastercard internationales — vous payez comme sur n'importe quel site marchand, et vous recevez immédiatement un reçu. Si vous préférez, un virement bancaire (ou Wise / Western Union) est possible. L'acompte est de 30 % ; le solde se règle à l'arrivée.",
+  faq1_q:"Comment confirmer ma réservation sans payer en ligne ?",
+  faq1_a:"C'est très simple et sans aucune carte bancaire : une fois vos dates confirmées par écrit, vous envoyez un acompte de 30 % via Western Union ou MoneyGram — depuis leur application, leur site ou l'une de leurs milliers d'agences en Europe, en quelques minutes. Vous nous transmettez ensuite le code de transfert sur WhatsApp : nous vérifions, votre chambre est bloquée fermement et vous recevez immédiatement votre confirmation écrite. Le solde se règle à l'arrivée.",
   faq2_q:"Et si je dois annuler ?",
-  faq2_a:"Jusqu'à 7 jours avant votre arrivée, l'acompte vous est intégralement remboursé, sans justification. À moins de 7 jours, il reste acquis à la maison — c'est ce qui nous permet de bloquer fermement votre chambre. En cas de force majeure (vol annulé…), écrivez-nous : nous proposons en priorité un report de dates.",
+  faq2_a:"Jusqu'à 7 jours avant votre arrivée, votre acompte est reporté sans frais sur de nouvelles dates (valable 12 mois) ou remboursé. À moins de 7 jours, il reste acquis à la maison — c'est ce qui nous permet de bloquer fermement votre chambre. En cas de force majeure (vol annulé…), écrivez-nous : nous trouvons toujours une solution.",
   faq3_q:"Quels moyens de paiement acceptez-vous sur place ?",
-  faq3_a:"Espèces en dinars tunisiens ou en euros, et carte bancaire. Le tarif confirmé lors de la réservation est définitif : aucun frais supplémentaire ne s'ajoute sur place (taxe de séjour incluse).",
+  faq3_a:"Le solde se règle à l'arrivée, en espèces : euros ou dinars tunisiens, comme vous préférez. Le tarif confirmé lors de la réservation est définitif — aucun frais supplémentaire ne s'ajoute sur place (taxe de séjour incluse) et un reçu écrit vous est remis.",
   faq4_q:"Le petit-déjeuner est-il inclus ? Peut-on dîner sur place ?",
-  faq4_a:"Le petit-déjeuner maison de Naïma est servi chaque matin au patio (confitures maison, pain frais, thé à la menthe). Sur demande la veille, un dîner tunisien peut être préparé. La cuisine équipée est aussi en libre accès pour nos hôtes.",
+  faq4_a:"Le petit-déjeuner maison est servi chaque matin au patio (confitures maison, pain frais, thé à la menthe). Sur demande la veille, un dîner tunisien peut être préparé. La cuisine équipée est aussi en libre accès pour nos hôtes.",
   faq5_q:"Proposez-vous un transfert depuis l'aéroport ?",
   faq5_a:"Oui — l'aéroport de Djerba-Zarzis est à 15 minutes. Indiquez votre numéro de vol lors de la réservation et nous organisons un taxi de confiance à prix fixe, qui vous attend à l'arrivée.",
   foot_tag:"Maison d'hôtes de 1925 à Houmt Souk, Djerba. Site officiel — réservez en direct, au meilleur tarif.",
@@ -1367,10 +1428,10 @@ en: {
   hero_sub:"Three characterful rooms set around a shaded patio and its pool, a five-minute walk from the Houmt Souk market. Djerbian tradition, today's comfort.",
   hero_cta_wa:"Book on WhatsApp", hero_cta_rooms:"See the rooms",
   proof_google:"73 Google reviews", proof_booking_b:"Booking.com score", proof_booking_s:"8.5 for couples",
-  proof_direct_b:"Book direct", proof_direct_s:"no commission, best rate",
+  proof_direct_b:"0% commission", proof_direct_s:"when you book direct, at the best rate",
   door_since:"Since 1925", stamp:"the house",
   strip_1:"Best rate guaranteed when you book direct",
-  strip_2:"Secure online deposit — balance on arrival",
+  strip_2:"No online payment — simple deposit, balance on arrival",
   strip_3:"WhatsApp reply within the hour",
   house_kicker:"The house", house_title:"A century of history, tradition meets modernity",
   house_p1:"Built in 1925 in the peaceful Taourit quarter, Dar Michèle is an authentic Djerbian house restored with passion. Every room has character: whitewashed vaults, antique doors, curated objects — our guests often say the house feels “like a little museum”.",
@@ -1381,15 +1442,15 @@ en: {
   feat4_b:"Souk 5 minutes away", feat4_s:"Houmt Souk's centre on foot, yet quiet",
   rooms_kicker:"The rooms", rooms_title:"Three rooms, three characters",
   rooms_sub:"Each opens onto the patio and pool. All have a private bathroom, air conditioning and Wi-Fi. The whole house sleeps up to 10 guests.",
-  room1_name:"Indigo Room", room1_desc:"Whitewashed vaults, an indigo headboard and a little terrace on the patio. Couples' favourite.",
-  room2_name:"Saffron Room", room2_desc:"Warm tones, local craftsmanship and golden morning light. A double bed plus an extra bed.",
-  room3_name:"Olive Suite", room3_desc:"The most spacious: ideal for families or friends, with a lounge corner and extra beds.",
-  chip_2p:"Sleeps 2", chip_3p:"Sleeps 2–3", chip_4p:"Sleeps 3–4", chip_ac:"Air con", chip_bath:"Private bath", chip_terr:"Patio terrace",
+  room1_name:"Double Room", room1_desc:"A big bed under whitewashed vaults, soft light from the patio. Cool, simple, luminous — couples' favourite.",
+  room2_name:"Quadruple Room", room2_desc:"A double bed and two singles, local craftsmanship in warm tones: the ideal option for families and small groups.",
+  room3_name:"Quadruple Room with Terrace", room3_desc:"The same generosity, plus a private sun terrace to stretch out the mornings. The most requested — book early.",
+  chip_2p:"Sleeps 2", chip_4p:"Sleeps 4", chip_ac:"Air con", chip_bath:"Private bath", chip_terr:"On the patio", chip_terrp:"Private terrace",
   price_from:"from", price_night:"/ night", room_cta:"Book",
   wh_title:"Book the whole house", wh_sub:"All three rooms, the patio, the pool and the rooftop just for you — up to 10 guests. Perfect for families, groups of friends and celebrations.", wh_cta:"Ask for a quote",
   gal_kicker:"In pictures", gal_title:"The house at a glance",
-  table_kicker:"Breakfast & around", table_title:"Naïma's breakfast, then Djerba",
-  table_sub:"Every morning Naïma lays the table on the patio: homemade jams, fresh bread, mint tea and Djerbian sweets. Then the island is yours.",
+  table_kicker:"Breakfast & around", table_title:"Breakfast on the patio, then the island",
+  table_sub:"Every morning the table is laid by the pool: homemade jams, fresh bread, mint tea and Djerbian sweets. Then Djerba is yours.",
   exp1_b:"The Houmt Souk market", exp1_s:"pottery, spices, fishmongers and cafés — a 5-minute walk",
   exp2_b:"Djerbahood, the street-art village", exp2_s:"250 open-air artworks in Erriadh — 15 minutes away",
   exp3_b:"Beaches & Flamingo Island", exp3_s:"white sand, turquoise water, trips on a traditional felucca",
@@ -1400,23 +1461,23 @@ en: {
   rev1_n:"Sophie", rev1_w:"France · on Tripadvisor",
   rev2_q:"Every room has character; the whole house is like a little museum. Very comfortable bedding and everything spotless.",
   rev2_n:"Marco", rev2_w:"Italy · on Booking.com",
-  rev3_q:"The homemade jams at breakfast are delicious, and Naïma is wonderfully kind. We'll be back.",
-  rev3_n:"Anna", rev3_w:"Germany · on Booking.com",
-  rev_cta:"Read the 73 reviews on Google",
+  rev3_q:"The homemade jams at breakfast are delicious and the welcome is wonderfully kind. We'll be back.",
+  rev3_n:"Anna", rev3_w:"Germany · on Google",
+  rev_cta:"Read the 73 reviews on Google", rev_verified:"Verified stay", rev_follow:"Find us on",
   book_kicker:"Book direct", book_title:"Book direct — simple, safe, best rate",
   book_sub:"No platform, no commission: you book with the house itself, at the best rate, with written confirmation and a secure deposit.",
   step1_b:"Send your request",
   step1_p:"Pick your dates in the form — your request goes straight to WhatsApp. We confirm availability and the exact rate within the hour during the day.",
   step2_b:"Confirm with a 30% deposit",
-  step2_p:"You receive a secure payment link (Visa / Mastercard) or our bank details for a transfer. As soon as it arrives, your room is firmly blocked and you get a written confirmation with a receipt.",
+  step2_p:"No online payment: send the deposit via Western Union or MoneyGram — from their app or any agency, in minutes — then share the transfer code with us on WhatsApp. Once verified, your room is firmly blocked and you receive a written confirmation.",
   step3_b:"Pay the balance on arrival",
-  step3_p:"The rest is settled at the house — cash (€ or TND) or card. No hidden fees: the confirmed price is the price you pay.",
+  step3_p:"The rest is settled at the house, in cash (€ or TND). No hidden fees: the confirmed price is the price you pay, city tax included.",
   gar_title:"Our guarantee — both ways",
   gar_1:"<b>Your room is guaranteed</b>: once the deposit arrives, it is withdrawn from sale everywhere. Nobody can take it from you.",
-  gar_2:"<b>Flexible cancellation</b>: full deposit refund up to 7 days before arrival. Within 7 days, the deposit is retained by the house.",
+  gar_2:"<b>Flexible cancellation</b>: up to 7 days before arrival, your deposit is transferred free of charge to new dates (valid 12 months) or refunded. Within 7 days, it is retained by the house.",
   gar_3:"<b>Written confirmation + receipt</b> for every payment, sent on WhatsApp and by e-mail.",
   gar_4:"<b>Best-rate guarantee</b>: find the same dates cheaper on any platform and we'll match it — and you keep the direct-booking perks.",
-  pay_link:"Secure payment link", pay_transfer:"Bank transfer",
+  pay_cash:"Balance in cash — € or TND", pay_noweb:"No online payment",
   form_title:"Booking request", form_sub:"No commitment — we confirm availability and the rate first.",
   f_in:"Check-in", f_out:"Check-out", f_guests:"Guests", f_room:"Room", f_room_any:"Any / advise me",
   f_name:"Your name", f_name_ph:"First and last name", f_msg:"Message (optional)", f_msg_ph:"A question, arrival time, dietary needs…",
@@ -1431,14 +1492,14 @@ en: {
   d3:"from Djerba–Zarzis International Airport (DJE)", d4:"from Djerbahood and Erriadh village",
   acc_maps:"Open in Google Maps",
   faq_kicker:"FAQ", faq_title:"Everything guests ask us",
-  faq1_q:"How does the deposit work? Is it secure?",
-  faq1_a:"Once availability is confirmed, we send you a secure payment link accepting international Visa and Mastercard — you pay as on any online shop and instantly receive a receipt. If you prefer, a bank transfer (or Wise / Western Union) works too. The deposit is 30%; the balance is paid on arrival.",
+  faq1_q:"How do I confirm my booking without paying online?",
+  faq1_a:"It's very simple and needs no bank card: once your dates are confirmed in writing, you send a 30% deposit via Western Union or MoneyGram — from their app, their website or one of their thousands of agencies across Europe, in minutes. Then you share the transfer code with us on WhatsApp: we verify it, your room is firmly blocked and you instantly receive your written confirmation. The balance is paid on arrival.",
   faq2_q:"What if I have to cancel?",
-  faq2_a:"Up to 7 days before arrival, your deposit is fully refunded, no questions asked. Within 7 days it is retained by the house — that's what allows us to block your room firmly. In case of force majeure (cancelled flight…), write to us: we'll offer new dates first.",
+  faq2_a:"Up to 7 days before arrival, your deposit is transferred free of charge to new dates (valid 12 months) or refunded. Within 7 days it is retained by the house — that's what allows us to block your room firmly. In case of force majeure (cancelled flight…), write to us: we always find a solution.",
   faq3_q:"Which payment methods do you accept at the house?",
-  faq3_a:"Cash in Tunisian dinars or euros, and card. The rate confirmed at booking is final: nothing is added on site (city tax included).",
+  faq3_a:"The balance is paid on arrival, in cash: euros or Tunisian dinars, as you prefer. The rate confirmed at booking is final — nothing is added on site (city tax included) and you receive a written receipt.",
   faq4_q:"Is breakfast included? Can we dine at the house?",
-  faq4_a:"Naïma's homemade breakfast is served every morning on the patio (homemade jams, fresh bread, mint tea). With a day's notice, a Tunisian dinner can be prepared. The equipped kitchen is also free for guests to use.",
+  faq4_a:"A homemade breakfast is served every morning on the patio (homemade jams, fresh bread, mint tea). With a day's notice, a Tunisian dinner can be prepared. The equipped kitchen is also free for guests to use.",
   faq5_q:"Do you offer an airport transfer?",
   faq5_a:"Yes — Djerba–Zarzis airport is 15 minutes away. Give us your flight number when booking and we arrange a trusted fixed-price taxi waiting on arrival.",
   foot_tag:"A 1925 guest house in Houmt Souk, Djerba. Official website — book direct at the best rate.",
@@ -1458,10 +1519,10 @@ de: {
   hero_sub:"Drei charaktervolle Zimmer rund um einen schattigen Patio mit Pool, fünf Gehminuten vom Souk von Houmt Souk. Djerbische Tradition, heutiger Komfort.",
   hero_cta_wa:"Per WhatsApp buchen", hero_cta_rooms:"Zimmer entdecken",
   proof_google:"73 Google-Bewertungen", proof_booking_b:"Booking.com-Note", proof_booking_s:"8,5 für Paare",
-  proof_direct_b:"Direkt buchen", proof_direct_s:"ohne Kommission, Bestpreis",
+  proof_direct_b:"0 % Kommission", proof_direct_s:"bei Direktbuchung, zum Bestpreis",
   door_since:"Seit 1925", stamp:"das Haus",
   strip_1:"Bestpreis-Garantie bei Direktbuchung",
-  strip_2:"Sichere Online-Anzahlung — Rest vor Ort",
+  strip_2:"Keine Online-Zahlung — einfache Anzahlung, Rest vor Ort",
   strip_3:"WhatsApp-Antwort innerhalb einer Stunde",
   house_kicker:"Das Haus", house_title:"Ein Jahrhundert Geschichte, Tradition trifft Moderne",
   house_p1:"1925 im ruhigen Viertel Taourit erbaut, ist Dar Michèle ein authentisches djerbisches Haus, mit Leidenschaft restauriert. Jeder Raum hat Charakter: weiß gekalkte Gewölbe, alte Türen, liebevoll gesammelte Objekte — unsere Gäste sagen oft, das Haus sei „wie ein kleines Museum“.",
@@ -1472,15 +1533,15 @@ de: {
   feat4_b:"Souk in 5 Minuten", feat4_s:"das Zentrum von Houmt Souk zu Fuß, dennoch ruhig",
   rooms_kicker:"Die Zimmer", rooms_title:"Drei Zimmer, drei Charaktere",
   rooms_sub:"Jedes öffnet sich zum Patio und Pool. Alle mit eigenem Bad, Klimaanlage und WLAN. Das ganze Haus bietet Platz für bis zu 10 Gäste.",
-  room1_name:"Zimmer Indigo", room1_desc:"Weiß gekalkte Gewölbe, indigoblaues Kopfteil und kleine Terrasse zum Patio. Der Favorit für Paare.",
-  room2_name:"Zimmer Safran", room2_desc:"Warme Töne, lokales Kunsthandwerk und goldenes Morgenlicht. Doppelbett plus Zustellbett.",
-  room3_name:"Suite Olive", room3_desc:"Die geräumigste: ideal für Familien oder Freunde, mit Sitzecke und zusätzlichen Betten.",
-  chip_2p:"2 Pers.", chip_3p:"2–3 Pers.", chip_4p:"3–4 Pers.", chip_ac:"Klimaanlage", chip_bath:"Eigenes Bad", chip_terr:"Patio-Terrasse",
+  room1_name:"Doppelzimmer", room1_desc:"Ein großes Bett unter weiß gekalkten Gewölben, sanftes Licht vom Patio. Kühl, schlicht, hell — der Favorit für Paare.",
+  room2_name:"Vierbettzimmer", room2_desc:"Ein Doppelbett und zwei Einzelbetten, lokales Kunsthandwerk in warmen Tönen: ideal für Familien und kleine Gruppen.",
+  room3_name:"Vierbettzimmer mit Terrasse", room3_desc:"Dieselbe Großzügigkeit, plus eine private Sonnenterrasse für lange Vormittage. Das gefragteste Zimmer — früh buchen.",
+  chip_2p:"2 Pers.", chip_4p:"4 Pers.", chip_ac:"Klimaanlage", chip_bath:"Eigenes Bad", chip_terr:"Am Patio", chip_terrp:"Private Terrasse",
   price_from:"ab", price_night:"/ Nacht", room_cta:"Buchen",
   wh_title:"Mieten Sie das ganze Haus", wh_sub:"Alle drei Zimmer, Patio, Pool und Dachterrasse ganz für Sie — bis zu 10 Gäste. Ideal für Familien, Freundesgruppen und Feiern.", wh_cta:"Angebot anfragen",
   gal_kicker:"In Bildern", gal_title:"Das Haus auf einen Blick",
-  table_kicker:"Frühstück & Umgebung", table_title:"Naïmas Frühstück, dann Djerba",
-  table_sub:"Jeden Morgen deckt Naïma den Tisch im Patio: hausgemachte Marmeladen, frisches Brot, Minztee und djerbische Süßigkeiten. Danach gehört die Insel Ihnen.",
+  table_kicker:"Frühstück & Umgebung", table_title:"Frühstück im Patio, dann die Insel",
+  table_sub:"Jeden Morgen wird der Tisch am Pool gedeckt: hausgemachte Marmeladen, frisches Brot, Minztee und djerbische Süßigkeiten. Danach gehört Djerba Ihnen.",
   exp1_b:"Der Souk von Houmt Souk", exp1_s:"Töpferware, Gewürze, Fischhändler und Cafés — 5 Gehminuten",
   exp2_b:"Djerbahood, das Street-Art-Dorf", exp2_s:"250 Kunstwerke unter freiem Himmel in Erriadh — 15 Minuten",
   exp3_b:"Strände & Flamingo-Insel", exp3_s:"weißer Sand, türkisfarbenes Wasser, Ausflüge mit dem Traditionssegler",
@@ -1491,23 +1552,23 @@ de: {
   rev1_n:"Sophie", rev1_w:"Frankreich · auf Tripadvisor",
   rev2_q:"Jedes Zimmer hat Charakter, das ganze Haus ist wie ein kleines Museum. Sehr bequeme Betten, alles makellos sauber.",
   rev2_n:"Marco", rev2_w:"Italien · auf Booking.com",
-  rev3_q:"Die hausgemachten Marmeladen zum Frühstück sind köstlich, und Naïma ist unglaublich herzlich. Wir kommen wieder.",
-  rev3_n:"Anna", rev3_w:"Deutschland · auf Booking.com",
-  rev_cta:"Alle 73 Bewertungen auf Google lesen",
+  rev3_q:"Die hausgemachten Marmeladen zum Frühstück sind köstlich und der Empfang ist unglaublich herzlich. Wir kommen wieder.",
+  rev3_n:"Anna", rev3_w:"Deutschland · auf Google",
+  rev_cta:"Alle 73 Bewertungen auf Google lesen", rev_verified:"Verifizierter Aufenthalt", rev_follow:"Sie finden uns auf",
   book_kicker:"Direkt buchen", book_title:"Direkt buchen — einfach, sicher, zum Bestpreis",
   book_sub:"Keine Plattform, keine Kommission: Sie buchen direkt beim Haus, zum besten Preis, mit schriftlicher Bestätigung und sicherer Anzahlung.",
   step1_b:"Anfrage senden",
   step1_p:"Wählen Sie Ihre Daten im Formular — die Anfrage geht direkt per WhatsApp raus. Wir bestätigen Verfügbarkeit und exakten Preis tagsüber innerhalb einer Stunde.",
   step2_b:"Mit 30 % Anzahlung bestätigen",
-  step2_p:"Sie erhalten einen sicheren Zahlungslink (Visa / Mastercard) oder unsere Bankdaten für eine Überweisung. Nach Eingang ist Ihr Zimmer fest reserviert — mit schriftlicher Bestätigung und Quittung.",
+  step2_p:"Keine Online-Zahlung: Senden Sie die Anzahlung per Western Union oder MoneyGram — über deren App oder in einer Filiale, in wenigen Minuten — und schicken Sie uns den Transfercode per WhatsApp. Nach Prüfung ist Ihr Zimmer fest reserviert und Sie erhalten eine schriftliche Bestätigung.",
   step3_b:"Rest bei Ankunft zahlen",
-  step3_p:"Der Restbetrag wird vor Ort beglichen — bar (€ oder TND) oder mit Karte. Keine versteckten Kosten: der bestätigte Preis ist der Endpreis.",
+  step3_p:"Der Restbetrag wird vor Ort bar beglichen (€ oder TND). Keine versteckten Kosten: der bestätigte Preis ist der Endpreis, Kurtaxe inklusive.",
   gar_title:"Unsere Garantie — in beide Richtungen",
   gar_1:"<b>Ihr Zimmer ist garantiert</b>: Sobald die Anzahlung eingeht, wird es überall aus dem Verkauf genommen. Niemand kann es Ihnen wegnehmen.",
-  gar_2:"<b>Flexible Stornierung</b>: volle Rückerstattung der Anzahlung bis 7 Tage vor Anreise. Danach verbleibt die Anzahlung beim Haus.",
+  gar_2:"<b>Flexible Stornierung</b>: bis 7 Tage vor Anreise wird die Anzahlung kostenlos auf neue Daten übertragen (12 Monate gültig) oder erstattet. Danach verbleibt sie beim Haus.",
   gar_3:"<b>Schriftliche Bestätigung + Quittung</b> für jede Zahlung, per WhatsApp und E-Mail.",
   gar_4:"<b>Bestpreis-Garantie</b>: Finden Sie dieselben Daten auf einer Plattform günstiger, ziehen wir gleich — und Sie behalten alle Vorteile der Direktbuchung.",
-  pay_link:"Sicherer Zahlungslink", pay_transfer:"Banküberweisung",
+  pay_cash:"Rest bar — € oder TND", pay_noweb:"Keine Online-Zahlung",
   form_title:"Buchungsanfrage", form_sub:"Unverbindlich — wir bestätigen zuerst Verfügbarkeit und Preis.",
   f_in:"Anreise", f_out:"Abreise", f_guests:"Gäste", f_room:"Zimmer", f_room_any:"Egal / beraten Sie mich",
   f_name:"Ihr Name", f_name_ph:"Vor- und Nachname", f_msg:"Nachricht (optional)", f_msg_ph:"Eine Frage, Ankunftszeit, besondere Wünsche…",
@@ -1522,14 +1583,14 @@ de: {
   d3:"vom internationalen Flughafen Djerba–Zarzis (DJE)", d4:"nach Djerbahood und zum Dorf Erriadh",
   acc_maps:"In Google Maps öffnen",
   faq_kicker:"Häufige Fragen", faq_title:"Was Gäste uns fragen",
-  faq1_q:"Wie funktioniert die Anzahlung? Ist das sicher?",
-  faq1_a:"Nach Bestätigung der Verfügbarkeit senden wir Ihnen einen sicheren Zahlungslink für internationale Visa- und Mastercard-Karten — Sie zahlen wie in jedem Online-Shop und erhalten sofort eine Quittung. Alternativ ist eine Banküberweisung (oder Wise / Western Union) möglich. Die Anzahlung beträgt 30 %; der Rest wird bei Ankunft gezahlt.",
+  faq1_q:"Wie bestätige ich meine Buchung ohne Online-Zahlung?",
+  faq1_a:"Ganz einfach und ohne Bankkarte: Sobald Ihre Daten schriftlich bestätigt sind, senden Sie eine Anzahlung von 30 % per Western Union oder MoneyGram — über deren App, Website oder eine der tausenden Filialen in ganz Europa, in wenigen Minuten. Dann schicken Sie uns den Transfercode per WhatsApp: Wir prüfen ihn, Ihr Zimmer ist fest reserviert und Sie erhalten sofort Ihre schriftliche Bestätigung. Der Rest wird bei Ankunft gezahlt.",
   faq2_q:"Was, wenn ich stornieren muss?",
-  faq2_a:"Bis 7 Tage vor Anreise erhalten Sie die Anzahlung vollständig zurück, ohne Angabe von Gründen. Innerhalb von 7 Tagen verbleibt sie beim Haus — nur so können wir Ihr Zimmer fest blockieren. Bei höherer Gewalt (Flugausfall…) schreiben Sie uns: Wir bieten zuerst eine Umbuchung an.",
+  faq2_a:"Bis 7 Tage vor Anreise wird Ihre Anzahlung kostenlos auf neue Daten übertragen (12 Monate gültig) oder erstattet. Innerhalb von 7 Tagen verbleibt sie beim Haus — nur so können wir Ihr Zimmer fest blockieren. Bei höherer Gewalt (Flugausfall…) schreiben Sie uns: Wir finden immer eine Lösung.",
   faq3_q:"Welche Zahlungsmittel akzeptieren Sie vor Ort?",
-  faq3_a:"Bargeld in tunesischen Dinar oder Euro sowie Kartenzahlung. Der bei der Buchung bestätigte Preis ist endgültig: Vor Ort kommt nichts hinzu (Kurtaxe inklusive).",
+  faq3_a:"Der Restbetrag wird bei Ankunft bar bezahlt: in Euro oder tunesischen Dinar, wie Sie möchten. Der bei der Buchung bestätigte Preis ist endgültig — vor Ort kommt nichts hinzu (Kurtaxe inklusive) und Sie erhalten eine schriftliche Quittung.",
   faq4_q:"Ist das Frühstück inbegriffen? Kann man im Haus zu Abend essen?",
-  faq4_a:"Naïmas hausgemachtes Frühstück wird jeden Morgen im Patio serviert (hausgemachte Marmeladen, frisches Brot, Minztee). Mit einem Tag Vorlauf bereiten wir gerne ein tunesisches Abendessen zu. Die Küche steht Gästen frei zur Verfügung.",
+  faq4_a:"Das hausgemachte Frühstück wird jeden Morgen im Patio serviert (hausgemachte Marmeladen, frisches Brot, Minztee). Mit einem Tag Vorlauf bereiten wir gerne ein tunesisches Abendessen zu. Die Küche steht Gästen frei zur Verfügung.",
   faq5_q:"Bieten Sie einen Flughafentransfer an?",
   faq5_a:"Ja — der Flughafen Djerba–Zarzis ist 15 Minuten entfernt. Nennen Sie uns bei der Buchung Ihre Flugnummer und wir organisieren ein zuverlässiges Taxi zum Festpreis, das Sie bei Ankunft erwartet.",
   foot_tag:"Gästehaus von 1925 in Houmt Souk, Djerba. Offizielle Website — direkt buchen zum Bestpreis.",
@@ -1549,10 +1610,10 @@ it: {
   hero_sub:"Tre camere di carattere attorno a un patio ombreggiato con piscina, a cinque minuti a piedi dal souk di Houmt Souk. Tradizione djerbiana, comfort di oggi.",
   hero_cta_wa:"Prenota su WhatsApp", hero_cta_rooms:"Scopri le camere",
   proof_google:"73 recensioni Google", proof_booking_b:"Voto Booking.com", proof_booking_s:"8,5 per le coppie",
-  proof_direct_b:"Prenotazione diretta", proof_direct_s:"senza commissioni, miglior prezzo",
+  proof_direct_b:"0% di commissioni", proof_direct_s:"prenotando direttamente, al miglior prezzo",
   door_since:"Dal 1925", stamp:"la casa",
   strip_1:"Miglior tariffa garantita prenotando direttamente",
-  strip_2:"Acconto sicuro online — saldo in loco",
+  strip_2:"Nessun pagamento online — acconto semplice, saldo in loco",
   strip_3:"Risposta su WhatsApp entro un'ora",
   house_kicker:"La casa", house_title:"Un secolo di storia, tra tradizione e modernità",
   house_p1:"Costruita nel 1925 nel tranquillo quartiere di Taourit, Dar Michèle è un'autentica casa djerbiana restaurata con passione. Ogni stanza ha carattere: volte imbiancate a calce, porte antiche, oggetti d'epoca — i nostri ospiti dicono spesso che la casa si visita «come un piccolo museo».",
@@ -1563,15 +1624,15 @@ it: {
   feat4_b:"Souk a 5 minuti", feat4_s:"il centro di Houmt Souk a piedi, in tutta tranquillità",
   rooms_kicker:"Le camere", rooms_title:"Tre camere, tre caratteri",
   rooms_sub:"Ognuna si apre sul patio e sulla piscina. Tutte con bagno privato, aria condizionata e Wi-Fi. L'intera casa ospita fino a 10 persone.",
-  room1_name:"Camera Indaco", room1_desc:"Volte bianche, testiera indaco e piccola terrazza sul patio. La preferita delle coppie.",
-  room2_name:"Camera Zafferano", room2_desc:"Toni caldi, artigianato locale e luce dorata del mattino. Letto matrimoniale più letto aggiunto.",
-  room3_name:"Suite Ulivo", room3_desc:"La più spaziosa: ideale per famiglie o amici, con angolo salotto e letti supplementari.",
-  chip_2p:"2 pers.", chip_3p:"2–3 pers.", chip_4p:"3–4 pers.", chip_ac:"Aria cond.", chip_bath:"Bagno privato", chip_terr:"Terrazza patio",
+  room1_name:"Camera Doppia", room1_desc:"Un grande letto sotto le volte imbiancate a calce, la luce morbida del patio. Fresca, semplice, luminosa — la preferita delle coppie.",
+  room2_name:"Camera Quadrupla", room2_desc:"Un letto matrimoniale e due singoli, artigianato locale in toni caldi: l'opzione ideale per famiglie e piccoli gruppi.",
+  room3_name:"Camera Quadrupla con Terrazza", room3_desc:"La stessa generosità, più una terrazza privata al sole per prolungare le mattine. La più richiesta — prenotate presto.",
+  chip_2p:"2 pers.", chip_4p:"4 pers.", chip_ac:"Aria cond.", chip_bath:"Bagno privato", chip_terr:"Sul patio", chip_terrp:"Terrazza privata",
   price_from:"da", price_night:"/ notte", room_cta:"Prenota",
   wh_title:"Prenotate l'intera casa", wh_sub:"Le tre camere, il patio, la piscina e il rooftop tutti per voi — fino a 10 ospiti. Perfetto per famiglie, gruppi di amici e ricorrenze.", wh_cta:"Chiedete un preventivo",
   gal_kicker:"In immagini", gal_title:"La casa in un colpo d'occhio",
-  table_kicker:"La colazione & dintorni", table_title:"La colazione di Naïma, poi Djerba",
-  table_sub:"Ogni mattina Naïma apparecchia nel patio: marmellate fatte in casa, pane fresco, tè alla menta e dolci djerbiani. Poi l'isola è vostra.",
+  table_kicker:"La colazione & dintorni", table_title:"La colazione nel patio, poi l'isola",
+  table_sub:"Ogni mattina la tavola è apparecchiata a bordo piscina: marmellate fatte in casa, pane fresco, tè alla menta e dolci djerbiani. Poi Djerba è vostra.",
   exp1_b:"Il souk di Houmt Souk", exp1_s:"ceramiche, spezie, pescivendoli e caffè — a 5 minuti a piedi",
   exp2_b:"Djerbahood, il villaggio della street art", exp2_s:"250 opere a cielo aperto a Erriadh — a 15 minuti",
   exp3_b:"Spiagge & isola dei fenicotteri", exp3_s:"sabbia bianca, acque turchesi, gite in feluca tradizionale",
@@ -1582,23 +1643,23 @@ it: {
   rev1_n:"Sophie", rev1_w:"Francia · su Tripadvisor",
   rev2_q:"Ogni camera ha carattere, la casa intera è come un piccolo museo. Letti comodissimi e tutto impeccabile.",
   rev2_n:"Marco", rev2_w:"Italia · su Booking.com",
-  rev3_q:"Le marmellate fatte in casa della colazione sono deliziose, e Naïma è di una gentilezza rara. Torneremo.",
-  rev3_n:"Anna", rev3_w:"Germania · su Booking.com",
-  rev_cta:"Leggi le 73 recensioni su Google",
+  rev3_q:"Le marmellate fatte in casa della colazione sono deliziose e l'accoglienza è di una gentilezza rara. Torneremo.",
+  rev3_n:"Anna", rev3_w:"Germania · su Google",
+  rev_cta:"Leggi le 73 recensioni su Google", rev_verified:"Soggiorno verificato", rev_follow:"Ci trovate su",
   book_kicker:"Prenotazione diretta", book_title:"Prenota direttamente — semplice e sicuro",
   book_sub:"Nessuna piattaforma, nessuna commissione: prenotate direttamente con la casa, al miglior prezzo, con conferma scritta e acconto sicuro.",
   step1_b:"Inviate la richiesta",
   step1_p:"Scegliete le date nel modulo — la richiesta parte su WhatsApp. Confermiamo disponibilità e tariffa esatta entro un'ora durante il giorno.",
   step2_b:"Confermate con un acconto del 30%",
-  step2_p:"Ricevete un link di pagamento sicuro (Visa / Mastercard) o le nostre coordinate per un bonifico. Alla ricezione, la camera è bloccata definitivamente e ricevete conferma scritta con ricevuta.",
+  step2_p:"Nessun pagamento online: inviate l'acconto con Western Union o MoneyGram — dall'app o in agenzia, in pochi minuti — poi mandateci il codice di trasferimento su WhatsApp. Dopo la verifica, la camera è bloccata definitivamente e ricevete la conferma scritta.",
   step3_b:"Saldo all'arrivo",
-  step3_p:"Il resto si paga in loco — contanti (€ o TND) o carta. Nessun costo nascosto: il prezzo confermato è il prezzo pagato.",
+  step3_p:"Il resto si paga in loco, in contanti (€ o TND). Nessun costo nascosto: il prezzo confermato è il prezzo pagato, tassa di soggiorno inclusa.",
   gar_title:"La nostra garanzia, nei due sensi",
   gar_1:"<b>La vostra camera è garantita</b>: ricevuto l'acconto, viene ritirata dalla vendita ovunque. Nessuno può portarvela via.",
-  gar_2:"<b>Cancellazione flessibile</b>: rimborso integrale dell'acconto fino a 7 giorni prima dell'arrivo. A meno di 7 giorni, l'acconto resta alla casa.",
+  gar_2:"<b>Cancellazione flessibile</b>: fino a 7 giorni prima dell'arrivo, l'acconto viene trasferito senza costi su nuove date (valido 12 mesi) o rimborsato. A meno di 7 giorni, resta alla casa.",
   gar_3:"<b>Conferma scritta + ricevuta</b> per ogni pagamento, inviate su WhatsApp e via e-mail.",
   gar_4:"<b>Miglior prezzo garantito</b>: se trovate le stesse date a meno su una piattaforma, allineiamo il prezzo — e mantenete i vantaggi del diretto.",
-  pay_link:"Link di pagamento sicuro", pay_transfer:"Bonifico bancario",
+  pay_cash:"Saldo in contanti — € o TND", pay_noweb:"Nessun pagamento online",
   form_title:"Richiesta di prenotazione", form_sub:"Senza impegno — confermiamo prima disponibilità e tariffa.",
   f_in:"Arrivo", f_out:"Partenza", f_guests:"Ospiti", f_room:"Camera", f_room_any:"Indifferente / consigliatemi",
   f_name:"Il vostro nome", f_name_ph:"Nome e cognome", f_msg:"Messaggio (facoltativo)", f_msg_ph:"Una domanda, orario d'arrivo, esigenze particolari…",
@@ -1613,14 +1674,14 @@ it: {
   d3:"dall'aeroporto internazionale Djerba–Zarzis (DJE)", d4:"da Djerbahood e dal villaggio di Erriadh",
   acc_maps:"Apri in Google Maps",
   faq_kicker:"Domande frequenti", faq_title:"Tutto ciò che ci chiedono",
-  faq1_q:"Come funziona l'acconto? È sicuro?",
-  faq1_a:"Confermata la disponibilità, vi inviamo un link di pagamento sicuro che accetta Visa e Mastercard internazionali — pagate come in qualsiasi negozio online e ricevete subito la ricevuta. In alternativa è possibile un bonifico bancario (o Wise / Western Union). L'acconto è del 30%; il saldo si paga all'arrivo.",
+  faq1_q:"Come confermo la prenotazione senza pagare online?",
+  faq1_a:"È semplicissimo e non serve alcuna carta: una volta confermate le date per iscritto, inviate un acconto del 30% con Western Union o MoneyGram — dall'app, dal sito o da una delle migliaia di agenzie in tutta Europa, in pochi minuti. Poi ci mandate il codice di trasferimento su WhatsApp: verifichiamo, la camera è bloccata definitivamente e ricevete subito la conferma scritta. Il saldo si paga all'arrivo.",
   faq2_q:"E se devo cancellare?",
-  faq2_a:"Fino a 7 giorni prima dell'arrivo, l'acconto viene rimborsato integralmente, senza domande. A meno di 7 giorni resta alla casa — è ciò che ci permette di bloccare fermamente la vostra camera. In caso di forza maggiore (volo cancellato…), scriveteci: proponiamo prima un cambio di date.",
+  faq2_a:"Fino a 7 giorni prima dell'arrivo, l'acconto viene trasferito senza costi su nuove date (valido 12 mesi) o rimborsato. A meno di 7 giorni resta alla casa — è ciò che ci permette di bloccare fermamente la vostra camera. In caso di forza maggiore (volo cancellato…), scriveteci: troviamo sempre una soluzione.",
   faq3_q:"Quali pagamenti accettate in loco?",
-  faq3_a:"Contanti in dinari tunisini o euro, e carta. La tariffa confermata alla prenotazione è definitiva: nulla si aggiunge in loco (tassa di soggiorno inclusa).",
+  faq3_a:"Il saldo si paga all'arrivo, in contanti: euro o dinari tunisini, come preferite. La tariffa confermata alla prenotazione è definitiva — nulla si aggiunge in loco (tassa di soggiorno inclusa) e ricevete una ricevuta scritta.",
   faq4_q:"La colazione è inclusa? Si può cenare in casa?",
-  faq4_a:"La colazione fatta in casa di Naïma è servita ogni mattina nel patio (marmellate fatte in casa, pane fresco, tè alla menta). Con un giorno di preavviso prepariamo volentieri una cena tunisina. La cucina attrezzata è a libera disposizione degli ospiti.",
+  faq4_a:"La colazione fatta in casa è servita ogni mattina nel patio (marmellate fatte in casa, pane fresco, tè alla menta). Con un giorno di preavviso prepariamo volentieri una cena tunisina. La cucina attrezzata è a libera disposizione degli ospiti.",
   faq5_q:"Offrite il transfer dall'aeroporto?",
   faq5_a:"Sì — l'aeroporto di Djerba–Zarzis è a 15 minuti. Indicateci il numero del volo alla prenotazione e organizziamo un taxi di fiducia a prezzo fisso che vi aspetta all'arrivo.",
   foot_tag:"Guest house del 1925 a Houmt Souk, Djerba. Sito ufficiale — prenotate direttamente al miglior prezzo.",
@@ -1640,10 +1701,10 @@ pl: {
   hero_sub:"Trzy pokoje z charakterem wokół zacienionego patio z basenem, pięć minut spacerem od suku w Houmt Souk. Djerbańska tradycja, dzisiejszy komfort.",
   hero_cta_wa:"Rezerwuj przez WhatsApp", hero_cta_rooms:"Zobacz pokoje",
   proof_google:"73 opinie Google", proof_booking_b:"Ocena Booking.com", proof_booking_s:"8,5 dla par",
-  proof_direct_b:"Rezerwacja bezpośrednia", proof_direct_s:"bez prowizji, najlepsza cena",
+  proof_direct_b:"0% prowizji", proof_direct_s:"przy rezerwacji bezpośredniej, w najlepszej cenie",
   door_since:"Od 1925", stamp:"dom",
   strip_1:"Gwarancja najlepszej ceny przy rezerwacji bezpośredniej",
-  strip_2:"Bezpieczna zaliczka online — reszta na miejscu",
+  strip_2:"Bez płatności online — prosta zaliczka, reszta na miejscu",
   strip_3:"Odpowiedź na WhatsApp w mniej niż godzinę",
   house_kicker:"Dom", house_title:"Wiek historii — tradycja spotyka nowoczesność",
   house_p1:"Zbudowany w 1925 roku w spokojnej dzielnicy Taourit, Dar Michèle to autentyczny djerbański dom odrestaurowany z pasją. Każde pomieszczenie ma charakter: bielone wapnem sklepienia, stare drzwi, przedmioty z duszą — nasi goście często mówią, że dom zwiedza się „jak małe muzeum”.",
@@ -1654,15 +1715,15 @@ pl: {
   feat4_b:"Suk 5 minut stąd", feat4_s:"centrum Houmt Souk pieszo, a jednak cisza",
   rooms_kicker:"Pokoje", rooms_title:"Trzy pokoje, trzy charaktery",
   rooms_sub:"Każdy otwiera się na patio i basen. Wszystkie z prywatną łazienką, klimatyzacją i Wi-Fi. Cały dom pomieści do 10 gości.",
-  room1_name:"Pokój Indygo", room1_desc:"Bielone sklepienia, zagłówek w kolorze indygo i mały taras na patio. Ulubiony przez pary.",
-  room2_name:"Pokój Szafranowy", room2_desc:"Ciepłe barwy, lokalne rękodzieło i złote poranne światło. Podwójne łóżko plus dostawka.",
-  room3_name:"Apartament Oliwka", room3_desc:"Największy: idealny dla rodzin lub przyjaciół, z kącikiem wypoczynkowym i dodatkowymi łóżkami.",
-  chip_2p:"2 os.", chip_3p:"2–3 os.", chip_4p:"3–4 os.", chip_ac:"Klimatyzacja", chip_bath:"Własna łazienka", chip_terr:"Taras na patio",
+  room1_name:"Pokój Dwuosobowy", room1_desc:"Duże łóżko pod bielonymi wapnem sklepieniami, miękkie światło z patio. Chłodny, prosty, jasny — ulubiony przez pary.",
+  room2_name:"Pokój Czteroosobowy", room2_desc:"Podwójne łóżko i dwa pojedyncze, lokalne rękodzieło w ciepłych barwach: idealna opcja dla rodzin i małych grup.",
+  room3_name:"Pokój Czteroosobowy z Tarasem", room3_desc:"Ta sama przestronność, plus prywatny słoneczny taras na długie poranki. Najczęściej wybierany — rezerwujcie wcześnie.",
+  chip_2p:"2 os.", chip_4p:"4 os.", chip_ac:"Klimatyzacja", chip_bath:"Własna łazienka", chip_terr:"Przy patio", chip_terrp:"Prywatny taras",
   price_from:"od", price_night:"/ noc", room_cta:"Rezerwuj",
   wh_title:"Wynajmijcie cały dom", wh_sub:"Trzy pokoje, patio, basen i taras na dachu tylko dla Was — do 10 gości. Idealne dla rodzin, grup przyjaciół i uroczystości.", wh_cta:"Poproś o wycenę",
   gal_kicker:"W obrazach", gal_title:"Dom w jednym spojrzeniu",
-  table_kicker:"Śniadanie i okolica", table_title:"Śniadanie Naïmy, a potem Djerba",
-  table_sub:"Każdego ranka Naïma nakrywa stół na patio: domowe konfitury, świeży chleb, miętowa herbata i djerbańskie słodkości. Potem wyspa należy do Was.",
+  table_kicker:"Śniadanie i okolica", table_title:"Śniadanie na patio, a potem wyspa",
+  table_sub:"Każdego ranka stół nakrywany jest przy basenie: domowe konfitury, świeży chleb, miętowa herbata i djerbańskie słodkości. Potem Djerba należy do Was.",
   exp1_b:"Suk w Houmt Souk", exp1_s:"ceramika, przyprawy, stragany rybne i kawiarnie — 5 minut pieszo",
   exp2_b:"Djerbahood, wioska street artu", exp2_s:"250 dzieł pod gołym niebem w Erriadh — 15 minut stąd",
   exp3_b:"Plaże i wyspa flamingów", exp3_s:"biały piasek, turkusowa woda, rejsy tradycyjną łodzią",
@@ -1673,23 +1734,23 @@ pl: {
   rev1_n:"Sophie", rev1_w:"Francja · na Tripadvisor",
   rev2_q:"Każdy pokój ma charakter, cały dom jest jak małe muzeum. Bardzo wygodne łóżka i wszystko nieskazitelnie czyste.",
   rev2_n:"Marco", rev2_w:"Włochy · na Booking.com",
-  rev3_q:"Domowe konfitury na śniadanie są przepyszne, a Naïma jest niezwykle serdeczna. Wrócimy.",
-  rev3_n:"Anna", rev3_w:"Niemcy · na Booking.com",
-  rev_cta:"Przeczytaj 73 opinie w Google",
+  rev3_q:"Domowe konfitury na śniadanie są przepyszne, a gościnność niezwykle serdeczna. Wrócimy.",
+  rev3_n:"Anna", rev3_w:"Niemcy · w Google",
+  rev_cta:"Przeczytaj 73 opinie w Google", rev_verified:"Zweryfikowany pobyt", rev_follow:"Znajdziecie nas na",
   book_kicker:"Rezerwacja bezpośrednia", book_title:"Rezerwuj bezpośrednio — prosto i pewnie",
   book_sub:"Bez platform, bez prowizji: rezerwujecie bezpośrednio u gospodarzy, w najlepszej cenie, z pisemnym potwierdzeniem i bezpieczną zaliczką.",
   step1_b:"Wyślijcie zapytanie",
   step1_p:"Wybierzcie daty w formularzu — zapytanie trafia prosto na WhatsApp. Dostępność i dokładną cenę potwierdzamy w ciągu godziny w ciągu dnia.",
   step2_b:"Potwierdźcie zaliczką 30%",
-  step2_p:"Otrzymacie bezpieczny link do płatności (Visa / Mastercard) lub nasze dane do przelewu. Po zaksięgowaniu pokój jest ostatecznie zablokowany, a Wy dostajecie pisemne potwierdzenie z pokwitowaniem.",
+  step2_p:"Bez płatności online: wysyłacie zaliczkę przez Western Union lub MoneyGram — z aplikacji lub w placówce, w kilka minut — a potem przesyłacie nam kod transferu na WhatsApp. Po weryfikacji pokój jest ostatecznie zablokowany i dostajecie pisemne potwierdzenie.",
   step3_b:"Resztę zapłacicie na miejscu",
-  step3_p:"Pozostałą kwotę rozliczacie na miejscu — gotówką (€ lub TND) albo kartą. Bez ukrytych opłat: potwierdzona cena to cena ostateczna.",
+  step3_p:"Pozostałą kwotę rozliczacie na miejscu, gotówką (€ lub TND). Bez ukrytych opłat: potwierdzona cena to cena ostateczna, taksa klimatyczna wliczona.",
   gar_title:"Nasza gwarancja — w obie strony",
   gar_1:"<b>Wasz pokój jest gwarantowany</b>: po otrzymaniu zaliczki znika ze sprzedaży wszędzie. Nikt Wam go nie odbierze.",
-  gar_2:"<b>Elastyczne anulowanie</b>: pełny zwrot zaliczki do 7 dni przed przyjazdem. Poniżej 7 dni zaliczka pozostaje w domu.",
+  gar_2:"<b>Elastyczne anulowanie</b>: do 7 dni przed przyjazdem zaliczka jest bezpłatnie przenoszona na nowy termin (ważna 12 miesięcy) lub zwracana. Poniżej 7 dni pozostaje w domu.",
   gar_3:"<b>Pisemne potwierdzenie + pokwitowanie</b> każdej płatności, wysyłane na WhatsApp i e-mailem.",
   gar_4:"<b>Gwarancja najlepszej ceny</b>: jeśli znajdziecie te same daty taniej na jakiejkolwiek platformie, wyrównamy cenę — a Wy zachowacie przywileje rezerwacji bezpośredniej.",
-  pay_link:"Bezpieczny link do płatności", pay_transfer:"Przelew bankowy",
+  pay_cash:"Reszta gotówką — € lub TND", pay_noweb:"Bez płatności online",
   form_title:"Zapytanie o rezerwację", form_sub:"Bez zobowiązań — najpierw potwierdzamy dostępność i cenę.",
   f_in:"Przyjazd", f_out:"Wyjazd", f_guests:"Goście", f_room:"Pokój", f_room_any:"Obojętnie / doradźcie mi",
   f_name:"Imię i nazwisko", f_name_ph:"Imię i nazwisko", f_msg:"Wiadomość (opcjonalnie)", f_msg_ph:"Pytanie, godzina przyjazdu, specjalne potrzeby…",
@@ -1704,14 +1765,14 @@ pl: {
   d3:"z międzynarodowego lotniska Djerba–Zarzis (DJE)", d4:"do Djerbahood i wioski Erriadh",
   acc_maps:"Otwórz w Google Maps",
   faq_kicker:"Częste pytania", faq_title:"Wszystko, o co pytają goście",
-  faq1_q:"Jak działa zaliczka? Czy to bezpieczne?",
-  faq1_a:"Po potwierdzeniu dostępności wysyłamy Wam bezpieczny link do płatności akceptujący międzynarodowe karty Visa i Mastercard — płacicie jak w każdym sklepie internetowym i od razu otrzymujecie pokwitowanie. Możliwy jest też przelew bankowy (lub Wise / Western Union). Zaliczka wynosi 30%; resztę płaci się na miejscu.",
+  faq1_q:"Jak potwierdzić rezerwację bez płacenia online?",
+  faq1_a:"To bardzo proste i nie wymaga żadnej karty: gdy Wasze daty zostaną pisemnie potwierdzone, wysyłacie zaliczkę 30% przez Western Union lub MoneyGram — z aplikacji, strony lub jednej z tysięcy placówek w całej Europie, w kilka minut. Potem przesyłacie nam kod transferu na WhatsApp: weryfikujemy go, pokój jest ostatecznie zablokowany i od razu dostajecie pisemne potwierdzenie. Resztę płaci się na miejscu.",
   faq2_q:"A jeśli będę musiał(a) anulować?",
-  faq2_a:"Do 7 dni przed przyjazdem zaliczka jest zwracana w całości, bez pytań. Poniżej 7 dni pozostaje w domu — to właśnie pozwala nam ostatecznie zablokować Wasz pokój. W razie siły wyższej (odwołany lot…) napiszcie do nas: w pierwszej kolejności zaproponujemy zmianę terminu.",
+  faq2_a:"Do 7 dni przed przyjazdem zaliczka jest bezpłatnie przenoszona na nowy termin (ważna 12 miesięcy) lub zwracana. Poniżej 7 dni pozostaje w domu — to właśnie pozwala nam ostatecznie zablokować Wasz pokój. W razie siły wyższej (odwołany lot…) napiszcie do nas: zawsze znajdziemy rozwiązanie.",
   faq3_q:"Jakie formy płatności akceptujecie na miejscu?",
-  faq3_a:"Gotówka w dinarach tunezyjskich lub euro oraz karta. Cena potwierdzona przy rezerwacji jest ostateczna: na miejscu nic nie dochodzi (taksa klimatyczna wliczona).",
+  faq3_a:"Resztę płaci się po przyjeździe, gotówką: w euro lub dinarach tunezyjskich, jak wolicie. Cena potwierdzona przy rezerwacji jest ostateczna — na miejscu nic nie dochodzi (taksa klimatyczna wliczona), a Wy otrzymujecie pisemne pokwitowanie.",
   faq4_q:"Czy śniadanie jest wliczone? Czy można zjeść kolację na miejscu?",
-  faq4_a:"Domowe śniadanie Naïmy podawane jest każdego ranka na patio (domowe konfitury, świeży chleb, miętowa herbata). Na życzenie, z jednodniowym wyprzedzeniem, przygotujemy tunezyjską kolację. Wyposażona kuchnia jest też do swobodnej dyspozycji gości.",
+  faq4_a:"Domowe śniadanie podawane jest każdego ranka na patio (domowe konfitury, świeży chleb, miętowa herbata). Na życzenie, z jednodniowym wyprzedzeniem, przygotujemy tunezyjską kolację. Wyposażona kuchnia jest też do swobodnej dyspozycji gości.",
   faq5_q:"Czy oferujecie transfer z lotniska?",
   faq5_a:"Tak — lotnisko Djerba–Zarzis jest 15 minut stąd. Podajcie numer lotu przy rezerwacji, a zorganizujemy zaufaną taksówkę w stałej cenie, czekającą na Was po przylocie.",
   foot_tag:"Pensjonat z 1925 roku w Houmt Souk na Djerbie. Oficjalna strona — rezerwujcie bezpośrednio w najlepszej cenie.",
@@ -1719,6 +1780,97 @@ pl: {
   foot_official:"Oficjalna strona", foot_made:"Houmt Souk · Djerba · Tunezja",
   meta_title:"Dar Michèle Djerba — Pensjonat w Houmt Souk | Oficjalna strona",
   meta_desc:"Dar Michèle Djerba, pensjonat z 1925 roku w Houmt Souk. Trzy pokoje z charakterem wokół patio z basenem, 5 minut od suku. Rezerwujcie bezpośrednio w najlepszej cenie."
+},
+
+/* ─────────── РУССКИЙ ─────────── */
+ru: {
+  _dir:"ltr",
+  brand_sub:"Джерба · Хумт-Сук",
+  nav_house:"Дом", nav_rooms:"Комнаты", nav_table:"Завтрак", nav_reviews:"Отзывы", nav_access:"Как добраться", nav_book:"Забронировать",
+  hero_eyebrow:"Гостевой дом · Хумт-Сук, Джерба",
+  hero_title:"Дом <em>1925</em> года, патио, бассейн — и вы.",
+  hero_sub:"Три комнаты с характером вокруг тенистого патио с бассейном, в пяти минутах ходьбы от базара Хумт-Сука. Джербийские традиции, сегодняшний комфорт.",
+  hero_cta_wa:"Забронировать в WhatsApp", hero_cta_rooms:"Посмотреть комнаты",
+  proof_google:"73 отзыва в Google", proof_booking_b:"Оценка Booking.com", proof_booking_s:"8,5 для пар",
+  proof_direct_b:"0% комиссии", proof_direct_s:"при прямом бронировании, по лучшей цене",
+  door_since:"С 1925 года", stamp:"дом",
+  strip_1:"Гарантия лучшей цены при прямом бронировании",
+  strip_2:"Без онлайн-оплаты — простой задаток, остальное на месте",
+  strip_3:"Ответ в WhatsApp в течение часа",
+  house_kicker:"Дом", house_title:"Век истории: традиции встречают современность",
+  house_p1:"Построенный в 1925 году в тихом квартале Таурит, Dar Michèle — подлинный джербийский дом, отреставрированный с любовью. Каждая комната с характером: белёные известью своды, старинные двери, вещи с историей — гости часто говорят, что по дому гуляешь «как по маленькому музею».",
+  house_p2:"Три комнаты выходят на патио с бассейном, вокруг которого течёт жизнь дома: завтрак в тени, сиеста на солнце, тихие вечера на крыше. А в пяти минутах ходьбы — оживлённый базар Хумт-Сука.",
+  feat1_b:"Бассейн в патио", feat1_s:"в сердце дома, в окружении комнат",
+  feat2_b:"Терраса на крыше", feat2_s:"закаты над белыми крышами",
+  feat3_b:"Оборудованная кухня", feat3_s:"холодильник, плита — в свободном доступе для гостей",
+  feat4_b:"Базар в 5 минутах", feat4_s:"центр Хумт-Сука пешком, и при этом тишина",
+  rooms_kicker:"Комнаты", rooms_title:"Три комнаты, три характера",
+  rooms_sub:"Каждая выходит на патио и бассейн. Во всех — собственная ванная, кондиционер и Wi-Fi. Весь дом вмещает до 10 гостей.",
+  room1_name:"Двухместный номер", room1_desc:"Большая кровать под белёными сводами, мягкий свет из патио. Прохладный, простой, светлый — любимый у пар.",
+  room2_name:"Четырёхместный номер", room2_desc:"Двуспальная кровать и две односпальные, местные ремёсла в тёплых тонах: идеальный вариант для семей и небольших компаний.",
+  room3_name:"Четырёхместный номер с террасой", room3_desc:"Та же просторность, плюс собственная солнечная терраса для долгих утренних часов. Самый востребованный — бронируйте заранее.",
+  chip_2p:"2 чел.", chip_4p:"4 чел.", chip_ac:"Кондиционер", chip_bath:"Своя ванная", chip_terr:"У патио", chip_terrp:"Своя терраса",
+  price_from:"от", price_night:"/ ночь", room_cta:"Забронировать",
+  wh_title:"Арендуйте весь дом", wh_sub:"Три комнаты, патио, бассейн и крыша — только для вас, до 10 гостей. Идеально для семей, компаний друзей и праздников.", wh_cta:"Запросить цену",
+  gal_kicker:"В фотографиях", gal_title:"Дом с одного взгляда",
+  table_kicker:"Завтрак и окрестности", table_title:"Завтрак в патио, затем остров",
+  table_sub:"Каждое утро стол накрывают у бассейна: домашнее варенье, свежий хлеб, мятный чай и джербийские сладости. Дальше Джерба ваша.",
+  exp1_b:"Базар Хумт-Сука", exp1_s:"керамика, специи, рыбные ряды и кафе — 5 минут пешком",
+  exp2_b:"Джербахуд, деревня стрит-арта", exp2_s:"250 работ под открытым небом в Эрриаде — в 15 минутах",
+  exp3_b:"Пляжи и остров фламинго", exp3_s:"белый песок, бирюзовая вода, прогулки на традиционной лодке",
+  exp4_b:"Геллала и её гончары", exp4_s:"тысячелетнее ремесло острова среди оливковых рощ",
+  rev_kicker:"Они здесь ночевали", rev_title:"Что говорят наши гости",
+  rev_google:"73 отзыва в Google", rev_couples:"оценка «для пар»",
+  rev1_q:"Уголок рая — тихий, очаровательный и умиротворяющий. Двор, бассейн и терраса на крыше великолепны.",
+  rev1_n:"Софи", rev1_w:"Франция · на Tripadvisor",
+  rev2_q:"У каждой комнаты свой характер, весь дом — как маленький музей. Очень удобные кровати, и всё безупречно чисто.",
+  rev2_n:"Марко", rev2_w:"Италия · на Booking.com",
+  rev3_q:"Домашнее варенье на завтрак восхитительно, а приём на редкость радушный. Мы вернёмся.",
+  rev3_n:"Анна", rev3_w:"Германия · в Google",
+  rev_cta:"Читать 73 отзыва в Google", rev_verified:"Подтверждённое проживание", rev_follow:"Мы на",
+  book_kicker:"Прямое бронирование", book_title:"Бронируйте напрямую — просто и надёжно",
+  book_sub:"Без платформ и без комиссий: вы бронируете у самого дома, по лучшей цене, с письменным подтверждением и простым задатком.",
+  step1_b:"Отправьте запрос",
+  step1_p:"Выберите даты в форме — запрос уйдёт прямо в WhatsApp. Наличие мест и точную цену мы подтверждаем в течение часа днём.",
+  step2_b:"Подтвердите задатком 30%",
+  step2_p:"Без онлайн-оплаты: отправьте задаток через Western Union или MoneyGram — из приложения или в отделении, за несколько минут — и пришлите нам код перевода в WhatsApp. После проверки комната закрепляется за вами окончательно, и вы получаете письменное подтверждение.",
+  step3_b:"Остальное — по приезде",
+  step3_p:"Остаток оплачивается на месте, наличными (€ или динары). Никаких скрытых платежей: подтверждённая цена — окончательная, туристический сбор включён.",
+  gar_title:"Наша гарантия — в обе стороны",
+  gar_1:"<b>Ваша комната гарантирована</b>: как только задаток получен, она снимается с продажи везде. Никто не сможет её занять.",
+  gar_2:"<b>Гибкая отмена</b>: до 7 дней до заезда задаток бесплатно переносится на новые даты (действует 12 месяцев) или возвращается. Менее 7 дней — остаётся дому.",
+  gar_3:"<b>Письменное подтверждение + расписка</b> за каждый платёж — в WhatsApp и по электронной почте.",
+  gar_4:"<b>Гарантия лучшей цены</b>: нашли те же даты дешевле на любой платформе — мы сравняем цену, а преимущества прямого бронирования останутся с вами.",
+  pay_cash:"Остаток наличными — € или динары", pay_noweb:"Без онлайн-оплаты",
+  form_title:"Запрос на бронирование", form_sub:"Ни к чему не обязывает — сначала мы подтверждаем наличие и цену.",
+  f_in:"Заезд", f_out:"Выезд", f_guests:"Гости", f_room:"Комната", f_room_any:"Не важно / посоветуйте",
+  f_name:"Ваше имя", f_name_ph:"Имя и фамилия", f_msg:"Сообщение (по желанию)", f_msg_ph:"Вопрос, время прибытия, особые пожелания…",
+  f_send:"Отправить запрос в WhatsApp", f_or:"или позвоните:",
+  f_note:"Ответ в течение часа, 9:00–21:00 (тунисское время)",
+  wa_msg:"Здравствуйте, Dar Michèle! Хочу забронировать проживание.\n• Заезд: {in}\n• Выезд: {out}\n• Гости: {guests}\n• Комната: {room}\n• Имя: {name}\n{msg}\n(отправлено с официального сайта)",
+  wa_hello:"Здравствуйте, Dar Michèle! Хочу узнать о проживании.",
+  acc_kicker:"Как нас найти", acc_title:"В тишине, но рядом со всем",
+  acc_addr_b:"Dar Michèle Djerba",
+  acc_addr_p:"Квартал Таурит, рядом с мечетью Сиди Ибрагим эль-Шариф — Хумт-Сук 4180, Джерба, Тунис",
+  d1:"пешком до центра и базара Хумт-Сука", d2:"на машине до пляжей с белым песком",
+  d3:"от международного аэропорта Джерба–Зарзис (DJE)", d4:"до Джербахуда и деревни Эрриад",
+  acc_maps:"Открыть в Google Maps",
+  faq_kicker:"Частые вопросы", faq_title:"Всё, о чём нас спрашивают",
+  faq1_q:"Как подтвердить бронирование без онлайн-оплаты?",
+  faq1_a:"Это очень просто, и банковская карта не нужна: как только ваши даты письменно подтверждены, вы отправляете задаток 30% через Western Union или MoneyGram — из приложения, с сайта или в одном из тысяч отделений по всей Европе, за несколько минут. Затем присылаете нам код перевода в WhatsApp: мы проверяем его, комната закрепляется за вами окончательно, и вы сразу получаете письменное подтверждение. Остаток оплачивается по приезде.",
+  faq2_q:"А если придётся отменить поездку?",
+  faq2_a:"До 7 дней до заезда задаток бесплатно переносится на новые даты (действует 12 месяцев) или возвращается. Менее чем за 7 дней он остаётся дому — именно это позволяет нам жёстко закреплять комнату за вами. В случае форс-мажора (отменённый рейс…) напишите нам: мы всегда находим решение.",
+  faq3_q:"Какие способы оплаты принимаются на месте?",
+  faq3_a:"Остаток оплачивается по приезде наличными: в евро или тунисских динарах, как вам удобнее. Подтверждённая при бронировании цена окончательная — на месте ничего не добавляется (туристический сбор включён), и вы получаете письменную расписку.",
+  faq4_q:"Завтрак включён? Можно ли поужинать в доме?",
+  faq4_a:"Домашний завтрак подаётся каждое утро в патио (домашнее варенье, свежий хлеб, мятный чай). По предварительной просьбе за день мы приготовим тунисский ужин. Оборудованная кухня также в свободном доступе для гостей.",
+  faq5_q:"Организуете ли вы трансфер из аэропорта?",
+  faq5_a:"Да — аэропорт Джерба–Зарзис в 15 минутах. Сообщите номер рейса при бронировании, и мы организуем надёжное такси по фиксированной цене, которое встретит вас по прилёте.",
+  foot_tag:"Гостевой дом 1925 года в Хумт-Суке, Джерба. Официальный сайт — бронируйте напрямую по лучшей цене.",
+  foot_contact:"Контакты", foot_addr:"Таурит, Хумт-Сук 4180, Джерба", foot_nav:"Дом",
+  foot_official:"Официальный сайт", foot_made:"Хумт-Сук · Джерба · Тунис",
+  meta_title:"Dar Michèle Djerba — гостевой дом в Хумт-Суке | Официальный сайт",
+  meta_desc:"Dar Michèle Djerba — гостевой дом 1925 года в Хумт-Суке. Три комнаты с характером вокруг патио с бассейном, в 5 минутах от базара. Бронируйте напрямую по лучшей цене."
 },
 
 /* ─────────── العربية ─────────── */
@@ -1731,10 +1883,10 @@ ar: {
   hero_sub:"ثلاث غرف مميّزة حول فناء ظليل ومسبحه، على بعد خمس دقائق مشيًا من سوق حومة السوق. أصالة جربة وراحة اليوم.",
   hero_cta_wa:"احجز عبر واتساب", hero_cta_rooms:"اكتشف الغرف",
   proof_google:"73 تقييمًا على Google", proof_booking_b:"تقييم Booking.com", proof_booking_s:"8.5 للأزواج",
-  proof_direct_b:"حجز مباشر", proof_direct_s:"بدون عمولة، أفضل سعر",
+  proof_direct_b:"0% عمولة", proof_direct_s:"عند الحجز المباشر، بأفضل سعر",
   door_since:"منذ 1925", stamp:"الدار",
   strip_1:"أفضل سعر مضمون عند الحجز المباشر",
-  strip_2:"تسبقة مؤمّنة عبر الإنترنت — والباقي عند الوصول",
+  strip_2:"بدون دفع إلكتروني — تسبقة بسيطة، والباقي عند الوصول",
   strip_3:"ردّ على واتساب في أقل من ساعة",
   house_kicker:"المنزل", house_title:"قرن من التاريخ، بين الأصالة والحداثة",
   house_p1:"بُنيت دار ميشال سنة 1925 في حيّ تاوريت الهادئ، وهي دار جربية أصيلة رُمّمت بشغف. كل غرفة لها طابعها: أقبية مبيّضة بالجير، أبواب قديمة، وقطع مقتناة بعناية — كثيرًا ما يقول ضيوفنا إن الدار تُزار «كمتحف صغير».",
@@ -1745,15 +1897,15 @@ ar: {
   feat4_b:"السوق على بعد 5 دقائق", feat4_s:"وسط حومة السوق مشيًا، في هدوء تام",
   rooms_kicker:"الغرف", rooms_title:"ثلاث غرف، ثلاثة طوابع",
   rooms_sub:"كل غرفة تطلّ على الفناء والمسبح. جميعها بحمّام خاص وتكييف وواي فاي. الدار كاملة تتّسع لعشرة ضيوف.",
-  room1_name:"غرفة النيلة", room1_desc:"أقبية بيضاء، سرير بلون النيلة وشرفة صغيرة على الفناء. المفضّلة لدى الأزواج.",
-  room2_name:"غرفة الزعفران", room2_desc:"ألوان دافئة، حرف يدوية محلية وضوء الصباح الذهبي. سرير مزدوج وسرير إضافي.",
-  room3_name:"جناح الزيتونة", room3_desc:"الأوسع مساحة: مثالي للعائلات أو الأصدقاء، مع ركن جلوس وأسرّة إضافية.",
-  chip_2p:"شخصان", chip_3p:"2–3 أشخاص", chip_4p:"3–4 أشخاص", chip_ac:"تكييف", chip_bath:"حمّام خاص", chip_terr:"شرفة على الفناء",
+  room1_name:"غرفة مزدوجة", room1_desc:"سرير كبير تحت أقبية مبيّضة بالجير، وضوء ناعم من الفناء. باردة، بسيطة، مضيئة — المفضّلة لدى الأزواج.",
+  room2_name:"غرفة رباعية", room2_desc:"سرير مزدوج وسريران فرديان، وحرف يدوية محلية بألوان دافئة: الخيار المثالي للعائلات والمجموعات الصغيرة.",
+  room3_name:"غرفة رباعية مع شرفة", room3_desc:"نفس الرحابة، مع شرفة خاصة مشمسة لصباحات أطول. الأكثر طلبًا — احجزوا مبكرًا.",
+  chip_2p:"شخصان", chip_4p:"4 أشخاص", chip_ac:"تكييف", chip_bath:"حمّام خاص", chip_terr:"على الفناء", chip_terrp:"شرفة خاصة",
   price_from:"ابتداءً من", price_night:"/ الليلة", room_cta:"احجز",
   wh_title:"احجزوا الدار كاملة", wh_sub:"الغرف الثلاث والفناء والمسبح والسطح لكم وحدكم — حتى 10 ضيوف. مثالي للعائلات ومجموعات الأصدقاء والمناسبات.", wh_cta:"اطلبوا عرض سعر",
   gal_kicker:"بالصور", gal_title:"الدار في لمحة",
-  table_kicker:"الفطور والجوار", table_title:"فطور نعيمة، ثم جربة",
-  table_sub:"كل صباح تُعدّ نعيمة المائدة في الفناء: مربّيات منزلية، خبز طازج، شاي بالنعناع وحلويات جربية. ثم الجزيرة في انتظاركم.",
+  table_kicker:"الفطور والجوار", table_title:"الفطور في الفناء، ثم الجزيرة",
+  table_sub:"كل صباح تُعدّ المائدة على حافة المسبح: مربّيات منزلية، خبز طازج، شاي بالنعناع وحلويات جربية. ثم جربة في انتظاركم.",
   exp1_b:"سوق حومة السوق", exp1_s:"فخّار، توابل، سمّاكون ومقاهٍ — على بعد 5 دقائق مشيًا",
   exp2_b:"جربة هود، قرية فن الشارع", exp2_s:"250 عملًا فنيًا في الهواء الطلق بالرياض — على بعد 15 دقيقة",
   exp3_b:"الشواطئ وجزيرة الفلامينغو", exp3_s:"رمال بيضاء، مياه فيروزية، ورحلات بالمراكب التقليدية",
@@ -1764,23 +1916,23 @@ ar: {
   rev1_n:"صوفي", rev1_w:"فرنسا · على Tripadvisor",
   rev2_q:"كل غرفة لها طابعها، والدار كلها كمتحف صغير. أسرّة مريحة جدًا وكل شيء نظيف تمامًا.",
   rev2_n:"ماركو", rev2_w:"إيطاليا · على Booking.com",
-  rev3_q:"مربّيات الفطور المنزلية لذيذة، ونعيمة في غاية اللطف. سنعود بالتأكيد.",
-  rev3_n:"آنا", rev3_w:"ألمانيا · على Booking.com",
-  rev_cta:"اقرأ الـ73 تقييمًا على Google",
+  rev3_q:"مربّيات الفطور المنزلية لذيذة، والاستقبال في غاية اللطف. سنعود بالتأكيد.",
+  rev3_n:"آنا", rev3_w:"ألمانيا · على Google",
+  rev_cta:"اقرأ الـ73 تقييمًا على Google", rev_verified:"إقامة موثَّقة", rev_follow:"تجدوننا على",
   book_kicker:"الحجز المباشر", book_title:"احجزوا مباشرة، ببساطة وثقة",
   book_sub:"لا منصّات ولا عمولات: تحجزون مباشرة لدى الدار، بأفضل سعر، مع تأكيد كتابي وتسبقة مؤمّنة.",
   step1_b:"أرسلوا طلبكم",
   step1_p:"اختاروا تواريخكم في الاستمارة — يصلنا طلبكم عبر واتساب. نؤكّد التوفّر والسعر النهائي في أقل من ساعة خلال النهار.",
   step2_b:"أكّدوا بتسبقة 30%",
-  step2_p:"تتوصّلون برابط دفع مؤمّن (Visa / Mastercard) أو بمعطياتنا البنكية للتحويل. فور استلام التسبقة تُحجز غرفتكم نهائيًا وتتوصّلون بتأكيد كتابي مع وصل.",
+  step2_p:"بدون أي دفع إلكتروني: أرسلوا التسبقة عبر Western Union أو MoneyGram — من التطبيق أو من أي وكالة، في دقائق — ثم أرسلوا لنا رمز التحويل على واتساب. بعد التحقق، تُحجز غرفتكم نهائيًا وتتوصّلون بتأكيد كتابي.",
   step3_b:"ادفعوا الباقي عند الوصول",
-  step3_p:"يُدفع الباقي في الدار — نقدًا (€ أو دينار) أو بالبطاقة. لا تكاليف خفية: السعر المؤكَّد هو السعر المدفوع.",
+  step3_p:"يُدفع الباقي في الدار نقدًا (€ أو دينار). لا تكاليف خفية: السعر المؤكَّد هو السعر المدفوع، معلوم الإقامة مشمول.",
   gar_title:"ضمانتنا، في الاتجاهين",
   gar_1:"<b>غرفتكم مضمونة</b>: بمجرد استلام التسبقة، تُسحب من البيع في كل مكان. لا أحد يستطيع أخذها منكم.",
-  gar_2:"<b>إلغاء مرن</b>: استرجاع كامل للتسبقة حتى 7 أيام قبل الوصول. أقل من 7 أيام: تبقى التسبقة للدار.",
+  gar_2:"<b>إلغاء مرن</b>: حتى 7 أيام قبل الوصول، تُنقل التسبقة مجانًا إلى تواريخ جديدة (صالحة 12 شهرًا) أو تُسترجع. أقل من 7 أيام: تبقى للدار.",
   gar_3:"<b>تأكيد كتابي + وصل</b> عن كل دفعة، يُرسلان عبر واتساب والبريد الإلكتروني.",
   gar_4:"<b>أفضل سعر مضمون</b>: إن وجدتم نفس التواريخ بسعر أقل على أي منصّة، نُطابق السعر — وتحتفظون بمزايا الحجز المباشر.",
-  pay_link:"رابط دفع مؤمّن", pay_transfer:"تحويل بنكي",
+  pay_cash:"الباقي نقدًا — € أو دينار", pay_noweb:"بدون دفع إلكتروني",
   form_title:"طلب حجز", form_sub:"دون التزام — نؤكّد أولًا التوفّر والسعر.",
   f_in:"الوصول", f_out:"المغادرة", f_guests:"الضيوف", f_room:"الغرفة", f_room_any:"لا يهم / انصحوني",
   f_name:"الاسم", f_name_ph:"الاسم واللقب", f_msg:"رسالة (اختياري)", f_msg_ph:"سؤال، ساعة الوصول، طلب خاص…",
@@ -1795,14 +1947,14 @@ ar: {
   d3:"من مطار جربة–جرجيس الدولي (DJE)", d4:"من جربة هود وقرية الرياض",
   acc_maps:"افتح في خرائط Google",
   faq_kicker:"أسئلة شائعة", faq_title:"كل ما يُطرح علينا",
-  faq1_q:"كيف تعمل التسبقة؟ وهل هي آمنة؟",
-  faq1_a:"بعد تأكيد التوفّر، نرسل لكم رابط دفع مؤمّنًا يقبل بطاقات Visa وMastercard الدولية — تدفعون كما في أي متجر إلكتروني وتتوصّلون فورًا بوصل. ويمكن أيضًا التحويل البنكي (أو Wise / Western Union). التسبقة 30%؛ والباقي يُدفع عند الوصول.",
+  faq1_q:"كيف أؤكّد حجزي دون الدفع عبر الإنترنت؟",
+  faq1_a:"الأمر بسيط جدًا ولا يحتاج أي بطاقة بنكية: بعد تأكيد تواريخكم كتابيًا، ترسلون تسبقة 30% عبر Western Union أو MoneyGram — من التطبيق أو الموقع أو إحدى آلاف الوكالات في أوروبا، في دقائق. ثم ترسلون لنا رمز التحويل على واتساب: نتحقق منه، فتُحجز غرفتكم نهائيًا وتتوصّلون فورًا بتأكيدكم الكتابي. والباقي يُدفع عند الوصول.",
   faq2_q:"وإذا اضطُررت إلى الإلغاء؟",
-  faq2_a:"حتى 7 أيام قبل الوصول، تُسترجع التسبقة كاملة دون أي سؤال. أقل من 7 أيام تبقى للدار — فهي ما يسمح لنا بحجز غرفتكم نهائيًا. وفي حالات القوة القاهرة (إلغاء رحلة…) راسلونا: نقترح أولًا تغيير التواريخ.",
+  faq2_a:"حتى 7 أيام قبل الوصول، تُنقل تسبقتكم مجانًا إلى تواريخ جديدة (صالحة 12 شهرًا) أو تُسترجع. أقل من 7 أيام تبقى للدار — فهي ما يسمح لنا بحجز غرفتكم نهائيًا. وفي حالات القوة القاهرة (إلغاء رحلة…) راسلونا: نجد دائمًا حلًّا.",
   faq3_q:"ما وسائل الدفع المقبولة في الدار؟",
-  faq3_a:"نقدًا بالدينار التونسي أو باليورو، وبالبطاقة البنكية. السعر المؤكَّد عند الحجز نهائي: لا يُضاف أي مبلغ في عين المكان (معلوم الإقامة مشمول).",
+  faq3_a:"يُدفع الباقي عند الوصول نقدًا: باليورو أو بالدينار التونسي، كما تفضّلون. السعر المؤكَّد عند الحجز نهائي — لا يُضاف أي مبلغ في عين المكان (معلوم الإقامة مشمول) وتتوصّلون بوصل كتابي.",
   faq4_q:"هل الفطور مشمول؟ وهل يمكن العشاء في الدار؟",
-  faq4_a:"فطور نعيمة المنزلي يُقدَّم كل صباح في الفناء (مربّيات منزلية، خبز طازج، شاي بالنعناع). وبطلب مسبق بيوم، نُعدّ عشاءً تونسيًا. والمطبخ المجهّز بتصرّف الضيوف مجانًا.",
+  faq4_a:"الفطور المنزلي يُقدَّم كل صباح في الفناء (مربّيات منزلية، خبز طازج، شاي بالنعناع). وبطلب مسبق بيوم، نُعدّ عشاءً تونسيًا. والمطبخ المجهّز بتصرّف الضيوف مجانًا.",
   faq5_q:"هل توفّرون نقلًا من المطار؟",
   faq5_a:"نعم — مطار جربة–جرجيس على بعد 15 دقيقة. أعطونا رقم رحلتكم عند الحجز وننظّم لكم سيارة أجرة موثوقة بسعر ثابت تنتظركم عند الوصول.",
   foot_tag:"دار ضيافة من سنة 1925 بحومة السوق، جربة. الموقع الرسمي — احجزوا مباشرة بأفضل سعر.",
