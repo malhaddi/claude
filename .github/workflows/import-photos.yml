@@ -24,14 +24,20 @@ jobs:
         run: |
           mkdir -p dar-michele-djerba/photos
           python3 -c '
-          import json, os, urllib.request
+          import json, os, re, urllib.request
+          def get(url):
+              req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (photo-import)"})
+              with urllib.request.urlopen(req, timeout=60) as r:
+                  return r.read()
           with open("dar-michele-djerba/photos-import.json") as fh:
               mapping = json.load(fh)
           for name, url in mapping.items():
               name = os.path.basename(name)
-              req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (photo-import)"})
-              with urllib.request.urlopen(req, timeout=60) as r:
-                  data = r.read()
+              data = get(url)
+              if data[:1] == b"<" or b"<html" in data[:400].lower():
+                  m = re.search(rb"property=.og:image.\s+content=.([^\"]+).", data)
+                  assert m, f"{name}: page has no og:image"
+                  data = get(m.group(1).decode())
               assert data[:3] in (b"\xff\xd8\xff", b"\x89PN", b"RIF", b"GIF"), f"{name}: not an image ({data[:12]!r})"
               with open(os.path.join("dar-michele-djerba/photos", name), "wb") as f:
                   f.write(data)
