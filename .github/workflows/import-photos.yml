@@ -3,13 +3,13 @@ name: Import photos
 # Télécharge des photos depuis des URLs publiques et les commit dans
 # dar-michele-djerba/photos/ — utilisé parce que l'environnement Claude
 # n'a pas d'accès web sortant, alors que les runners GitHub en ont un.
+#
+# Déclenchement : pousser/modifier le fichier dar-michele-djerba/photos-import.json
+# contenant {"nom-fichier.webp": "https://url-directe", ...}
 on:
-  workflow_dispatch:
-    inputs:
-      mapping:
-        description: 'JSON {"nom-fichier.jpg":"https://url-directe", ...} téléchargé dans dar-michele-djerba/photos/'
-        required: true
-        type: string
+  push:
+    paths:
+      - "dar-michele-djerba/photos-import.json"
 
 permissions:
   contents: write
@@ -21,13 +21,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download photos
-        env:
-          MAPPING: ${{ inputs.mapping }}
         run: |
           mkdir -p dar-michele-djerba/photos
-          printf '%s' "$MAPPING" | python3 -c '
-          import json, sys, os, urllib.request
-          mapping = json.load(sys.stdin)
+          python3 -c '
+          import json, os, urllib.request
+          with open("dar-michele-djerba/photos-import.json") as fh:
+              mapping = json.load(fh)
           for name, url in mapping.items():
               name = os.path.basename(name)
               req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (photo-import)"})
