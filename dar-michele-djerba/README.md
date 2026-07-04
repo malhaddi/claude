@@ -10,9 +10,9 @@ indexé par Google à cause de CMS non maintenus ; ce site n'a pas cette surface
 
 - **7 langues avec détection automatique** : français (défaut), anglais, allemand, italien, **polonais** (3ᵉ nationalité à Djerba en 2025, devant les Allemands), **russe** et arabe (avec bascule droite-à-gauche automatique). La langue du navigateur du visiteur est détectée à l'arrivée ; un sélecteur manuel est toujours visible et le choix est mémorisé.
 - **Réservation directe via WhatsApp** : le formulaire construit un message pré-rempli (dates, chambre, nom) dans la langue du visiteur et l'envoie sur le WhatsApp de la maison. Zéro commission.
-- **Le problème de la garantie, résolu SANS paiement en ligne** : demande WhatsApp → **acompte de 30 % via Western Union ou MoneyGram** (le client l'envoie depuis l'appli/le site WU ou une agence ; la maison retire en dinars, gratuitement, à la Poste ou en banque) → le client transmet le code MTCN sur WhatsApp → confirmation écrite → **solde en espèces à l'arrivée (€ ou DT)**. Aucune carte, aucun virement international, aucun lien de paiement — rien d'illégal, rien à installer : Western Union est un simple transfert d'argent entre personnes, parfaitement légal en réception en Tunisie.
+- **Réservation garantie sans aucun paiement à l'avance** : demande WhatsApp → le propriétaire vérifie son calendrier et confirme → le client valide par écrit (nom complet + case « j'accepte les conditions » cochée dans le formulaire) → confirmation écrite à prix bloqué qui vaut accord de réservation → **tout se paie à l'arrivée, en espèces (€ ou DT)**. L'annulation est gratuite ; seule une non-présentation sans annulation entraîne un forfait de 50 € prévu par les conditions — c'est l'engagement réciproque qui remplace l'acompte.
 - **Chambres réelles de l'établissement** (mêmes intitulés que Booking) : Chambre Double, Chambre Quadruple, Chambre Quadruple avec Terrasse.
-- Preuves sociales renforcées : étoiles par avis, badges Tripadvisor/Booking/Google, mention « séjour vérifié », liens vers les fiches Booking, Tripadvisor et Facebook, 4,5★ / 73 avis Google, 8,3 Booking. Galerie, table & expériences, offre « maison entière », accès/carte, FAQ, SEO (JSON-LD `BedAndBreakfast`).
+- **Avis intégrés au site** : mur d'avis défilant (16 avis, notes de 3,5 à 5, dans leur langue d'origine) construit à partir des vrais avis publics des hôtes, avec attribution anonymisée (« Couple · France · 2025 ») et mention « séjour vérifié » — aucune plateforme mise en avant. Galerie, table & expériences, offre « maison entière », accès/carte, FAQ, SEO (JSON-LD `BedAndBreakfast`).
 - **Photos réelles prêtes à l'emploi** : déposez les fichiers dans `photos/` (voir `photos/LISEZMOI.txt`) — chaque photo remplace automatiquement l'illustration correspondante, sans toucher au code.
 
 ## Déployer (gratuit)
@@ -25,30 +25,19 @@ N'importe quel hébergeur statique. Les plus simples :
 
 Domaine conseillé : `darmichele-djerba.com` (~12 €/an). Ensuite, **ajouter le lien du site sur la fiche Google Business et la page Facebook** — c'est de là que viendront 80 % des visiteurs.
 
-## L'acompte sans paiement en ligne — mode d'emploi pour le propriétaire
+## La garantie sans paiement — mode d'emploi pour le propriétaire
 
-Contrainte assumée : **aucun paiement en ligne** (pas de carte, pas de compte à l'étranger, pas de
-virement international — la réception de paiements marchands depuis l'étranger pose problème
-pour un particulier en Tunisie). La solution : le **transfert d'espèces entre personnes**,
-100 % légal en réception.
+1. La demande arrive sur WhatsApp avec dates, chambre, nombre de voyageurs, nom — et la mention
+   « ✔ Conditions de réservation acceptées » (le client a coché la case sur le site).
+2. Vérifier le calendrier. Si c'est libre : répondre avec le prix total et demander la validation.
+3. À la validation du client, envoyer la **confirmation écrite** : dates, chambre, prix bloqué,
+   rappel des conditions (annulation gratuite par simple message ; 50 € en cas de non-présentation
+   sans annulation). Ce message WhatsApp vaut accord de réservation des deux côtés.
+4. Tout se règle à l'arrivée en espèces (€ ou DT) + reçu écrit.
+5. En cas de no-show : le forfait de 50 € prévu par les conditions acceptées est exigible —
+   dans les faits, son rôle principal est dissuasif : il filtre les réservations non sérieuses.
 
-| Canal | Verdict | Détail |
-|---|---|---|
-| **Western Union** | ✅ **Recommandé n°1** | Le client envoie depuis l'appli/le site wu.com (avec sa carte, côté client c'est son affaire) ou depuis une agence. **Réception gratuite en dinars** à la Poste Tunisienne, BIAT, BTL… sur présentation de la CIN + code MTCN. Le client paie les frais d'envoi (~4-8 € pour un acompte type). |
-| **MoneyGram** | ✅ Plan B | Même principe, agences partout en Europe, réception à la Poste/banques tunisiennes. |
-| **Espèces à l'arrivée** | ✅ Pour le solde | € ou DT — zéro frais, zéro intermédiaire. |
-
-**Flux opérationnel (depuis un téléphone) :**
-1. Le client envoie sa demande via le site (elle arrive sur WhatsApp, déjà dans sa langue → répondre dans la même langue avec une app de traduction si besoin).
-2. Confirmer la dispo + le prix total en €, rappeler la politique : acompte 30 %, report gratuit ou remboursement ≥ 7 j.
-3. Envoyer au client : nom complet du bénéficiaire (tel que sur la CIN) + ville (Houmt Souk, Tunisie) — c'est tout ce qu'il faut pour un envoi Western Union. Préciser « chambre en option 48 h ».
-4. Le client envoie l'acompte et transmet **le code MTCN + son nom** sur WhatsApp.
-5. Vérifier/retirer (Poste ou banque, CIN + MTCN) → envoyer la **confirmation écrite** (récap dates, montant reçu, solde, conditions). Ce message WhatsApp fait office de contrat et de reçu.
-6. Solde à l'arrivée en espèces (€ ou DT) + reçu écrit.
-7. Annulations : proposer d'abord le **report de dates sans frais (12 mois)** ; rembourser (WU dans l'autre sens) seulement en dernier recours — c'est exactement ce que le site annonce au client.
-
-Coût pour la maison : **0 dinar** (les frais d'envoi sont côté client, la réception est gratuite).
-À comparer aux 15-25 % de commission Booking sur la totalité du séjour.
+Coût du dispositif : zéro. Aucun compte, aucun intermédiaire, aucune commission.
 
 ## Personnaliser
 
@@ -57,7 +46,7 @@ Tout est dans `index.html` :
 - **Photos** : déposer les fichiers dans `photos/` avec les noms listés dans `photos/LISEZMOI.txt` — ils s'affichent automatiquement (aucune modification de code).
 - **Prix** : chercher `data-price` (3 occurrences, valeurs indicatives 45/65/75 € à ajuster).
 - **N° WhatsApp / téléphone** : objet `CONFIG` en haut du `<script>` (une seule fois).
-- **Politique d'annulation (7 jours)** : chercher `7` dans les clés `gar_2` et `faq2_a` de chaque langue.
+- **Forfait non-présentation (50 €)** : chercher `50 €` dans les clés `gar_4`, `faq1_a`, `faq2_a` et `f_terms` de chaque langue.
 - **Textes** : objet `I18N` (7 blocs de langue — fr, en, de, it, pl, ru, ar — mêmes clés partout).
 
 ## SEO — note importante

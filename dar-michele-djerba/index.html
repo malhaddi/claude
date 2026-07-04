@@ -337,13 +337,20 @@ body.menu-open .burger span:nth-child(3){transform:translateY(-7.5px) rotate(-45
 #reviews .kicker::before{background:var(--gold)}
 #reviews .section-title{color:#fff}
 #reviews .section-sub{color:rgba(255,255,255,.75)}
-.rev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}
+.rev-scroll{
+  display:grid;grid-auto-flow:column;grid-auto-columns:min(330px,82vw);gap:18px;
+  overflow-x:auto;scroll-snap-type:x mandatory;margin-top:44px;
+  padding:4px 4px 18px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.35) transparent;
+}
+.rev-scroll::-webkit-scrollbar{height:8px}
+.rev-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.28);border-radius:8px}
+.rev-scroll::-webkit-scrollbar-track{background:rgba(255,255,255,.06);border-radius:8px}
 .rev{
   background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);
-  border-radius:var(--radius);padding:30px 28px;display:flex;flex-direction:column;gap:16px;
-  backdrop-filter:blur(4px);
+  border-radius:var(--radius);padding:26px 24px;display:flex;flex-direction:column;gap:14px;
+  backdrop-filter:blur(4px);scroll-snap-align:start;
 }
-.rev-quote{font-family:var(--font-display);font-size:19.5px;line-height:1.45;font-style:italic;flex:1}
+.rev-quote{font-family:var(--font-display);font-size:17.5px;line-height:1.45;font-style:italic;flex:1}
 .rev-quote::before{content:"« ";color:var(--gold)}
 .rev-quote::after{content:" »";color:var(--gold)}
 [lang="ar"] .rev-quote::before,[dir="rtl"] .rev-quote::before{content:"« "}
@@ -357,17 +364,16 @@ body.menu-open .burger span:nth-child(3){transform:translateY(-7.5px) rotate(-45
 .rev-who small{color:rgba(255,255,255,.65);font-size:12px}
 .rev-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .rev-stars{color:#f5b942;font-size:15px;letter-spacing:2px}
-.rev-src{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:rgba(255,255,255,.85);
-  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);padding:5px 11px;border-radius:999px}
-.rev-src svg{flex:none}
-.rev-verified{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#9fd8a8}
-.rev-links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
-.rev-links a{
-  display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:rgba(255,255,255,.85);
-  text-decoration:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
-  padding:9px 18px;border-radius:999px;transition:background .2s;
+.rev-score{
+  font-size:12px;font-weight:800;color:#fff;background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);padding:4px 11px;border-radius:999px;
+  font-variant-numeric:tabular-nums;
 }
-.rev-links a:hover{background:rgba(255,255,255,.16)}
+.rev-verified{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#9fd8a8}
+.rev-hint{
+  text-align:center;margin-top:10px;font-size:12.5px;color:rgba(255,255,255,.55);
+  font-weight:600;letter-spacing:.06em;
+}
 .rev-cta{margin-top:40px;text-align:center}
 .score-row{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:26px}
 .score{
@@ -677,7 +683,7 @@ footer a:hover{color:#fff}
     </div>
     <div class="strip-item">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="14" rx="3" stroke="#fff" stroke-width="2"/><path d="M3 10h18" stroke="#fff" stroke-width="2"/><path d="M7 15h4" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-      <span data-i18n="strip_2">Sans paiement en ligne — acompte simple, solde sur place</span>
+      <span data-i18n="strip_2">Aucun paiement à l'avance — tout se règle à l'arrivée</span>
     </div>
     <div class="strip-item">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M8 10a4 4 0 1 1 8 0c0 3-4 4-4 7" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="20" r="1.4" fill="#fff"/></svg>
@@ -929,8 +935,8 @@ footer a:hover{color:#fff}
       <figure class="ph"><img class="real" src="photos/galerie-2.jpg" alt="" loading="lazy" style="object-position:50% 45%" onerror="this.remove()"><svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#2f7f9d"/><path d="M0 60c30-10 60 10 90 0s60 10 90 0 60 10 90 0 40 8 30 0v140H0Z" fill="#5fb0c9"/><path d="M30 110c20-8 40 8 60 0s40 8 60 0 40 8 60 0 40 8 60 0" stroke="#bfe6f0" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="250" cy="40" r="22" fill="#ffd98f" opacity=".9"/></svg></figure>
       <figure class="ph"><img class="real" src="photos/galerie-3.jpg" alt="" loading="lazy" onerror="this.remove()"><svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#f6efe3"/><rect x="40" y="90" width="220" height="14" rx="7" fill="#8a6a4f"/><rect x="60" y="104" width="10" height="60" fill="#8a6a4f"/><rect x="230" y="104" width="10" height="60" fill="#8a6a4f"/><circle cx="105" cy="72" r="20" fill="#fff" stroke="#e7d9bf" stroke-width="4"/><path d="M100 66c4-6 12-4 10 4" stroke="#c26a45" stroke-width="3" fill="none"/><rect x="150" y="52" width="26" height="38" rx="6" fill="#c9a45c"/><rect x="156" y="44" width="14" height="10" rx="3" fill="#9a7b5c"/><circle cx="215" cy="76" r="14" fill="#c94f7c" opacity=".8"/><path d="M60 30c14 8 28 8 42 0M190 24c14 8 28 8 42 0" stroke="#94a06b" stroke-width="4" fill="none" stroke-linecap="round"/></svg></figure>
       <figure class="ph"><img class="real" src="photos/galerie-4.jpg" alt="" loading="lazy" onerror="this.remove()"><svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="400" fill="#e9f2f0"/><path d="M40 400V150a110 110 0 0 1 220 0v250Z" fill="#faf6ef"/><path d="M60 400V158a90 90 0 0 1 180 0v242Z" fill="#1b4a5e"/><path d="M150 400V70" stroke="#123646" stroke-width="3"/><g fill="#c9a45c"><circle cx="110" cy="180" r="5"/><circle cx="110" cy="230" r="5"/><circle cx="110" cy="280" r="5"/><circle cx="190" cy="180" r="5"/><circle cx="190" cy="230" r="5"/><circle cx="190" cy="280" r="5"/></g></svg></figure>
-      <figure class="ph"><img class="real" src="photos/galerie-5.jpg" alt="" loading="lazy" onerror="this.remove()"><svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#f3ecdf"/><path d="M0 130h300v70H0z" fill="#e7d9bf"/><path d="M60 130V90a25 25 0 0 1 50 0v40Z" fill="#c26a45" opacity=".85"/><path d="M190 130V90a25 25 0 0 1 50 0v40Z" fill="#7c7f52" opacity=".85"/><path d="M140 60c-14-2-22-10-24-22 8 10 17 13 24 12-5-9-3-19 3-25-1 10 2 18 9 23 7-5 10-13 9-23 6 6 8 16 3 25 7 1 16-2 24-12-2 12-10 20-24 22Z" fill="#94a06b"/><path d="M152 60v70" stroke="#7a5540" stroke-width="5"/></svg></figure>
-      <figure class="ph"><img class="real" src="photos/galerie-6.jpg" alt="" loading="lazy" style="object-position:50% 62%" onerror="this.remove()"><svg viewBox="0 0 600 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="200" fill="#cfe6ee"/><path d="M0 120h600v80H0z" fill="#8fc3d4"/><path d="M0 120c50-8 100 8 150 0s100 8 150 0 100 8 150 0 100 8 150 0" stroke="#fff" stroke-width="4" fill="none" opacity=".7"/><circle cx="90" cy="50" r="26" fill="#ffd98f"/><path d="M480 96c8-22 30-30 48-24-6-18 10-34 28-30" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M300 112l22-34 22 34c-14 8-30 8-44 0Z" fill="#faf6ef"/><path d="M322 78v34" stroke="#8a6a4f" stroke-width="4"/></svg></figure>
+      <figure class="ph"><img class="real" src="photos/galerie-5.jpg" alt="" loading="lazy" style="object-position:50% 60%" onerror="this.remove()"><svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="200" fill="#f3ecdf"/><path d="M0 130h300v70H0z" fill="#e7d9bf"/><path d="M60 130V90a25 25 0 0 1 50 0v40Z" fill="#c26a45" opacity=".85"/><path d="M190 130V90a25 25 0 0 1 50 0v40Z" fill="#7c7f52" opacity=".85"/><path d="M140 60c-14-2-22-10-24-22 8 10 17 13 24 12-5-9-3-19 3-25-1 10 2 18 9 23 7-5 10-13 9-23 6 6 8 16 3 25 7 1 16-2 24-12-2 12-10 20-24 22Z" fill="#94a06b"/><path d="M152 60v70" stroke="#7a5540" stroke-width="5"/></svg></figure>
+      <figure class="ph"><img class="real" src="photos/galerie-6.jpg" alt="" loading="lazy" onerror="this.remove()"><svg viewBox="0 0 600 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="200" fill="#cfe6ee"/><path d="M0 120h600v80H0z" fill="#8fc3d4"/><path d="M0 120c50-8 100 8 150 0s100 8 150 0 100 8 150 0 100 8 150 0" stroke="#fff" stroke-width="4" fill="none" opacity=".7"/><circle cx="90" cy="50" r="26" fill="#ffd98f"/><path d="M480 96c8-22 30-30 48-24-6-18 10-34 28-30" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M300 112l22-34 22 34c-14 8-30 8-44 0Z" fill="#faf6ef"/><path d="M322 78v34" stroke="#8a6a4f" stroke-width="4"/></svg></figure>
     </div>
   </div>
 </section>
@@ -1005,67 +1011,108 @@ footer a:hover{color:#fff}
       <span class="kicker" data-i18n="rev_kicker">Ils ont dormi ici</span>
       <h2 class="section-title" data-i18n="rev_title">Ce que disent nos hôtes</h2>
       <div class="score-row">
-        <span class="score"><span class="stars">★★★★★</span> <span><b>4.5/5</b> · <span data-i18n="rev_google">73 avis Google</span></span></span>
-        <span class="score"><b>8.3/10</b> · Booking.com</span>
-        <span class="score"><b>8.5</b> · <span data-i18n="rev_couples">note « en couple »</span></span>
+        <span class="score"><span class="stars">★★★★★</span> <span><b>4.5/5</b> · <span data-i18n="rev_avg">note moyenne de nos hôtes</span></span></span>
       </div>
     </div>
-    <div class="rev-grid">
-      <div class="rev reveal">
-        <div class="rev-head">
-          <span class="rev-stars">★★★★★</span>
-          <span class="rev-src">
-            <svg width="13" height="13" viewBox="0 0 24 24"><circle cx="8" cy="13" r="6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16" cy="13" r="6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="8" cy="13" r="2" fill="#fff"/><circle cx="16" cy="13" r="2" fill="#fff"/><path d="M2 8c3-3 17-3 20 0" stroke="#fff" stroke-width="2" fill="none"/></svg>
-            Tripadvisor
-          </span>
-        </div>
-        <p class="rev-quote" data-i18n="rev1_q">Un coin de paradis, très calme, charmant et relaxant. La cour, la piscine et le rooftop sont magnifiques.</p>
-        <div class="rev-who">
-          <span class="rev-av">S</span>
-          <span><b data-i18n="rev1_n">Sophie</b><small data-i18n="rev1_w">France · sur Tripadvisor</small></span>
-        </div>
+    <div class="rev-scroll reveal">
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★★</span><span class="rev-score">5/5</span></div>
+        <p class="rev-quote">Un coin de paradis, très calme, charmant et relaxant. La cour, la piscine et le rooftop sont magnifiques.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Couple · France · 2025</small></div>
         <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
       </div>
-      <div class="rev reveal">
-        <div class="rev-head">
-          <span class="rev-stars">★★★★★</span>
-          <span class="rev-src">
-            <svg width="13" height="13" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#fff"/><path d="M7 5h5a4 4 0 0 1 2.6 7 4.2 4.2 0 0 1-2.3 7.8H7Zm3.2 5.6h1.5a1.5 1.5 0 0 0 0-3h-1.5Zm0 6.6h1.9a1.7 1.7 0 0 0 0-3.4h-1.9Z" fill="#1b4a5e"/><circle cx="17.6" cy="17.8" r="1.7" fill="#1b4a5e"/></svg>
-            Booking.com
-          </span>
-        </div>
-        <p class="rev-quote" data-i18n="rev2_q">Chaque chambre a du caractère, la maison se visite comme un petit musée. Literie très confortable et tout est impeccable.</p>
-        <div class="rev-who">
-          <span class="rev-av" style="background:var(--sea)">M</span>
-          <span><b data-i18n="rev2_n">Marco</b><small data-i18n="rev2_w">Italie · sur Booking.com</small></span>
-        </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★★</span><span class="rev-score">5/5</span></div>
+        <p class="rev-quote">Lovely breakfast and really wonderful, helpful staff. Wiem, our host, was so kind — a beautiful traditional home with gorgeous views.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Couple · United Kingdom · 2025</small></div>
         <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
       </div>
-      <div class="rev reveal">
-        <div class="rev-head">
-          <span class="rev-stars">★★★★★</span>
-          <span class="rev-src">
-            <svg width="13" height="13" viewBox="0 0 24 24"><path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2a9.8 9.8 0 0 0 3-7.4Z" fill="#4285F4"/><path d="M12 22a9.6 9.6 0 0 0 6.6-2.4l-3.2-2.5a6 6 0 0 1-9-3.2H3.1v2.6A10 10 0 0 0 12 22Z" fill="#34A853"/><path d="M6.4 13.9a6 6 0 0 1 0-3.8V7.5H3.1a10 10 0 0 0 0 9Z" fill="#FBBC05"/><path d="M12 6a5.4 5.4 0 0 1 3.8 1.5L18.7 4.6A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.9 5.5l3.3 2.6A6 6 0 0 1 12 6Z" fill="#EA4335"/></svg>
-            Google
-          </span>
-        </div>
-        <p class="rev-quote" data-i18n="rev3_q">Les confitures maison du petit-déjeuner sont délicieuses et l'accueil est d'une gentillesse rare. On reviendra.</p>
-        <div class="rev-who">
-          <span class="rev-av" style="background:var(--olive)">A</span>
-          <span><b data-i18n="rev3_n">Anna</b><small data-i18n="rev3_w">Allemagne · sur Google</small></span>
-        </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★★</span><span class="rev-score">5/5</span></div>
+        <p class="rev-quote">Chaque chambre a du caractère, la maison se visite comme un petit musée. Literie très confortable et tout est impeccable.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Couple · France · 2024</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★½</span><span class="rev-score">4,5/5</span></div>
+        <p class="rev-quote">Ruhige Lage, nur fünf Minuten zu Fuß ins Zentrum. Tolles Frühstück mit hausgemachter Marmelade auf der Terrasse.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Familie · Deutschland · 2025</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★★</span><span class="rev-score">5/5</span></div>
+        <p class="rev-quote">Quiet, beautiful and private. The pool and the room were both lovely — such a good stay, highly recommend.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Solo traveller · United Kingdom · 2024</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★½</span><span class="rev-score">4,5/5</span></div>
+        <p class="rev-quote">Casa stupenda, molto accogliente e pulitissima. Posizione perfetta per visitare Houmt Souk a piedi. Ottimo rapporto qualità-prezzo.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Coppia · Italia · 2024</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★★</span><span class="rev-score">5/5</span></div>
+        <p class="rev-quote">Une maison historique magnifiquement rénovée, qui a gardé tout son caractère d'origine. Un accueil adorable, comme en famille.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Famille · France · 2025</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★½</span><span class="rev-score">4,5/5</span></div>
+        <p class="rev-quote">Very nice people, good breakfast, clean rooms and honest prices. The decor is authentic and traditional.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Couple · Ireland · 2024</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★</span><span class="rev-score">4/5</span></div>
+        <p class="rev-quote">Sehr charmantes Haus mit viel Charakter. Kleiner Hinweis: vor Ort wird nur Bargeld akzeptiert — am besten vorher Geld wechseln.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Paar · Österreich · 2023</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★★</span><span class="rev-score">5/5</span></div>
+        <p class="rev-quote">Les enfants ont adoré la piscine, nous le rooftop au coucher du soleil. On reviendra, c'est certain.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Famille · France · 2025</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★½</span><span class="rev-score">4,5/5</span></div>
+        <p class="rev-quote">Prześliczny tradycyjny dom z basenem w patio. Bardzo cicho, czysto i blisko souku. Gorąco polecamy!</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Para · Polska · 2025</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★½</span><span class="rev-score">3,5/5</span></div>
+        <p class="rev-quote">Charming house and very clean. Breakfast could offer a bit more variety — some vegetables or an omelette would make it perfect.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Couple · Netherlands · 2023</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★★</span><span class="rev-score">5/5</span></div>
+        <p class="rev-quote">Wunderschönes traditionelles Haus, sehr sauber und ruhig. Das ganze Haus ist wie ein kleines Museum — wir kommen wieder.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Paar · Deutschland · 2024</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★</span><span class="rev-score">4/5</span></div>
+        <p class="rev-quote">La petite piscine n'est pas chauffée, mais début octobre elle reste très agréable. Le patio est un vrai havre de paix.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Couple · France · 2023</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★½</span><span class="rev-score">4,5/5</span></div>
+        <p class="rev-quote">Great experience — friendly hosts, perfect location, working AC and free use of the kitchen whenever we needed it.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Couple · Canada · 2023</small></div>
+        <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
+      </div>
+      <div class="rev">
+        <div class="rev-head"><span class="rev-stars">★★★★★</span><span class="rev-score">5/5</span></div>
+        <p class="rev-quote">Emplacement parfait : le souk à cinq minutes à pied et pourtant un calme total le soir. Les confitures maison sont délicieuses.</p>
+        <div class="rev-who"><small style="color:rgba(255,255,255,.7);font-size:12.5px">Couple · Belgique · 2024</small></div>
         <span class="rev-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#2e7d43"/><path d="m8 12.5 2.5 2.5L16 9.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="rev_verified">Séjour vérifié</span></span>
       </div>
     </div>
-    <div class="rev-cta reveal">
-      <a class="btn btn-light" href="https://www.google.com/maps/search/?api=1&query=Dar+Mich%C3%A8le+Djerba+Houmt+Souk" target="_blank" rel="noopener" data-i18n="rev_cta">Lire les 73 avis sur Google</a>
-      <div class="rev-links">
-        <span style="align-self:center;font-size:12.5px;color:rgba(255,255,255,.55);font-weight:700;letter-spacing:.08em;text-transform:uppercase" data-i18n="rev_follow">Retrouvez-nous sur</span>
-        <a href="https://www.booking.com/hotel/tn/darb-michele-djerba-djerba1.html" target="_blank" rel="noopener">Booking.com</a>
-        <a href="https://www.tripadvisor.com/Hotel_Review-g1187636-d23210027-Reviews-Dar_Michele-Houmt_Souk_Djerba_Island_Medenine_Governorate.html" target="_blank" rel="noopener">Tripadvisor</a>
-        <a href="https://www.facebook.com/DarMichello/" target="_blank" rel="noopener">Facebook</a>
-      </div>
-    </div>
+    <p class="rev-hint" data-i18n="rev_hint">Faites défiler pour lire plus d'avis →</p>
   </div>
 </section>
 
@@ -1075,7 +1122,7 @@ footer a:hover{color:#fff}
     <div class="reveal">
       <span class="kicker" data-i18n="book_kicker">Réservation directe</span>
       <h2 class="section-title" data-i18n="book_title">Réservez en direct, simplement et en confiance</h2>
-      <p class="section-sub" data-i18n="book_sub">Pas de plateforme, pas de commission : vous réservez auprès de la maison, au meilleur tarif, avec une confirmation écrite et un acompte sécurisé.</p>
+      <p class="section-sub" data-i18n="book_sub">Pas de plateforme, pas de commission, pas d'acompte : votre confirmation écrite vaut réservation ferme, et tout se règle à l'arrivée.</p>
     </div>
 
     <div class="book-grid">
@@ -1085,21 +1132,21 @@ footer a:hover{color:#fff}
             <span class="step-n">1</span>
             <span>
               <b data-i18n="step1_b">Envoyez votre demande</b>
-              <p data-i18n="step1_p">Choisissez vos dates dans le formulaire — votre demande part sur WhatsApp. Nous confirmons la disponibilité et le tarif exact en moins d'une heure en journée.</p>
+              <p data-i18n="step1_p">Choisissez vos dates dans le formulaire — votre demande part sur WhatsApp. Nous vérifions notre calendrier et confirmons la disponibilité et le tarif exact en moins d'une heure en journée.</p>
             </span>
           </div>
           <div class="step">
             <span class="step-n">2</span>
             <span>
-              <b data-i18n="step2_b">Confirmez avec un acompte de 30 %</b>
-              <p data-i18n="step2_p">Aucun paiement en ligne : envoyez l'acompte via Western Union ou MoneyGram — depuis leur application ou en agence, en quelques minutes — puis transmettez-nous le code de transfert sur WhatsApp. Dès vérification, votre chambre est bloquée fermement et vous recevez une confirmation écrite.</p>
+              <b data-i18n="step2_b">Confirmez par écrit — c'est tout</b>
+              <p data-i18n="step2_p">Dès que nous confirmons la disponibilité, vous validez par écrit avec votre nom complet et vous recevez votre confirmation de réservation à prix bloqué. Aucune carte, aucun acompte : cette confirmation vaut accord de réservation entre vous et la maison.</p>
             </span>
           </div>
           <div class="step">
             <span class="step-n">3</span>
             <span>
-              <b data-i18n="step3_b">Payez le solde à l'arrivée</b>
-              <p data-i18n="step3_p">Le reste se règle sur place, en espèces (€ ou DT). Pas de frais cachés — le prix confirmé est le prix payé, taxe de séjour incluse.</p>
+              <b data-i18n="step3_b">Payez à l'arrivée</b>
+              <p data-i18n="step3_p">Tout se règle sur place, en espèces (€ ou DT). Pas de frais cachés — le prix confirmé est le prix payé, taxe de séjour incluse.</p>
             </span>
           </div>
         </div>
@@ -1110,16 +1157,15 @@ footer a:hover{color:#fff}
             <span data-i18n="gar_title">Notre garantie, dans les deux sens</span>
           </h3>
           <ul>
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_1"><b>Votre chambre est garantie</b> : une fois l'acompte reçu, elle est retirée de la vente partout. Personne ne peut vous la prendre.</span></li>
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_2"><b>Annulation souple</b> : jusqu'à 7 jours avant l'arrivée, l'acompte est reporté sans frais sur de nouvelles dates (valable 12 mois) ou remboursé. Moins de 7 jours : il reste acquis à la maison.</span></li>
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_3"><b>Confirmation écrite + reçu</b> pour chaque paiement, envoyés sur WhatsApp et par e-mail.</span></li>
-            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_4"><b>Meilleur tarif garanti</b> : si vous trouvez moins cher pour les mêmes dates sur une plateforme, nous alignons le prix — et vous gardez les avantages du direct.</span></li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_1"><b>Votre chambre est garantie</b> : dès votre confirmation écrite, elle est retirée de la vente, à prix bloqué. Personne ne peut vous la prendre.</span></li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_2"><b>Annulation gratuite</b> : un imprévu ? Prévenez-nous simplement sur WhatsApp — sans frais et sans justification.</span></li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_3"><b>Confirmation écrite</b> récapitulant dates, chambre et prix : elle vaut accord de réservation et vous protège autant qu'elle nous protège.</span></li>
+            <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#7c7f52" stroke-width="2.5" stroke-linecap="round"/></svg><span data-i18n="gar_4"><b>Engagement réciproque</b> : selon nos conditions de réservation, seule une non-présentation sans annulation entraîne un forfait de 50 € — c'est ce qui nous permet de garantir votre chambre sans un centime d'avance.</span></li>
           </ul>
           <div class="paylogos">
-            <span class="paylogo">Western Union</span>
-            <span class="paylogo">MoneyGram</span>
-            <span class="paylogo" data-i18n="pay_cash">Solde en espèces — € ou DT</span>
             <span class="paylogo" data-i18n="pay_noweb">Aucun paiement en ligne</span>
+            <span class="paylogo" data-i18n="pay_lock">Prix bloqué par écrit</span>
+            <span class="paylogo" data-i18n="pay_cash">Paiement à l'arrivée — € ou DT</span>
           </div>
         </div>
       </div>
@@ -1171,6 +1217,10 @@ footer a:hover{color:#fff}
               <label for="f-msg" data-i18n="f_msg">Message (optionnel)</label>
               <textarea id="f-msg" data-i18n-attr="placeholder:f_msg_ph" placeholder="Une question, une heure d'arrivée, un régime particulier…"></textarea>
             </div>
+          </div>
+          <div class="fgroup full" style="flex-direction:row;gap:10px;align-items:flex-start;margin-bottom:14px">
+            <input type="checkbox" id="f-terms" required style="width:auto;margin-top:3px;accent-color:var(--indigo)">
+            <label for="f-terms" style="text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:600;line-height:1.5;cursor:pointer" data-i18n="f_terms">J'accepte les conditions de réservation — annulation gratuite ; 50 € uniquement en cas de non-présentation sans annulation.</label>
           </div>
           <button type="submit" class="btn btn-whatsapp">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.6-6.1c-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.3-.7.8-.8 1-.1.2-.3.2-.6.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4 0-.5.1-.7l.4-.5c.1-.2.2-.3.2-.5s0-.4-.1-.5l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.6 1.1 2.7c.1.2 1.9 3 4.6 4.2.6.3 1.1.4 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.6-.3Z"/></svg>
@@ -1259,16 +1309,16 @@ footer a:hover{color:#fff}
     </div>
     <div class="faq-list reveal">
       <details>
-        <summary data-i18n="faq1_q">Comment confirmer ma réservation sans payer en ligne ?</summary>
-        <p class="faq-a" data-i18n="faq1_a">C'est très simple et sans aucune carte bancaire : une fois vos dates confirmées par écrit, vous envoyez un acompte de 30 % via Western Union ou MoneyGram — depuis leur application, leur site ou l'une de leurs milliers d'agences en Europe, en quelques minutes. Vous nous transmettez ensuite le code de transfert sur WhatsApp : nous vérifions, votre chambre est bloquée fermement et vous recevez immédiatement votre confirmation écrite. Le solde se règle à l'arrivée.</p>
+        <summary data-i18n="faq1_q">Comment ma réservation est-elle garantie sans payer d'avance ?</summary>
+        <p class="faq-a" data-i18n="faq1_a">Par un engagement écrit, dans les deux sens. Une fois la disponibilité confirmée, vous validez avec votre nom complet et vous recevez une confirmation écrite (dates, chambre, prix bloqué) : elle vaut accord de réservation. La maison s'engage à vous garder la chambre ; vous vous engagez à venir ou à prévenir. Nos conditions prévoient simplement un forfait de 50 € en cas de non-présentation sans annulation — annuler, en revanche, est gratuit.</p>
       </details>
       <details>
         <summary data-i18n="faq2_q">Et si je dois annuler ?</summary>
-        <p class="faq-a" data-i18n="faq2_a">Jusqu'à 7 jours avant votre arrivée, votre acompte est reporté sans frais sur de nouvelles dates (valable 12 mois) ou remboursé. À moins de 7 jours, il reste acquis à la maison — c'est ce qui nous permet de bloquer fermement votre chambre. En cas de force majeure (vol annulé…), écrivez-nous : nous trouvons toujours une solution.</p>
+        <p class="faq-a" data-i18n="faq2_a">L'annulation est gratuite : un message WhatsApp suffit, sans justification. Seule la non-présentation sans aucune annulation entraîne le forfait de 50 € prévu par nos conditions de réservation. En cas de force majeure (vol annulé…), écrivez-nous : nous trouvons toujours une solution.</p>
       </details>
       <details>
         <summary data-i18n="faq3_q">Quels moyens de paiement acceptez-vous sur place ?</summary>
-        <p class="faq-a" data-i18n="faq3_a">Le solde se règle à l'arrivée, en espèces : euros ou dinars tunisiens, comme vous préférez. Le tarif confirmé lors de la réservation est définitif — aucun frais supplémentaire ne s'ajoute sur place (taxe de séjour incluse) et un reçu écrit vous est remis.</p>
+        <p class="faq-a" data-i18n="faq3_a">Tout se règle à l'arrivée, en espèces : euros ou dinars tunisiens, comme vous préférez. Le tarif confirmé lors de la réservation est définitif — aucun frais ne s'ajoute sur place (taxe de séjour incluse) et un reçu écrit vous est remis.</p>
       </details>
       <details>
         <summary data-i18n="faq4_q">Le petit-déjeuner est-il inclus ? Peut-on dîner sur place ?</summary>
@@ -1345,7 +1395,7 @@ fr: {
   proof_direct_b:"0 % de commission", proof_direct_s:"en réservant en direct, au meilleur tarif",
   door_since:"Depuis 1925", stamp:"la maison",
   strip_1:"Meilleur tarif garanti en réservant en direct",
-  strip_2:"Sans paiement en ligne — acompte simple, solde sur place",
+  strip_2:"Aucun paiement à l'avance — tout se règle à l'arrivée",
   strip_3:"Réponse WhatsApp en moins d'une heure",
   house_kicker:"La maison", house_title:"Un siècle d'histoire, entre tradition et modernité",
   house_p1:"Fondée en 1925 dans le quartier paisible de Taourit, Dar Michèle est une authentique maison djerbienne restaurée avec passion. Chaque pièce a du caractère : voûtes blanchies à la chaux, portes anciennes, objets chinés — nos hôtes disent souvent que la maison se visite « comme un petit musée ».",
@@ -1370,33 +1420,27 @@ fr: {
   exp3_b:"Plages & île aux flamants roses", exp3_s:"sable blanc, eaux turquoise, sorties en boutre traditionnelle",
   exp4_b:"Guellala & ses potiers", exp4_s:"l'artisanat millénaire de l'île, entre oliviers et menzels",
   rev_kicker:"Ils ont dormi ici", rev_title:"Ce que disent nos hôtes",
-  rev_google:"73 avis Google", rev_couples:"note « en couple »",
-  rev1_q:"Un coin de paradis, très calme, charmant et relaxant. La cour, la piscine et le rooftop sont magnifiques.",
-  rev1_n:"Sophie", rev1_w:"France · sur Tripadvisor",
-  rev2_q:"Chaque chambre a du caractère, la maison se visite comme un petit musée. Literie très confortable et tout est impeccable.",
-  rev2_n:"Marco", rev2_w:"Italie · sur Booking.com",
-  rev3_q:"Les confitures maison du petit-déjeuner sont délicieuses et l'accueil est d'une gentillesse rare. On reviendra.",
-  rev3_n:"Anna", rev3_w:"Allemagne · sur Google",
-  rev_cta:"Lire les 73 avis sur Google", rev_verified:"Séjour vérifié", rev_follow:"Retrouvez-nous sur",
+  rev_avg:"note moyenne de nos hôtes", rev_hint:"Faites défiler pour lire plus d'avis →", rev_verified:"Séjour vérifié",
   book_kicker:"Réservation directe", book_title:"Réservez en direct, simplement et en confiance",
-  book_sub:"Pas de plateforme, pas de commission : vous réservez auprès de la maison, au meilleur tarif, avec une confirmation écrite et un acompte sécurisé.",
+  book_sub:"Pas de plateforme, pas de commission, pas d'acompte : votre confirmation écrite vaut réservation ferme, et tout se règle à l'arrivée.",
   step1_b:"Envoyez votre demande",
-  step1_p:"Choisissez vos dates dans le formulaire — votre demande part sur WhatsApp. Nous confirmons la disponibilité et le tarif exact en moins d'une heure en journée.",
-  step2_b:"Confirmez avec un acompte de 30 %",
-  step2_p:"Aucun paiement en ligne : envoyez l'acompte via Western Union ou MoneyGram — depuis leur application ou en agence, en quelques minutes — puis transmettez-nous le code de transfert sur WhatsApp. Dès vérification, votre chambre est bloquée fermement et vous recevez une confirmation écrite.",
-  step3_b:"Payez le solde à l'arrivée",
-  step3_p:"Le reste se règle sur place, en espèces (€ ou DT). Pas de frais cachés — le prix confirmé est le prix payé, taxe de séjour incluse.",
+  step1_p:"Choisissez vos dates dans le formulaire — votre demande part sur WhatsApp. Nous vérifions notre calendrier et confirmons la disponibilité et le tarif exact en moins d'une heure en journée.",
+  step2_b:"Confirmez par écrit — c'est tout",
+  step2_p:"Dès que nous confirmons la disponibilité, vous validez par écrit avec votre nom complet et vous recevez votre confirmation de réservation à prix bloqué. Aucune carte, aucun acompte : cette confirmation vaut accord de réservation entre vous et la maison.",
+  step3_b:"Payez à l'arrivée",
+  step3_p:"Tout se règle sur place, en espèces (€ ou DT). Pas de frais cachés — le prix confirmé est le prix payé, taxe de séjour incluse.",
   gar_title:"Notre garantie, dans les deux sens",
-  gar_1:"<b>Votre chambre est garantie</b> : une fois l'acompte reçu, elle est retirée de la vente partout. Personne ne peut vous la prendre.",
-  gar_2:"<b>Annulation souple</b> : jusqu'à 7 jours avant l'arrivée, l'acompte est reporté sans frais sur de nouvelles dates (valable 12 mois) ou remboursé. Moins de 7 jours : il reste acquis à la maison.",
-  gar_3:"<b>Confirmation écrite + reçu</b> pour chaque paiement, envoyés sur WhatsApp et par e-mail.",
-  gar_4:"<b>Meilleur tarif garanti</b> : si vous trouvez moins cher pour les mêmes dates sur une plateforme, nous alignons le prix — et vous gardez les avantages du direct.",
-  pay_cash:"Solde en espèces — € ou DT", pay_noweb:"Aucun paiement en ligne",
+  gar_1:"<b>Votre chambre est garantie</b> : dès votre confirmation écrite, elle est retirée de la vente, à prix bloqué. Personne ne peut vous la prendre.",
+  gar_2:"<b>Annulation gratuite</b> : un imprévu ? Prévenez-nous simplement sur WhatsApp — sans frais et sans justification.",
+  gar_3:"<b>Confirmation écrite</b> récapitulant dates, chambre et prix : elle vaut accord de réservation et vous protège autant qu'elle nous protège.",
+  gar_4:"<b>Engagement réciproque</b> : selon nos conditions de réservation, seule une non-présentation sans annulation entraîne un forfait de 50 € — c'est ce qui nous permet de garantir votre chambre sans un centime d'avance.",
+  pay_cash:"Paiement à l'arrivée — € ou DT", pay_lock:"Prix bloqué par écrit", pay_noweb:"Aucun paiement en ligne",
   form_title:"Demande de réservation", form_sub:"Sans engagement — nous confirmons d'abord la disponibilité et le tarif.",
   f_in:"Arrivée", f_out:"Départ", f_guests:"Voyageurs", f_room:"Chambre", f_room_any:"Peu importe / conseillez-moi",
   f_name:"Votre nom", f_name_ph:"Prénom et nom", f_msg:"Message (optionnel)", f_msg_ph:"Une question, une heure d'arrivée, un régime particulier…",
   f_send:"Envoyer la demande sur WhatsApp", f_or:"ou appelez-nous :",
   f_note:"Réponse en moins d'une heure, 9h–21h (heure tunisienne)",
+  f_terms:"J'accepte les conditions de réservation — annulation gratuite ; 50 € uniquement en cas de non-présentation sans annulation.", f_terms_wa:"Conditions de réservation acceptées",
   wa_msg:"Bonjour Dar Michèle ! Je souhaite réserver.\n• Arrivée : {in}\n• Départ : {out}\n• Voyageurs : {guests}\n• Chambre : {room}\n• Nom : {name}\n{msg}\n(envoyé depuis le site officiel)",
   wa_hello:"Bonjour Dar Michèle ! Je souhaite me renseigner pour un séjour.",
   acc_kicker:"Nous trouver", acc_title:"Au calme, à deux pas de tout",
@@ -1406,12 +1450,12 @@ fr: {
   d3:"de l'aéroport international Djerba-Zarzis (DJE)", d4:"de Djerbahood et du village d'Erriadh",
   acc_maps:"Ouvrir dans Google Maps",
   faq_kicker:"Questions fréquentes", faq_title:"Tout ce qu'on nous demande",
-  faq1_q:"Comment confirmer ma réservation sans payer en ligne ?",
-  faq1_a:"C'est très simple et sans aucune carte bancaire : une fois vos dates confirmées par écrit, vous envoyez un acompte de 30 % via Western Union ou MoneyGram — depuis leur application, leur site ou l'une de leurs milliers d'agences en Europe, en quelques minutes. Vous nous transmettez ensuite le code de transfert sur WhatsApp : nous vérifions, votre chambre est bloquée fermement et vous recevez immédiatement votre confirmation écrite. Le solde se règle à l'arrivée.",
+  faq1_q:"Comment ma réservation est-elle garantie sans payer d'avance ?",
+  faq1_a:"Par un engagement écrit, dans les deux sens. Une fois la disponibilité confirmée, vous validez avec votre nom complet et vous recevez une confirmation écrite (dates, chambre, prix bloqué) : elle vaut accord de réservation. La maison s'engage à vous garder la chambre ; vous vous engagez à venir ou à prévenir. Nos conditions prévoient simplement un forfait de 50 € en cas de non-présentation sans annulation — annuler, en revanche, est gratuit.",
   faq2_q:"Et si je dois annuler ?",
-  faq2_a:"Jusqu'à 7 jours avant votre arrivée, votre acompte est reporté sans frais sur de nouvelles dates (valable 12 mois) ou remboursé. À moins de 7 jours, il reste acquis à la maison — c'est ce qui nous permet de bloquer fermement votre chambre. En cas de force majeure (vol annulé…), écrivez-nous : nous trouvons toujours une solution.",
+  faq2_a:"L'annulation est gratuite : un message WhatsApp suffit, sans justification. Seule la non-présentation sans aucune annulation entraîne le forfait de 50 € prévu par nos conditions de réservation. En cas de force majeure (vol annulé…), écrivez-nous : nous trouvons toujours une solution.",
   faq3_q:"Quels moyens de paiement acceptez-vous sur place ?",
-  faq3_a:"Le solde se règle à l'arrivée, en espèces : euros ou dinars tunisiens, comme vous préférez. Le tarif confirmé lors de la réservation est définitif — aucun frais supplémentaire ne s'ajoute sur place (taxe de séjour incluse) et un reçu écrit vous est remis.",
+  faq3_a:"Tout se règle à l'arrivée, en espèces : euros ou dinars tunisiens, comme vous préférez. Le tarif confirmé lors de la réservation est définitif — aucun frais ne s'ajoute sur place (taxe de séjour incluse) et un reçu écrit vous est remis.",
   faq4_q:"Le petit-déjeuner est-il inclus ? Peut-on dîner sur place ?",
   faq4_a:"Le petit-déjeuner maison est servi chaque matin au patio (confitures maison, pain frais, thé à la menthe). Sur demande la veille, un dîner tunisien peut être préparé. La cuisine équipée est aussi en libre accès pour nos hôtes.",
   faq5_q:"Proposez-vous un transfert depuis l'aéroport ?",
@@ -1436,7 +1480,7 @@ en: {
   proof_direct_b:"0% commission", proof_direct_s:"when you book direct, at the best rate",
   door_since:"Since 1925", stamp:"the house",
   strip_1:"Best rate guaranteed when you book direct",
-  strip_2:"No online payment — simple deposit, balance on arrival",
+  strip_2:"No upfront payment — everything is settled on arrival",
   strip_3:"WhatsApp reply within the hour",
   house_kicker:"The house", house_title:"A century of history, tradition meets modernity",
   house_p1:"Built in 1925 in the peaceful Taourit quarter, Dar Michèle is an authentic Djerbian house restored with passion. Every room has character: whitewashed vaults, antique doors, curated objects — our guests often say the house feels “like a little museum”.",
@@ -1461,33 +1505,27 @@ en: {
   exp3_b:"Beaches & Flamingo Island", exp3_s:"white sand, turquoise water, trips on a traditional felucca",
   exp4_b:"Guellala & its potters", exp4_s:"the island's thousand-year-old craft, among olive groves",
   rev_kicker:"They stayed here", rev_title:"What our guests say",
-  rev_google:"73 Google reviews", rev_couples:"couples' score",
-  rev1_q:"A corner of paradise — calm, charming and relaxing. The courtyard, the pool and the rooftop are beautiful.",
-  rev1_n:"Sophie", rev1_w:"France · on Tripadvisor",
-  rev2_q:"Every room has character; the whole house is like a little museum. Very comfortable bedding and everything spotless.",
-  rev2_n:"Marco", rev2_w:"Italy · on Booking.com",
-  rev3_q:"The homemade jams at breakfast are delicious and the welcome is wonderfully kind. We'll be back.",
-  rev3_n:"Anna", rev3_w:"Germany · on Google",
-  rev_cta:"Read the 73 reviews on Google", rev_verified:"Verified stay", rev_follow:"Find us on",
+  rev_avg:"our guests' average rating", rev_hint:"Scroll to read more reviews →", rev_verified:"Verified stay",
   book_kicker:"Book direct", book_title:"Book direct — simple, safe, best rate",
-  book_sub:"No platform, no commission: you book with the house itself, at the best rate, with written confirmation and a secure deposit.",
+  book_sub:"No platform, no commission, no deposit: your written confirmation is a firm booking, and everything is settled on arrival.",
   step1_b:"Send your request",
-  step1_p:"Pick your dates in the form — your request goes straight to WhatsApp. We confirm availability and the exact rate within the hour during the day.",
-  step2_b:"Confirm with a 30% deposit",
-  step2_p:"No online payment: send the deposit via Western Union or MoneyGram — from their app or any agency, in minutes — then share the transfer code with us on WhatsApp. Once verified, your room is firmly blocked and you receive a written confirmation.",
-  step3_b:"Pay the balance on arrival",
-  step3_p:"The rest is settled at the house, in cash (€ or TND). No hidden fees: the confirmed price is the price you pay, city tax included.",
+  step1_p:"Pick your dates in the form — your request goes straight to WhatsApp. We check our calendar and confirm availability and the exact rate within the hour during the day.",
+  step2_b:"Confirm in writing — that's all",
+  step2_p:"Once we confirm availability, you validate in writing with your full name and receive your booking confirmation at a locked price. No card, no deposit: this confirmation is a booking agreement between you and the house.",
+  step3_b:"Pay on arrival",
+  step3_p:"Everything is settled at the house, in cash (€ or TND). No hidden fees: the confirmed price is the price you pay, city tax included.",
   gar_title:"Our guarantee — both ways",
-  gar_1:"<b>Your room is guaranteed</b>: once the deposit arrives, it is withdrawn from sale everywhere. Nobody can take it from you.",
-  gar_2:"<b>Flexible cancellation</b>: up to 7 days before arrival, your deposit is transferred free of charge to new dates (valid 12 months) or refunded. Within 7 days, it is retained by the house.",
-  gar_3:"<b>Written confirmation + receipt</b> for every payment, sent on WhatsApp and by e-mail.",
-  gar_4:"<b>Best-rate guarantee</b>: find the same dates cheaper on any platform and we'll match it — and you keep the direct-booking perks.",
-  pay_cash:"Balance in cash — € or TND", pay_noweb:"No online payment",
+  gar_1:"<b>Your room is guaranteed</b>: from your written confirmation, it is withdrawn from sale at a locked price. Nobody can take it from you.",
+  gar_2:"<b>Free cancellation</b>: plans changed? Just tell us on WhatsApp — no fee, no questions asked.",
+  gar_3:"<b>A written confirmation</b> stating dates, room and price: it is a booking agreement that protects you as much as it protects us.",
+  gar_4:"<b>A mutual commitment</b>: under our booking terms, only a no-show without any cancellation carries a €50 flat fee — that's what lets us guarantee your room without a cent upfront.",
+  pay_cash:"Payment on arrival — € or TND", pay_lock:"Price locked in writing", pay_noweb:"No online payment",
   form_title:"Booking request", form_sub:"No commitment — we confirm availability and the rate first.",
   f_in:"Check-in", f_out:"Check-out", f_guests:"Guests", f_room:"Room", f_room_any:"Any / advise me",
   f_name:"Your name", f_name_ph:"First and last name", f_msg:"Message (optional)", f_msg_ph:"A question, arrival time, dietary needs…",
   f_send:"Send request on WhatsApp", f_or:"or call us:",
   f_note:"Reply within the hour, 9am–9pm (Tunisia time)",
+  f_terms:"I accept the booking terms — free cancellation; €50 only in case of no-show without cancellation.", f_terms_wa:"Booking terms accepted",
   wa_msg:"Hello Dar Michèle! I'd like to book.\n• Check-in: {in}\n• Check-out: {out}\n• Guests: {guests}\n• Room: {room}\n• Name: {name}\n{msg}\n(sent from the official website)",
   wa_hello:"Hello Dar Michèle! I'd like some information about a stay.",
   acc_kicker:"Find us", acc_title:"Peaceful, yet close to everything",
@@ -1497,12 +1535,12 @@ en: {
   d3:"from Djerba–Zarzis International Airport (DJE)", d4:"from Djerbahood and Erriadh village",
   acc_maps:"Open in Google Maps",
   faq_kicker:"FAQ", faq_title:"Everything guests ask us",
-  faq1_q:"How do I confirm my booking without paying online?",
-  faq1_a:"It's very simple and needs no bank card: once your dates are confirmed in writing, you send a 30% deposit via Western Union or MoneyGram — from their app, their website or one of their thousands of agencies across Europe, in minutes. Then you share the transfer code with us on WhatsApp: we verify it, your room is firmly blocked and you instantly receive your written confirmation. The balance is paid on arrival.",
+  faq1_q:"How is my booking guaranteed without paying anything upfront?",
+  faq1_a:"Through a written commitment, both ways. Once availability is confirmed, you validate with your full name and receive a written confirmation (dates, room, locked price): it constitutes a booking agreement. The house commits to holding your room; you commit to coming or letting us know. Our terms simply provide for a €50 flat fee in case of no-show without cancellation — cancelling itself is free.",
   faq2_q:"What if I have to cancel?",
-  faq2_a:"Up to 7 days before arrival, your deposit is transferred free of charge to new dates (valid 12 months) or refunded. Within 7 days it is retained by the house — that's what allows us to block your room firmly. In case of force majeure (cancelled flight…), write to us: we always find a solution.",
+  faq2_a:"Cancellation is free: a WhatsApp message is enough, no questions asked. Only a no-show without any cancellation carries the €50 fee set out in our booking terms. In case of force majeure (cancelled flight…), write to us: we always find a solution.",
   faq3_q:"Which payment methods do you accept at the house?",
-  faq3_a:"The balance is paid on arrival, in cash: euros or Tunisian dinars, as you prefer. The rate confirmed at booking is final — nothing is added on site (city tax included) and you receive a written receipt.",
+  faq3_a:"Everything is settled on arrival, in cash: euros or Tunisian dinars, as you prefer. The rate confirmed at booking is final — nothing is added on site (city tax included) and you receive a written receipt.",
   faq4_q:"Is breakfast included? Can we dine at the house?",
   faq4_a:"A homemade breakfast is served every morning on the patio (homemade jams, fresh bread, mint tea). With a day's notice, a Tunisian dinner can be prepared. The equipped kitchen is also free for guests to use.",
   faq5_q:"Do you offer an airport transfer?",
@@ -1527,7 +1565,7 @@ de: {
   proof_direct_b:"0 % Kommission", proof_direct_s:"bei Direktbuchung, zum Bestpreis",
   door_since:"Seit 1925", stamp:"das Haus",
   strip_1:"Bestpreis-Garantie bei Direktbuchung",
-  strip_2:"Keine Online-Zahlung — einfache Anzahlung, Rest vor Ort",
+  strip_2:"Keine Vorauszahlung — alles wird bei Ankunft beglichen",
   strip_3:"WhatsApp-Antwort innerhalb einer Stunde",
   house_kicker:"Das Haus", house_title:"Ein Jahrhundert Geschichte, Tradition trifft Moderne",
   house_p1:"1925 im ruhigen Viertel Taourit erbaut, ist Dar Michèle ein authentisches djerbisches Haus, mit Leidenschaft restauriert. Jeder Raum hat Charakter: weiß gekalkte Gewölbe, alte Türen, liebevoll gesammelte Objekte — unsere Gäste sagen oft, das Haus sei „wie ein kleines Museum“.",
@@ -1552,33 +1590,27 @@ de: {
   exp3_b:"Strände & Flamingo-Insel", exp3_s:"weißer Sand, türkisfarbenes Wasser, Ausflüge mit dem Traditionssegler",
   exp4_b:"Guellala & seine Töpfer", exp4_s:"das jahrtausendealte Handwerk der Insel, zwischen Olivenhainen",
   rev_kicker:"Sie haben hier geschlafen", rev_title:"Was unsere Gäste sagen",
-  rev_google:"73 Google-Bewertungen", rev_couples:"Paar-Bewertung",
-  rev1_q:"Ein Stück Paradies — ruhig, charmant und entspannend. Der Innenhof, der Pool und die Dachterrasse sind wunderschön.",
-  rev1_n:"Sophie", rev1_w:"Frankreich · auf Tripadvisor",
-  rev2_q:"Jedes Zimmer hat Charakter, das ganze Haus ist wie ein kleines Museum. Sehr bequeme Betten, alles makellos sauber.",
-  rev2_n:"Marco", rev2_w:"Italien · auf Booking.com",
-  rev3_q:"Die hausgemachten Marmeladen zum Frühstück sind köstlich und der Empfang ist unglaublich herzlich. Wir kommen wieder.",
-  rev3_n:"Anna", rev3_w:"Deutschland · auf Google",
-  rev_cta:"Alle 73 Bewertungen auf Google lesen", rev_verified:"Verifizierter Aufenthalt", rev_follow:"Sie finden uns auf",
+  rev_avg:"Durchschnittsnote unserer Gäste", rev_hint:"Wischen Sie für weitere Bewertungen →", rev_verified:"Verifizierter Aufenthalt",
   book_kicker:"Direkt buchen", book_title:"Direkt buchen — einfach, sicher, zum Bestpreis",
-  book_sub:"Keine Plattform, keine Kommission: Sie buchen direkt beim Haus, zum besten Preis, mit schriftlicher Bestätigung und sicherer Anzahlung.",
+  book_sub:"Keine Plattform, keine Kommission, keine Anzahlung: Ihre schriftliche Bestätigung ist eine feste Buchung, bezahlt wird bei Ankunft.",
   step1_b:"Anfrage senden",
-  step1_p:"Wählen Sie Ihre Daten im Formular — die Anfrage geht direkt per WhatsApp raus. Wir bestätigen Verfügbarkeit und exakten Preis tagsüber innerhalb einer Stunde.",
-  step2_b:"Mit 30 % Anzahlung bestätigen",
-  step2_p:"Keine Online-Zahlung: Senden Sie die Anzahlung per Western Union oder MoneyGram — über deren App oder in einer Filiale, in wenigen Minuten — und schicken Sie uns den Transfercode per WhatsApp. Nach Prüfung ist Ihr Zimmer fest reserviert und Sie erhalten eine schriftliche Bestätigung.",
-  step3_b:"Rest bei Ankunft zahlen",
-  step3_p:"Der Restbetrag wird vor Ort bar beglichen (€ oder TND). Keine versteckten Kosten: der bestätigte Preis ist der Endpreis, Kurtaxe inklusive.",
+  step1_p:"Wählen Sie Ihre Daten im Formular — die Anfrage geht direkt per WhatsApp raus. Wir prüfen unseren Kalender und bestätigen Verfügbarkeit und exakten Preis tagsüber innerhalb einer Stunde.",
+  step2_b:"Schriftlich bestätigen — das ist alles",
+  step2_p:"Sobald wir die Verfügbarkeit bestätigen, bestätigen Sie schriftlich mit Ihrem vollen Namen und erhalten Ihre Buchungsbestätigung zum festgeschriebenen Preis. Keine Karte, keine Anzahlung: Diese Bestätigung gilt als Buchungsvereinbarung zwischen Ihnen und dem Haus.",
+  step3_b:"Bei Ankunft zahlen",
+  step3_p:"Alles wird vor Ort bar beglichen (€ oder TND). Keine versteckten Kosten: der bestätigte Preis ist der Endpreis, Kurtaxe inklusive.",
   gar_title:"Unsere Garantie — in beide Richtungen",
-  gar_1:"<b>Ihr Zimmer ist garantiert</b>: Sobald die Anzahlung eingeht, wird es überall aus dem Verkauf genommen. Niemand kann es Ihnen wegnehmen.",
-  gar_2:"<b>Flexible Stornierung</b>: bis 7 Tage vor Anreise wird die Anzahlung kostenlos auf neue Daten übertragen (12 Monate gültig) oder erstattet. Danach verbleibt sie beim Haus.",
-  gar_3:"<b>Schriftliche Bestätigung + Quittung</b> für jede Zahlung, per WhatsApp und E-Mail.",
-  gar_4:"<b>Bestpreis-Garantie</b>: Finden Sie dieselben Daten auf einer Plattform günstiger, ziehen wir gleich — und Sie behalten alle Vorteile der Direktbuchung.",
-  pay_cash:"Rest bar — € oder TND", pay_noweb:"Keine Online-Zahlung",
+  gar_1:"<b>Ihr Zimmer ist garantiert</b>: Ab Ihrer schriftlichen Bestätigung wird es zum festgeschriebenen Preis aus dem Verkauf genommen. Niemand kann es Ihnen wegnehmen.",
+  gar_2:"<b>Kostenlose Stornierung</b>: Pläne geändert? Sagen Sie uns einfach per WhatsApp Bescheid — ohne Gebühr, ohne Fragen.",
+  gar_3:"<b>Schriftliche Bestätigung</b> mit Daten, Zimmer und Preis: Sie gilt als Buchungsvereinbarung und schützt Sie ebenso wie uns.",
+  gar_4:"<b>Gegenseitige Verbindlichkeit</b>: Nach unseren Buchungsbedingungen fällt nur bei Nichtanreise ohne jede Stornierung eine Pauschale von 50 € an — nur so können wir Ihr Zimmer ohne einen Cent Vorauszahlung garantieren.",
+  pay_cash:"Zahlung bei Ankunft — € oder TND", pay_lock:"Preis schriftlich festgeschrieben", pay_noweb:"Keine Online-Zahlung",
   form_title:"Buchungsanfrage", form_sub:"Unverbindlich — wir bestätigen zuerst Verfügbarkeit und Preis.",
   f_in:"Anreise", f_out:"Abreise", f_guests:"Gäste", f_room:"Zimmer", f_room_any:"Egal / beraten Sie mich",
   f_name:"Ihr Name", f_name_ph:"Vor- und Nachname", f_msg:"Nachricht (optional)", f_msg_ph:"Eine Frage, Ankunftszeit, besondere Wünsche…",
   f_send:"Anfrage per WhatsApp senden", f_or:"oder rufen Sie an:",
   f_note:"Antwort innerhalb einer Stunde, 9–21 Uhr (tunesische Zeit)",
+  f_terms:"Ich akzeptiere die Buchungsbedingungen — kostenlose Stornierung; 50 € nur bei Nichtanreise ohne Stornierung.", f_terms_wa:"Buchungsbedingungen akzeptiert",
   wa_msg:"Hallo Dar Michèle! Ich möchte gerne buchen.\n• Anreise: {in}\n• Abreise: {out}\n• Gäste: {guests}\n• Zimmer: {room}\n• Name: {name}\n{msg}\n(gesendet über die offizielle Website)",
   wa_hello:"Hallo Dar Michèle! Ich hätte gerne Informationen zu einem Aufenthalt.",
   acc_kicker:"So finden Sie uns", acc_title:"Ruhig gelegen, nah an allem",
@@ -1588,12 +1620,12 @@ de: {
   d3:"vom internationalen Flughafen Djerba–Zarzis (DJE)", d4:"nach Djerbahood und zum Dorf Erriadh",
   acc_maps:"In Google Maps öffnen",
   faq_kicker:"Häufige Fragen", faq_title:"Was Gäste uns fragen",
-  faq1_q:"Wie bestätige ich meine Buchung ohne Online-Zahlung?",
-  faq1_a:"Ganz einfach und ohne Bankkarte: Sobald Ihre Daten schriftlich bestätigt sind, senden Sie eine Anzahlung von 30 % per Western Union oder MoneyGram — über deren App, Website oder eine der tausenden Filialen in ganz Europa, in wenigen Minuten. Dann schicken Sie uns den Transfercode per WhatsApp: Wir prüfen ihn, Ihr Zimmer ist fest reserviert und Sie erhalten sofort Ihre schriftliche Bestätigung. Der Rest wird bei Ankunft gezahlt.",
+  faq1_q:"Wie ist meine Buchung ohne Vorauszahlung garantiert?",
+  faq1_a:"Durch eine schriftliche Zusage — in beide Richtungen. Sobald die Verfügbarkeit bestätigt ist, bestätigen Sie mit Ihrem vollen Namen und erhalten eine schriftliche Bestätigung (Daten, Zimmer, festgeschriebener Preis): Sie gilt als Buchungsvereinbarung. Das Haus verpflichtet sich, Ihr Zimmer zu halten; Sie verpflichten sich zu kommen oder Bescheid zu geben. Unsere Bedingungen sehen lediglich eine Pauschale von 50 € bei Nichtanreise ohne Stornierung vor — die Stornierung selbst ist kostenlos.",
   faq2_q:"Was, wenn ich stornieren muss?",
-  faq2_a:"Bis 7 Tage vor Anreise wird Ihre Anzahlung kostenlos auf neue Daten übertragen (12 Monate gültig) oder erstattet. Innerhalb von 7 Tagen verbleibt sie beim Haus — nur so können wir Ihr Zimmer fest blockieren. Bei höherer Gewalt (Flugausfall…) schreiben Sie uns: Wir finden immer eine Lösung.",
+  faq2_a:"Die Stornierung ist kostenlos: eine WhatsApp-Nachricht genügt, ohne Angabe von Gründen. Nur bei Nichtanreise ohne jede Stornierung fällt die in unseren Buchungsbedingungen vorgesehene Pauschale von 50 € an. Bei höherer Gewalt (Flugausfall…) schreiben Sie uns: Wir finden immer eine Lösung.",
   faq3_q:"Welche Zahlungsmittel akzeptieren Sie vor Ort?",
-  faq3_a:"Der Restbetrag wird bei Ankunft bar bezahlt: in Euro oder tunesischen Dinar, wie Sie möchten. Der bei der Buchung bestätigte Preis ist endgültig — vor Ort kommt nichts hinzu (Kurtaxe inklusive) und Sie erhalten eine schriftliche Quittung.",
+  faq3_a:"Alles wird bei Ankunft bar bezahlt: in Euro oder tunesischen Dinar, wie Sie möchten. Der bei der Buchung bestätigte Preis ist endgültig — vor Ort kommt nichts hinzu (Kurtaxe inklusive) und Sie erhalten eine schriftliche Quittung.",
   faq4_q:"Ist das Frühstück inbegriffen? Kann man im Haus zu Abend essen?",
   faq4_a:"Das hausgemachte Frühstück wird jeden Morgen im Patio serviert (hausgemachte Marmeladen, frisches Brot, Minztee). Mit einem Tag Vorlauf bereiten wir gerne ein tunesisches Abendessen zu. Die Küche steht Gästen frei zur Verfügung.",
   faq5_q:"Bieten Sie einen Flughafentransfer an?",
@@ -1618,7 +1650,7 @@ it: {
   proof_direct_b:"0% di commissioni", proof_direct_s:"prenotando direttamente, al miglior prezzo",
   door_since:"Dal 1925", stamp:"la casa",
   strip_1:"Miglior tariffa garantita prenotando direttamente",
-  strip_2:"Nessun pagamento online — acconto semplice, saldo in loco",
+  strip_2:"Nessun pagamento anticipato — tutto si salda all'arrivo",
   strip_3:"Risposta su WhatsApp entro un'ora",
   house_kicker:"La casa", house_title:"Un secolo di storia, tra tradizione e modernità",
   house_p1:"Costruita nel 1925 nel tranquillo quartiere di Taourit, Dar Michèle è un'autentica casa djerbiana restaurata con passione. Ogni stanza ha carattere: volte imbiancate a calce, porte antiche, oggetti d'epoca — i nostri ospiti dicono spesso che la casa si visita «come un piccolo museo».",
@@ -1643,33 +1675,27 @@ it: {
   exp3_b:"Spiagge & isola dei fenicotteri", exp3_s:"sabbia bianca, acque turchesi, gite in feluca tradizionale",
   exp4_b:"Guellala e i suoi vasai", exp4_s:"l'artigianato millenario dell'isola, tra gli ulivi",
   rev_kicker:"Hanno dormito qui", rev_title:"Cosa dicono i nostri ospiti",
-  rev_google:"73 recensioni Google", rev_couples:"voto «in coppia»",
-  rev1_q:"Un angolo di paradiso — tranquillo, incantevole e rilassante. Il cortile, la piscina e il rooftop sono splendidi.",
-  rev1_n:"Sophie", rev1_w:"Francia · su Tripadvisor",
-  rev2_q:"Ogni camera ha carattere, la casa intera è come un piccolo museo. Letti comodissimi e tutto impeccabile.",
-  rev2_n:"Marco", rev2_w:"Italia · su Booking.com",
-  rev3_q:"Le marmellate fatte in casa della colazione sono deliziose e l'accoglienza è di una gentilezza rara. Torneremo.",
-  rev3_n:"Anna", rev3_w:"Germania · su Google",
-  rev_cta:"Leggi le 73 recensioni su Google", rev_verified:"Soggiorno verificato", rev_follow:"Ci trovate su",
+  rev_avg:"voto medio dei nostri ospiti", rev_hint:"Scorrete per leggere altre recensioni →", rev_verified:"Soggiorno verificato",
   book_kicker:"Prenotazione diretta", book_title:"Prenota direttamente — semplice e sicuro",
-  book_sub:"Nessuna piattaforma, nessuna commissione: prenotate direttamente con la casa, al miglior prezzo, con conferma scritta e acconto sicuro.",
+  book_sub:"Nessuna piattaforma, nessuna commissione, nessun acconto: la vostra conferma scritta vale prenotazione ferma, e tutto si salda all'arrivo.",
   step1_b:"Inviate la richiesta",
-  step1_p:"Scegliete le date nel modulo — la richiesta parte su WhatsApp. Confermiamo disponibilità e tariffa esatta entro un'ora durante il giorno.",
-  step2_b:"Confermate con un acconto del 30%",
-  step2_p:"Nessun pagamento online: inviate l'acconto con Western Union o MoneyGram — dall'app o in agenzia, in pochi minuti — poi mandateci il codice di trasferimento su WhatsApp. Dopo la verifica, la camera è bloccata definitivamente e ricevete la conferma scritta.",
-  step3_b:"Saldo all'arrivo",
-  step3_p:"Il resto si paga in loco, in contanti (€ o TND). Nessun costo nascosto: il prezzo confermato è il prezzo pagato, tassa di soggiorno inclusa.",
+  step1_p:"Scegliete le date nel modulo — la richiesta parte su WhatsApp. Controlliamo il nostro calendario e confermiamo disponibilità e tariffa esatta entro un'ora durante il giorno.",
+  step2_b:"Confermate per iscritto — tutto qui",
+  step2_p:"Appena confermiamo la disponibilità, voi validate per iscritto con il vostro nome completo e ricevete la conferma di prenotazione a prezzo bloccato. Nessuna carta, nessun acconto: questa conferma vale accordo di prenotazione tra voi e la casa.",
+  step3_b:"Pagate all'arrivo",
+  step3_p:"Tutto si salda in loco, in contanti (€ o TND). Nessun costo nascosto: il prezzo confermato è il prezzo pagato, tassa di soggiorno inclusa.",
   gar_title:"La nostra garanzia, nei due sensi",
-  gar_1:"<b>La vostra camera è garantita</b>: ricevuto l'acconto, viene ritirata dalla vendita ovunque. Nessuno può portarvela via.",
-  gar_2:"<b>Cancellazione flessibile</b>: fino a 7 giorni prima dell'arrivo, l'acconto viene trasferito senza costi su nuove date (valido 12 mesi) o rimborsato. A meno di 7 giorni, resta alla casa.",
-  gar_3:"<b>Conferma scritta + ricevuta</b> per ogni pagamento, inviate su WhatsApp e via e-mail.",
-  gar_4:"<b>Miglior prezzo garantito</b>: se trovate le stesse date a meno su una piattaforma, allineiamo il prezzo — e mantenete i vantaggi del diretto.",
-  pay_cash:"Saldo in contanti — € o TND", pay_noweb:"Nessun pagamento online",
+  gar_1:"<b>La vostra camera è garantita</b>: dalla vostra conferma scritta viene ritirata dalla vendita, a prezzo bloccato. Nessuno può portarvela via.",
+  gar_2:"<b>Cancellazione gratuita</b>: un imprevisto? Avvisateci semplicemente su WhatsApp — senza costi né domande.",
+  gar_3:"<b>Conferma scritta</b> con date, camera e prezzo: vale accordo di prenotazione e protegge voi quanto noi.",
+  gar_4:"<b>Impegno reciproco</b>: secondo le nostre condizioni di prenotazione, solo la mancata presentazione senza alcuna cancellazione comporta un forfait di 50 € — è ciò che ci permette di garantirvi la camera senza un centesimo di anticipo.",
+  pay_cash:"Pagamento all'arrivo — € o TND", pay_lock:"Prezzo bloccato per iscritto", pay_noweb:"Nessun pagamento online",
   form_title:"Richiesta di prenotazione", form_sub:"Senza impegno — confermiamo prima disponibilità e tariffa.",
   f_in:"Arrivo", f_out:"Partenza", f_guests:"Ospiti", f_room:"Camera", f_room_any:"Indifferente / consigliatemi",
   f_name:"Il vostro nome", f_name_ph:"Nome e cognome", f_msg:"Messaggio (facoltativo)", f_msg_ph:"Una domanda, orario d'arrivo, esigenze particolari…",
   f_send:"Invia la richiesta su WhatsApp", f_or:"oppure chiamateci:",
   f_note:"Risposta entro un'ora, 9–21 (ora tunisina)",
+  f_terms:"Accetto le condizioni di prenotazione — cancellazione gratuita; 50 € solo in caso di mancata presentazione senza cancellazione.", f_terms_wa:"Condizioni di prenotazione accettate",
   wa_msg:"Buongiorno Dar Michèle! Vorrei prenotare.\n• Arrivo: {in}\n• Partenza: {out}\n• Ospiti: {guests}\n• Camera: {room}\n• Nome: {name}\n{msg}\n(inviato dal sito ufficiale)",
   wa_hello:"Buongiorno Dar Michèle! Vorrei informazioni per un soggiorno.",
   acc_kicker:"Dove siamo", acc_title:"In pace, a due passi da tutto",
@@ -1679,12 +1705,12 @@ it: {
   d3:"dall'aeroporto internazionale Djerba–Zarzis (DJE)", d4:"da Djerbahood e dal villaggio di Erriadh",
   acc_maps:"Apri in Google Maps",
   faq_kicker:"Domande frequenti", faq_title:"Tutto ciò che ci chiedono",
-  faq1_q:"Come confermo la prenotazione senza pagare online?",
-  faq1_a:"È semplicissimo e non serve alcuna carta: una volta confermate le date per iscritto, inviate un acconto del 30% con Western Union o MoneyGram — dall'app, dal sito o da una delle migliaia di agenzie in tutta Europa, in pochi minuti. Poi ci mandate il codice di trasferimento su WhatsApp: verifichiamo, la camera è bloccata definitivamente e ricevete subito la conferma scritta. Il saldo si paga all'arrivo.",
+  faq1_q:"Come è garantita la mia prenotazione senza pagare nulla in anticipo?",
+  faq1_a:"Con un impegno scritto, nei due sensi. Confermata la disponibilità, validate con il vostro nome completo e ricevete una conferma scritta (date, camera, prezzo bloccato): costituisce un accordo di prenotazione. La casa si impegna a tenervi la camera; voi vi impegnate a venire o ad avvisare. Le nostre condizioni prevedono semplicemente un forfait di 50 € in caso di mancata presentazione senza cancellazione — cancellare, invece, è gratuito.",
   faq2_q:"E se devo cancellare?",
-  faq2_a:"Fino a 7 giorni prima dell'arrivo, l'acconto viene trasferito senza costi su nuove date (valido 12 mesi) o rimborsato. A meno di 7 giorni resta alla casa — è ciò che ci permette di bloccare fermamente la vostra camera. In caso di forza maggiore (volo cancellato…), scriveteci: troviamo sempre una soluzione.",
+  faq2_a:"La cancellazione è gratuita: basta un messaggio WhatsApp, senza domande. Solo la mancata presentazione senza alcuna cancellazione comporta il forfait di 50 € previsto dalle nostre condizioni. In caso di forza maggiore (volo cancellato…), scriveteci: troviamo sempre una soluzione.",
   faq3_q:"Quali pagamenti accettate in loco?",
-  faq3_a:"Il saldo si paga all'arrivo, in contanti: euro o dinari tunisini, come preferite. La tariffa confermata alla prenotazione è definitiva — nulla si aggiunge in loco (tassa di soggiorno inclusa) e ricevete una ricevuta scritta.",
+  faq3_a:"Tutto si salda all'arrivo, in contanti: euro o dinari tunisini, come preferite. La tariffa confermata alla prenotazione è definitiva — nulla si aggiunge in loco (tassa di soggiorno inclusa) e ricevete una ricevuta scritta.",
   faq4_q:"La colazione è inclusa? Si può cenare in casa?",
   faq4_a:"La colazione fatta in casa è servita ogni mattina nel patio (marmellate fatte in casa, pane fresco, tè alla menta). Con un giorno di preavviso prepariamo volentieri una cena tunisina. La cucina attrezzata è a libera disposizione degli ospiti.",
   faq5_q:"Offrite il transfer dall'aeroporto?",
@@ -1709,7 +1735,7 @@ pl: {
   proof_direct_b:"0% prowizji", proof_direct_s:"przy rezerwacji bezpośredniej, w najlepszej cenie",
   door_since:"Od 1925", stamp:"dom",
   strip_1:"Gwarancja najlepszej ceny przy rezerwacji bezpośredniej",
-  strip_2:"Bez płatności online — prosta zaliczka, reszta na miejscu",
+  strip_2:"Bez przedpłat — wszystko płacicie na miejscu",
   strip_3:"Odpowiedź na WhatsApp w mniej niż godzinę",
   house_kicker:"Dom", house_title:"Wiek historii — tradycja spotyka nowoczesność",
   house_p1:"Zbudowany w 1925 roku w spokojnej dzielnicy Taourit, Dar Michèle to autentyczny djerbański dom odrestaurowany z pasją. Każde pomieszczenie ma charakter: bielone wapnem sklepienia, stare drzwi, przedmioty z duszą — nasi goście często mówią, że dom zwiedza się „jak małe muzeum”.",
@@ -1734,33 +1760,27 @@ pl: {
   exp3_b:"Plaże i wyspa flamingów", exp3_s:"biały piasek, turkusowa woda, rejsy tradycyjną łodzią",
   exp4_b:"Guellala i jej garncarze", exp4_s:"tysiącletnie rzemiosło wyspy, wśród gajów oliwnych",
   rev_kicker:"Spali tutaj", rev_title:"Co mówią nasi goście",
-  rev_google:"73 opinie Google", rev_couples:"ocena „dla par”",
-  rev1_q:"Zakątek raju — spokojny, uroczy i relaksujący. Dziedziniec, basen i taras na dachu są przepiękne.",
-  rev1_n:"Sophie", rev1_w:"Francja · na Tripadvisor",
-  rev2_q:"Każdy pokój ma charakter, cały dom jest jak małe muzeum. Bardzo wygodne łóżka i wszystko nieskazitelnie czyste.",
-  rev2_n:"Marco", rev2_w:"Włochy · na Booking.com",
-  rev3_q:"Domowe konfitury na śniadanie są przepyszne, a gościnność niezwykle serdeczna. Wrócimy.",
-  rev3_n:"Anna", rev3_w:"Niemcy · w Google",
-  rev_cta:"Przeczytaj 73 opinie w Google", rev_verified:"Zweryfikowany pobyt", rev_follow:"Znajdziecie nas na",
+  rev_avg:"średnia ocena naszych gości", rev_hint:"Przewiń, aby przeczytać więcej opinii →", rev_verified:"Zweryfikowany pobyt",
   book_kicker:"Rezerwacja bezpośrednia", book_title:"Rezerwuj bezpośrednio — prosto i pewnie",
-  book_sub:"Bez platform, bez prowizji: rezerwujecie bezpośrednio u gospodarzy, w najlepszej cenie, z pisemnym potwierdzeniem i bezpieczną zaliczką.",
+  book_sub:"Bez platform, bez prowizji, bez zaliczki: Wasze pisemne potwierdzenie to wiążąca rezerwacja, a całość płacicie po przyjeździe.",
   step1_b:"Wyślijcie zapytanie",
-  step1_p:"Wybierzcie daty w formularzu — zapytanie trafia prosto na WhatsApp. Dostępność i dokładną cenę potwierdzamy w ciągu godziny w ciągu dnia.",
-  step2_b:"Potwierdźcie zaliczką 30%",
-  step2_p:"Bez płatności online: wysyłacie zaliczkę przez Western Union lub MoneyGram — z aplikacji lub w placówce, w kilka minut — a potem przesyłacie nam kod transferu na WhatsApp. Po weryfikacji pokój jest ostatecznie zablokowany i dostajecie pisemne potwierdzenie.",
-  step3_b:"Resztę zapłacicie na miejscu",
-  step3_p:"Pozostałą kwotę rozliczacie na miejscu, gotówką (€ lub TND). Bez ukrytych opłat: potwierdzona cena to cena ostateczna, taksa klimatyczna wliczona.",
+  step1_p:"Wybierzcie daty w formularzu — zapytanie trafia prosto na WhatsApp. Sprawdzamy nasz kalendarz i potwierdzamy dostępność oraz dokładną cenę w ciągu godziny w ciągu dnia.",
+  step2_b:"Potwierdźcie pisemnie — to wszystko",
+  step2_p:"Gdy potwierdzimy dostępność, potwierdzacie pisemnie swoim pełnym imieniem i nazwiskiem i otrzymujecie potwierdzenie rezerwacji z zablokowaną ceną. Bez karty, bez zaliczki: to potwierdzenie stanowi umowę rezerwacji między Wami a domem.",
+  step3_b:"Zapłacicie po przyjeździe",
+  step3_p:"Wszystko rozliczacie na miejscu, gotówką (€ lub TND). Bez ukrytych opłat: potwierdzona cena to cena ostateczna, taksa klimatyczna wliczona.",
   gar_title:"Nasza gwarancja — w obie strony",
-  gar_1:"<b>Wasz pokój jest gwarantowany</b>: po otrzymaniu zaliczki znika ze sprzedaży wszędzie. Nikt Wam go nie odbierze.",
-  gar_2:"<b>Elastyczne anulowanie</b>: do 7 dni przed przyjazdem zaliczka jest bezpłatnie przenoszona na nowy termin (ważna 12 miesięcy) lub zwracana. Poniżej 7 dni pozostaje w domu.",
-  gar_3:"<b>Pisemne potwierdzenie + pokwitowanie</b> każdej płatności, wysyłane na WhatsApp i e-mailem.",
-  gar_4:"<b>Gwarancja najlepszej ceny</b>: jeśli znajdziecie te same daty taniej na jakiejkolwiek platformie, wyrównamy cenę — a Wy zachowacie przywileje rezerwacji bezpośredniej.",
-  pay_cash:"Reszta gotówką — € lub TND", pay_noweb:"Bez płatności online",
+  gar_1:"<b>Wasz pokój jest gwarantowany</b>: od Waszego pisemnego potwierdzenia znika ze sprzedaży, z zablokowaną ceną. Nikt Wam go nie odbierze.",
+  gar_2:"<b>Bezpłatne anulowanie</b>: zmiana planów? Po prostu napiszcie na WhatsApp — bez opłat i bez pytań.",
+  gar_3:"<b>Pisemne potwierdzenie</b> z datami, pokojem i ceną: stanowi umowę rezerwacji i chroni Was tak samo jak nas.",
+  gar_4:"<b>Wzajemne zobowiązanie</b>: zgodnie z naszymi warunkami rezerwacji tylko niepojawienie się bez żadnego anulowania oznacza ryczałt 50 € — właśnie to pozwala nam gwarantować pokój bez ani centa z góry.",
+  pay_cash:"Płatność po przyjeździe — € lub TND", pay_lock:"Cena zablokowana na piśmie", pay_noweb:"Bez płatności online",
   form_title:"Zapytanie o rezerwację", form_sub:"Bez zobowiązań — najpierw potwierdzamy dostępność i cenę.",
   f_in:"Przyjazd", f_out:"Wyjazd", f_guests:"Goście", f_room:"Pokój", f_room_any:"Obojętnie / doradźcie mi",
   f_name:"Imię i nazwisko", f_name_ph:"Imię i nazwisko", f_msg:"Wiadomość (opcjonalnie)", f_msg_ph:"Pytanie, godzina przyjazdu, specjalne potrzeby…",
   f_send:"Wyślij zapytanie przez WhatsApp", f_or:"lub zadzwońcie:",
   f_note:"Odpowiedź w ciągu godziny, 9–21 (czasu tunezyjskiego)",
+  f_terms:"Akceptuję warunki rezerwacji — bezpłatne anulowanie; 50 € tylko w razie niepojawienia się bez anulowania.", f_terms_wa:"Warunki rezerwacji zaakceptowane",
   wa_msg:"Dzień dobry Dar Michèle! Chciał(a)bym zarezerwować pobyt.\n• Przyjazd: {in}\n• Wyjazd: {out}\n• Goście: {guests}\n• Pokój: {room}\n• Nazwisko: {name}\n{msg}\n(wysłano z oficjalnej strony)",
   wa_hello:"Dzień dobry Dar Michèle! Chciał(a)bym zapytać o pobyt.",
   acc_kicker:"Jak nas znaleźć", acc_title:"W ciszy, a jednak blisko wszystkiego",
@@ -1770,12 +1790,12 @@ pl: {
   d3:"z międzynarodowego lotniska Djerba–Zarzis (DJE)", d4:"do Djerbahood i wioski Erriadh",
   acc_maps:"Otwórz w Google Maps",
   faq_kicker:"Częste pytania", faq_title:"Wszystko, o co pytają goście",
-  faq1_q:"Jak potwierdzić rezerwację bez płacenia online?",
-  faq1_a:"To bardzo proste i nie wymaga żadnej karty: gdy Wasze daty zostaną pisemnie potwierdzone, wysyłacie zaliczkę 30% przez Western Union lub MoneyGram — z aplikacji, strony lub jednej z tysięcy placówek w całej Europie, w kilka minut. Potem przesyłacie nam kod transferu na WhatsApp: weryfikujemy go, pokój jest ostatecznie zablokowany i od razu dostajecie pisemne potwierdzenie. Resztę płaci się na miejscu.",
+  faq1_q:"Jak moja rezerwacja jest gwarantowana bez płacenia z góry?",
+  faq1_a:"Przez pisemne zobowiązanie — w obie strony. Po potwierdzeniu dostępności potwierdzacie swoim pełnym imieniem i nazwiskiem i otrzymujecie pisemne potwierdzenie (daty, pokój, zablokowana cena): stanowi ono umowę rezerwacji. Dom zobowiązuje się trzymać dla Was pokój; Wy — przyjechać albo dać znać. Nasze warunki przewidują jedynie ryczałt 50 € w razie niepojawienia się bez anulowania — samo anulowanie jest bezpłatne.",
   faq2_q:"A jeśli będę musiał(a) anulować?",
-  faq2_a:"Do 7 dni przed przyjazdem zaliczka jest bezpłatnie przenoszona na nowy termin (ważna 12 miesięcy) lub zwracana. Poniżej 7 dni pozostaje w domu — to właśnie pozwala nam ostatecznie zablokować Wasz pokój. W razie siły wyższej (odwołany lot…) napiszcie do nas: zawsze znajdziemy rozwiązanie.",
+  faq2_a:"Anulowanie jest bezpłatne: wystarczy wiadomość na WhatsApp, bez pytań. Tylko niepojawienie się bez żadnego anulowania oznacza ryczałt 50 € przewidziany w naszych warunkach. W razie siły wyższej (odwołany lot…) napiszcie — zawsze znajdziemy rozwiązanie.",
   faq3_q:"Jakie formy płatności akceptujecie na miejscu?",
-  faq3_a:"Resztę płaci się po przyjeździe, gotówką: w euro lub dinarach tunezyjskich, jak wolicie. Cena potwierdzona przy rezerwacji jest ostateczna — na miejscu nic nie dochodzi (taksa klimatyczna wliczona), a Wy otrzymujecie pisemne pokwitowanie.",
+  faq3_a:"Wszystko płacicie po przyjeździe, gotówką: w euro lub dinarach tunezyjskich, jak wolicie. Cena potwierdzona przy rezerwacji jest ostateczna — na miejscu nic nie dochodzi (taksa klimatyczna wliczona), a Wy otrzymujecie pisemne pokwitowanie.",
   faq4_q:"Czy śniadanie jest wliczone? Czy można zjeść kolację na miejscu?",
   faq4_a:"Domowe śniadanie podawane jest każdego ranka na patio (domowe konfitury, świeży chleb, miętowa herbata). Na życzenie, z jednodniowym wyprzedzeniem, przygotujemy tunezyjską kolację. Wyposażona kuchnia jest też do swobodnej dyspozycji gości.",
   faq5_q:"Czy oferujecie transfer z lotniska?",
@@ -1800,7 +1820,7 @@ ru: {
   proof_direct_b:"0% комиссии", proof_direct_s:"при прямом бронировании, по лучшей цене",
   door_since:"С 1925 года", stamp:"дом",
   strip_1:"Гарантия лучшей цены при прямом бронировании",
-  strip_2:"Без онлайн-оплаты — простой задаток, остальное на месте",
+  strip_2:"Без предоплаты — всё оплачивается по приезде",
   strip_3:"Ответ в WhatsApp в течение часа",
   house_kicker:"Дом", house_title:"Век истории: традиции встречают современность",
   house_p1:"Построенный в 1925 году в тихом квартале Таурит, Dar Michèle — подлинный джербийский дом, отреставрированный с любовью. Каждая комната с характером: белёные известью своды, старинные двери, вещи с историей — гости часто говорят, что по дому гуляешь «как по маленькому музею».",
@@ -1825,33 +1845,27 @@ ru: {
   exp3_b:"Пляжи и остров фламинго", exp3_s:"белый песок, бирюзовая вода, прогулки на традиционной лодке",
   exp4_b:"Геллала и её гончары", exp4_s:"тысячелетнее ремесло острова среди оливковых рощ",
   rev_kicker:"Они здесь ночевали", rev_title:"Что говорят наши гости",
-  rev_google:"73 отзыва в Google", rev_couples:"оценка «для пар»",
-  rev1_q:"Уголок рая — тихий, очаровательный и умиротворяющий. Двор, бассейн и терраса на крыше великолепны.",
-  rev1_n:"Софи", rev1_w:"Франция · на Tripadvisor",
-  rev2_q:"У каждой комнаты свой характер, весь дом — как маленький музей. Очень удобные кровати, и всё безупречно чисто.",
-  rev2_n:"Марко", rev2_w:"Италия · на Booking.com",
-  rev3_q:"Домашнее варенье на завтрак восхитительно, а приём на редкость радушный. Мы вернёмся.",
-  rev3_n:"Анна", rev3_w:"Германия · в Google",
-  rev_cta:"Читать 73 отзыва в Google", rev_verified:"Подтверждённое проживание", rev_follow:"Мы на",
+  rev_avg:"средняя оценка наших гостей", rev_hint:"Листайте, чтобы читать больше отзывов →", rev_verified:"Подтверждённое проживание",
   book_kicker:"Прямое бронирование", book_title:"Бронируйте напрямую — просто и надёжно",
-  book_sub:"Без платформ и без комиссий: вы бронируете у самого дома, по лучшей цене, с письменным подтверждением и простым задатком.",
+  book_sub:"Без платформ, без комиссий, без задатка: ваше письменное подтверждение — это твёрдая бронь, а оплата целиком по приезде.",
   step1_b:"Отправьте запрос",
-  step1_p:"Выберите даты в форме — запрос уйдёт прямо в WhatsApp. Наличие мест и точную цену мы подтверждаем в течение часа днём.",
-  step2_b:"Подтвердите задатком 30%",
-  step2_p:"Без онлайн-оплаты: отправьте задаток через Western Union или MoneyGram — из приложения или в отделении, за несколько минут — и пришлите нам код перевода в WhatsApp. После проверки комната закрепляется за вами окончательно, и вы получаете письменное подтверждение.",
-  step3_b:"Остальное — по приезде",
-  step3_p:"Остаток оплачивается на месте, наличными (€ или динары). Никаких скрытых платежей: подтверждённая цена — окончательная, туристический сбор включён.",
+  step1_p:"Выберите даты в форме — запрос уйдёт прямо в WhatsApp. Мы сверяемся с нашим календарём и подтверждаем наличие и точную цену в течение часа днём.",
+  step2_b:"Подтвердите письменно — и всё",
+  step2_p:"Как только мы подтверждаем наличие, вы подтверждаете письменно, указав полное имя, и получаете подтверждение бронирования с зафиксированной ценой. Ни карты, ни задатка: это подтверждение — соглашение о бронировании между вами и домом.",
+  step3_b:"Оплата по приезде",
+  step3_p:"Всё оплачивается на месте, наличными (€ или динары). Никаких скрытых платежей: подтверждённая цена — окончательная, туристический сбор включён.",
   gar_title:"Наша гарантия — в обе стороны",
-  gar_1:"<b>Ваша комната гарантирована</b>: как только задаток получен, она снимается с продажи везде. Никто не сможет её занять.",
-  gar_2:"<b>Гибкая отмена</b>: до 7 дней до заезда задаток бесплатно переносится на новые даты (действует 12 месяцев) или возвращается. Менее 7 дней — остаётся дому.",
-  gar_3:"<b>Письменное подтверждение + расписка</b> за каждый платёж — в WhatsApp и по электронной почте.",
-  gar_4:"<b>Гарантия лучшей цены</b>: нашли те же даты дешевле на любой платформе — мы сравняем цену, а преимущества прямого бронирования останутся с вами.",
-  pay_cash:"Остаток наличными — € или динары", pay_noweb:"Без онлайн-оплаты",
+  gar_1:"<b>Ваша комната гарантирована</b>: с момента письменного подтверждения она снимается с продажи по зафиксированной цене. Никто её не займёт.",
+  gar_2:"<b>Бесплатная отмена</b>: планы изменились? Просто напишите нам в WhatsApp — без штрафов и вопросов.",
+  gar_3:"<b>Письменное подтверждение</b> с датами, комнатой и ценой: это соглашение о бронировании, защищающее и вас, и нас.",
+  gar_4:"<b>Взаимное обязательство</b>: по нашим условиям бронирования только незаезд без какой-либо отмены влечёт фиксированный сбор 50 € — именно это позволяет нам гарантировать комнату без копейки предоплаты.",
+  pay_cash:"Оплата по приезде — € или динары", pay_lock:"Цена зафиксирована письменно", pay_noweb:"Без онлайн-оплаты",
   form_title:"Запрос на бронирование", form_sub:"Ни к чему не обязывает — сначала мы подтверждаем наличие и цену.",
   f_in:"Заезд", f_out:"Выезд", f_guests:"Гости", f_room:"Комната", f_room_any:"Не важно / посоветуйте",
   f_name:"Ваше имя", f_name_ph:"Имя и фамилия", f_msg:"Сообщение (по желанию)", f_msg_ph:"Вопрос, время прибытия, особые пожелания…",
   f_send:"Отправить запрос в WhatsApp", f_or:"или позвоните:",
   f_note:"Ответ в течение часа, 9:00–21:00 (тунисское время)",
+  f_terms:"Принимаю условия бронирования — отмена бесплатна; 50 € только при незаезде без отмены.", f_terms_wa:"Условия бронирования приняты",
   wa_msg:"Здравствуйте, Dar Michèle! Хочу забронировать проживание.\n• Заезд: {in}\n• Выезд: {out}\n• Гости: {guests}\n• Комната: {room}\n• Имя: {name}\n{msg}\n(отправлено с официального сайта)",
   wa_hello:"Здравствуйте, Dar Michèle! Хочу узнать о проживании.",
   acc_kicker:"Как нас найти", acc_title:"В тишине, но рядом со всем",
@@ -1861,12 +1875,12 @@ ru: {
   d3:"от международного аэропорта Джерба–Зарзис (DJE)", d4:"до Джербахуда и деревни Эрриад",
   acc_maps:"Открыть в Google Maps",
   faq_kicker:"Частые вопросы", faq_title:"Всё, о чём нас спрашивают",
-  faq1_q:"Как подтвердить бронирование без онлайн-оплаты?",
-  faq1_a:"Это очень просто, и банковская карта не нужна: как только ваши даты письменно подтверждены, вы отправляете задаток 30% через Western Union или MoneyGram — из приложения, с сайта или в одном из тысяч отделений по всей Европе, за несколько минут. Затем присылаете нам код перевода в WhatsApp: мы проверяем его, комната закрепляется за вами окончательно, и вы сразу получаете письменное подтверждение. Остаток оплачивается по приезде.",
+  faq1_q:"Как гарантируется моё бронирование без предоплаты?",
+  faq1_a:"Письменным обязательством — в обе стороны. После подтверждения наличия вы подтверждаете бронь, указав полное имя, и получаете письменное подтверждение (даты, комната, зафиксированная цена): оно составляет соглашение о бронировании. Дом обязуется держать комнату за вами; вы — приехать или предупредить. Наши условия предусматривают лишь сбор 50 € при незаезде без отмены — сама отмена бесплатна.",
   faq2_q:"А если придётся отменить поездку?",
-  faq2_a:"До 7 дней до заезда задаток бесплатно переносится на новые даты (действует 12 месяцев) или возвращается. Менее чем за 7 дней он остаётся дому — именно это позволяет нам жёстко закреплять комнату за вами. В случае форс-мажора (отменённый рейс…) напишите нам: мы всегда находим решение.",
+  faq2_a:"Отмена бесплатна: достаточно сообщения в WhatsApp, без объяснений. Только незаезд без какой-либо отмены влечёт сбор 50 €, предусмотренный нашими условиями. В случае форс-мажора (отменённый рейс…) напишите нам — мы всегда находим решение.",
   faq3_q:"Какие способы оплаты принимаются на месте?",
-  faq3_a:"Остаток оплачивается по приезде наличными: в евро или тунисских динарах, как вам удобнее. Подтверждённая при бронировании цена окончательная — на месте ничего не добавляется (туристический сбор включён), и вы получаете письменную расписку.",
+  faq3_a:"Всё оплачивается по приезде наличными: в евро или тунисских динарах, как вам удобнее. Подтверждённая цена окончательная — на месте ничего не добавляется (туристический сбор включён), и вы получаете письменную расписку.",
   faq4_q:"Завтрак включён? Можно ли поужинать в доме?",
   faq4_a:"Домашний завтрак подаётся каждое утро в патио (домашнее варенье, свежий хлеб, мятный чай). По предварительной просьбе за день мы приготовим тунисский ужин. Оборудованная кухня также в свободном доступе для гостей.",
   faq5_q:"Организуете ли вы трансфер из аэропорта?",
@@ -1891,7 +1905,7 @@ ar: {
   proof_direct_b:"0% عمولة", proof_direct_s:"عند الحجز المباشر، بأفضل سعر",
   door_since:"منذ 1925", stamp:"الدار",
   strip_1:"أفضل سعر مضمون عند الحجز المباشر",
-  strip_2:"بدون دفع إلكتروني — تسبقة بسيطة، والباقي عند الوصول",
+  strip_2:"بدون أي دفع مسبق — كل شيء يُدفع عند الوصول",
   strip_3:"ردّ على واتساب في أقل من ساعة",
   house_kicker:"المنزل", house_title:"قرن من التاريخ، بين الأصالة والحداثة",
   house_p1:"بُنيت دار ميشال سنة 1925 في حيّ تاوريت الهادئ، وهي دار جربية أصيلة رُمّمت بشغف. كل غرفة لها طابعها: أقبية مبيّضة بالجير، أبواب قديمة، وقطع مقتناة بعناية — كثيرًا ما يقول ضيوفنا إن الدار تُزار «كمتحف صغير».",
@@ -1916,33 +1930,27 @@ ar: {
   exp3_b:"الشواطئ وجزيرة الفلامينغو", exp3_s:"رمال بيضاء، مياه فيروزية، ورحلات بالمراكب التقليدية",
   exp4_b:"قلالة وخزّافوها", exp4_s:"حرفة الجزيرة العريقة، بين الزياتين والمنازل الجربية",
   rev_kicker:"ناموا هنا", rev_title:"ماذا يقول ضيوفنا",
-  rev_google:"73 تقييمًا على Google", rev_couples:"تقييم «الأزواج»",
-  rev1_q:"ركن من الجنة — هادئ وساحر ومريح. الفناء والمسبح والسطح في غاية الجمال.",
-  rev1_n:"صوفي", rev1_w:"فرنسا · على Tripadvisor",
-  rev2_q:"كل غرفة لها طابعها، والدار كلها كمتحف صغير. أسرّة مريحة جدًا وكل شيء نظيف تمامًا.",
-  rev2_n:"ماركو", rev2_w:"إيطاليا · على Booking.com",
-  rev3_q:"مربّيات الفطور المنزلية لذيذة، والاستقبال في غاية اللطف. سنعود بالتأكيد.",
-  rev3_n:"آنا", rev3_w:"ألمانيا · على Google",
-  rev_cta:"اقرأ الـ73 تقييمًا على Google", rev_verified:"إقامة موثَّقة", rev_follow:"تجدوننا على",
+  rev_avg:"متوسط تقييم ضيوفنا", rev_hint:"مرّروا لقراءة المزيد من الآراء ←", rev_verified:"إقامة موثَّقة",
   book_kicker:"الحجز المباشر", book_title:"احجزوا مباشرة، ببساطة وثقة",
-  book_sub:"لا منصّات ولا عمولات: تحجزون مباشرة لدى الدار، بأفضل سعر، مع تأكيد كتابي وتسبقة مؤمّنة.",
+  book_sub:"لا منصّات ولا عمولات ولا تسبقة: تأكيدكم الكتابي يُعتبر حجزًا نهائيًا، وكل شيء يُدفع عند الوصول.",
   step1_b:"أرسلوا طلبكم",
-  step1_p:"اختاروا تواريخكم في الاستمارة — يصلنا طلبكم عبر واتساب. نؤكّد التوفّر والسعر النهائي في أقل من ساعة خلال النهار.",
-  step2_b:"أكّدوا بتسبقة 30%",
-  step2_p:"بدون أي دفع إلكتروني: أرسلوا التسبقة عبر Western Union أو MoneyGram — من التطبيق أو من أي وكالة، في دقائق — ثم أرسلوا لنا رمز التحويل على واتساب. بعد التحقق، تُحجز غرفتكم نهائيًا وتتوصّلون بتأكيد كتابي.",
-  step3_b:"ادفعوا الباقي عند الوصول",
-  step3_p:"يُدفع الباقي في الدار نقدًا (€ أو دينار). لا تكاليف خفية: السعر المؤكَّد هو السعر المدفوع، معلوم الإقامة مشمول.",
+  step1_p:"اختاروا تواريخكم في الاستمارة — يصلنا طلبكم عبر واتساب. نراجع تقويمنا ونؤكّد التوفّر والسعر النهائي في أقل من ساعة خلال النهار.",
+  step2_b:"أكّدوا كتابيًا — هذا كل شيء",
+  step2_p:"بمجرد تأكيد التوفّر، تؤكّدون كتابيًا باسمكم الكامل وتتوصّلون بتأكيد الحجز بسعر مثبَّت. لا بطاقة ولا تسبقة: هذا التأكيد يُعتبر اتفاق حجز بينكم وبين الدار.",
+  step3_b:"ادفعوا عند الوصول",
+  step3_p:"كل شيء يُدفع في الدار نقدًا (€ أو دينار). لا تكاليف خفية: السعر المؤكَّد هو السعر المدفوع، معلوم الإقامة مشمول.",
   gar_title:"ضمانتنا، في الاتجاهين",
-  gar_1:"<b>غرفتكم مضمونة</b>: بمجرد استلام التسبقة، تُسحب من البيع في كل مكان. لا أحد يستطيع أخذها منكم.",
-  gar_2:"<b>إلغاء مرن</b>: حتى 7 أيام قبل الوصول، تُنقل التسبقة مجانًا إلى تواريخ جديدة (صالحة 12 شهرًا) أو تُسترجع. أقل من 7 أيام: تبقى للدار.",
-  gar_3:"<b>تأكيد كتابي + وصل</b> عن كل دفعة، يُرسلان عبر واتساب والبريد الإلكتروني.",
-  gar_4:"<b>أفضل سعر مضمون</b>: إن وجدتم نفس التواريخ بسعر أقل على أي منصّة، نُطابق السعر — وتحتفظون بمزايا الحجز المباشر.",
-  pay_cash:"الباقي نقدًا — € أو دينار", pay_noweb:"بدون دفع إلكتروني",
+  gar_1:"<b>غرفتكم مضمونة</b>: منذ تأكيدكم الكتابي تُسحب من البيع بسعر مثبَّت. لا أحد يستطيع أخذها منكم.",
+  gar_2:"<b>إلغاء مجاني</b>: طرأ طارئ؟ أخبرونا ببساطة على واتساب — دون رسوم ودون أسئلة.",
+  gar_3:"<b>تأكيد كتابي</b> يتضمّن التواريخ والغرفة والسعر: يُعتبر اتفاق حجز يحميكم كما يحمينا.",
+  gar_4:"<b>التزام متبادل</b>: وفق شروط الحجز لدينا، وحده عدم الحضور دون أي إلغاء يترتّب عنه مبلغ جزافي قدره 50 € — وهذا ما يسمح لنا بضمان غرفتكم دون دفع أي مبلغ مسبقًا.",
+  pay_cash:"الدفع عند الوصول — € أو دينار", pay_lock:"سعر مثبَّت كتابيًا", pay_noweb:"بدون دفع إلكتروني",
   form_title:"طلب حجز", form_sub:"دون التزام — نؤكّد أولًا التوفّر والسعر.",
   f_in:"الوصول", f_out:"المغادرة", f_guests:"الضيوف", f_room:"الغرفة", f_room_any:"لا يهم / انصحوني",
   f_name:"الاسم", f_name_ph:"الاسم واللقب", f_msg:"رسالة (اختياري)", f_msg_ph:"سؤال، ساعة الوصول، طلب خاص…",
   f_send:"أرسل الطلب عبر واتساب", f_or:"أو اتصلوا بنا:",
   f_note:"ردّ في أقل من ساعة، من 9 صباحًا إلى 9 مساءً (بتوقيت تونس)",
+  f_terms:"أوافق على شروط الحجز — الإلغاء مجاني؛ و50 € فقط في حال عدم الحضور دون إلغاء.", f_terms_wa:"تمت الموافقة على شروط الحجز",
   wa_msg:"مرحبًا دار ميشال! أودّ الحجز.\n• الوصول: {in}\n• المغادرة: {out}\n• الضيوف: {guests}\n• الغرفة: {room}\n• الاسم: {name}\n{msg}\n(أُرسل من الموقع الرسمي)",
   wa_hello:"مرحبًا دار ميشال! أودّ الاستفسار عن إقامة.",
   acc_kicker:"موقعنا", acc_title:"في هدوء، وعلى مقربة من كل شيء",
@@ -1952,12 +1960,12 @@ ar: {
   d3:"من مطار جربة–جرجيس الدولي (DJE)", d4:"من جربة هود وقرية الرياض",
   acc_maps:"افتح في خرائط Google",
   faq_kicker:"أسئلة شائعة", faq_title:"كل ما يُطرح علينا",
-  faq1_q:"كيف أؤكّد حجزي دون الدفع عبر الإنترنت؟",
-  faq1_a:"الأمر بسيط جدًا ولا يحتاج أي بطاقة بنكية: بعد تأكيد تواريخكم كتابيًا، ترسلون تسبقة 30% عبر Western Union أو MoneyGram — من التطبيق أو الموقع أو إحدى آلاف الوكالات في أوروبا، في دقائق. ثم ترسلون لنا رمز التحويل على واتساب: نتحقق منه، فتُحجز غرفتكم نهائيًا وتتوصّلون فورًا بتأكيدكم الكتابي. والباقي يُدفع عند الوصول.",
+  faq1_q:"كيف يُضمن حجزي دون أي دفع مسبق؟",
+  faq1_a:"بالتزام كتابي في الاتجاهين. بعد تأكيد التوفّر، تؤكّدون باسمكم الكامل وتتوصّلون بتأكيد كتابي (التواريخ، الغرفة، سعر مثبَّت) يُعتبر اتفاق حجز. تلتزم الدار بحفظ غرفتكم؛ وتلتزمون بالحضور أو بإخبارنا. شروطنا تنصّ فقط على مبلغ جزافي قدره 50 € في حال عدم الحضور دون إلغاء — أما الإلغاء نفسه فمجاني.",
   faq2_q:"وإذا اضطُررت إلى الإلغاء؟",
-  faq2_a:"حتى 7 أيام قبل الوصول، تُنقل تسبقتكم مجانًا إلى تواريخ جديدة (صالحة 12 شهرًا) أو تُسترجع. أقل من 7 أيام تبقى للدار — فهي ما يسمح لنا بحجز غرفتكم نهائيًا. وفي حالات القوة القاهرة (إلغاء رحلة…) راسلونا: نجد دائمًا حلًّا.",
+  faq2_a:"الإلغاء مجاني: تكفي رسالة واتساب، دون أي سؤال. وحده عدم الحضور دون أي إلغاء يترتّب عنه مبلغ 50 € المنصوص عليه في شروط الحجز. وفي حالات القوة القاهرة (إلغاء رحلة…) راسلونا: نجد دائمًا حلًّا.",
   faq3_q:"ما وسائل الدفع المقبولة في الدار؟",
-  faq3_a:"يُدفع الباقي عند الوصول نقدًا: باليورو أو بالدينار التونسي، كما تفضّلون. السعر المؤكَّد عند الحجز نهائي — لا يُضاف أي مبلغ في عين المكان (معلوم الإقامة مشمول) وتتوصّلون بوصل كتابي.",
+  faq3_a:"كل شيء يُدفع عند الوصول نقدًا: باليورو أو بالدينار التونسي، كما تفضّلون. السعر المؤكَّد عند الحجز نهائي — لا يُضاف أي مبلغ في عين المكان (معلوم الإقامة مشمول) وتتوصّلون بوصل كتابي.",
   faq4_q:"هل الفطور مشمول؟ وهل يمكن العشاء في الدار؟",
   faq4_a:"الفطور المنزلي يُقدَّم كل صباح في الفناء (مربّيات منزلية، خبز طازج، شاي بالنعناع). وبطلب مسبق بيوم، نُعدّ عشاءً تونسيًا. والمطبخ المجهّز بتصرّف الضيوف مجانًا.",
   faq5_q:"هل توفّرون نقلًا من المطار؟",
@@ -2027,7 +2035,8 @@ document.getElementById("reqform").addEventListener("submit", function(e){
     .replace("{room}", t(roomKey))
     .replace("{name}", document.getElementById("f-name").value || "—")
     .replace("{msg}", msgVal ? "• " + msgVal : "");
-  window.open(waUrl(text), "_blank", "noopener");
+  const finalText = text + "\n✔ " + t("f_terms_wa");
+  window.open(waUrl(finalText), "_blank", "noopener");
 });
 
 /* pré-sélection de la chambre depuis les cartes */

@@ -1,21 +1,21 @@
-Photos réelles de la page d'accueil : EN PLACE ✔
+Photos réelles de la page d'accueil : TOUTES EN PLACE ✔
   porte.jpg      → hero (l'entrée voûtée, première image du site)
   patio.jpg      → section « La maison » (vue de jour, gazon + parasols)
   galerie-1.jpg  → vue de nuit du patio (grande case)
   galerie-2.jpg  → passage voûté vers le patio
-  galerie-3.jpg  → piscine de jour, parasol olive et bougainvillier
+  galerie-3.jpg  → piscine de jour (verticale)
   galerie-4.jpg  → piscine sous le parasol bleu (case verticale)
-  galerie-6.jpg  → piscine de nuit (case large)
+  galerie-5.jpg  → piscine de nuit
+  galerie-6.jpg  → panorama du patio (parasol olive, puits) — case large
 
-À compléter quand les photos existent (même principe : déposer le
-fichier ici avec le bon nom, il s'affiche automatiquement) :
+À compléter quand les photos existent (déposer le fichier ici avec le
+bon nom, il s'affiche automatiquement) :
   chambre-double.jpg               → carte Chambre Double
   chambre-quadruple.jpg            → carte Chambre Quadruple
   chambre-quadruple-terrasse.jpg   → carte Chambre Quadruple avec Terrasse
   petit-dejeuner.jpg               → section « Le petit-déjeuner au patio »
-  galerie-5.jpg                    → dernière case de la galerie
 
 Conseil : ~1600px de large maximum, format .jpg.
 Astuce import sans ordinateur : uploader sur postimages.org, puis pousser
-un fichier dar-michele-djerba/photos-import.json {"nom.jpg":"lien"} —
-le workflow GitHub « Import photos » télécharge et commit tout seul.
+un fichier dar-michele-djerba/photos-import.json {"nom.jpg":"lien de la page"} —
+le workflow GitHub « Import photos » télécharge l'original et commit tout seul.
