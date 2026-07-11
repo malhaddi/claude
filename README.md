@@ -6,10 +6,15 @@ product information into mobile-first advertorial pre-sell pages.
 Core positioning: **« Transformez votre produit en advertorial français prêt à
 convertir. »**
 
-This repository currently contains the first milestone: the application
-foundation and the public marketing website. The product flow (accounts,
-projects, AI generation, editing, publishing, billing) comes in later
-milestones — see [TASKS.md](./TASKS.md).
+This repository currently contains the application foundation and a
+conversion-focused public marketing website (milestone 1 + the 1.1 homepage
+refinement). The product flow (accounts, projects, AI generation, editing,
+publishing, billing) comes in later milestones — see [TASKS.md](./TASKS.md).
+
+The homepage is intentionally honest about scope: features not yet built are
+labelled « Bientôt », the Growth plan is a disabled waitlist (no checkout),
+and there are no guaranteed-results/ROAS/CAC claims, testimonials or invented
+metrics.
 
 ## Tech stack
 
@@ -61,10 +66,11 @@ src/
     not-found.tsx         # Custom French 404 page
     icon.svg              # Favicon
   components/
-    layout/               # SiteHeader (client: mobile menu), SiteFooter
-    marketing/            # Hero, HowItWorks, TemplateExamples, Benefits,
-                          # FoundingOffer, Faq, FinalCta
-    ui/                   # ButtonLink, SectionHeading (shared primitives)
+    layout/               # SiteHeader (client: sticky + mobile menu), SiteFooter
+    marketing/            # Hero (+ HeroPreview), Problem, WorkflowDemo (client),
+                          # TemplateGallery, Capabilities, FranceFirst, Pricing
+                          # (client), Comparison, Faq, FinalCta
+    ui/                   # ButtonLink, SectionHeading, Reveal (client)
   lib/
     content.ts            # ALL French marketing copy, parsed with Zod
     content-schema.ts     # Zod schemas + types for the content
@@ -81,8 +87,16 @@ Conventions:
 - **Content is validated.** `content.ts` parses every export against the Zod
   schemas in `content-schema.ts` at module load, so malformed copy fails the
   build and tests rather than shipping.
-- **Server components by default.** Only `SiteHeader` is a client component
-  (mobile menu state). The FAQ uses native `<details>` so it needs no JS.
+- **Server components by default.** Client components are limited to what
+  needs browser state: `SiteHeader` (sticky nav + mobile menu), `WorkflowDemo`
+  (auto-advancing tabs), `Pricing` (billing-period preview toggle) and the
+  `Reveal` scroll-animation wrapper. The FAQ and template cards use native
+  `<details>` — no JS required.
+- **Motion is restrained and accessible.** Animations use CSS transitions +
+  IntersectionObserver (no animation library). Every animation is guarded by
+  `prefers-reduced-motion`, reveals fall back to visible without JS (a
+  `<noscript>` override), and only opacity/transform are animated so there is
+  no layout shift.
 - **Semantic Tailwind usage**: slate neutrals + indigo accent, mobile-first
   responsive classes, `cx()` for conditional classes.
 

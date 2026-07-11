@@ -29,6 +29,40 @@
 - [x] Verified in a real browser: no horizontal overflow at 390px/1440px,
       menu/FAQ/anchor interactions, skip link, 404 status codes
 
+## Milestone 1.1 — Conversion-focused homepage refinement (DONE)
+
+- [x] Sticky navigation with scroll background/shadow transition; links
+      Produit / Modèles / Tarifs / FAQ + Connexion + Commencer gratuitement
+- [x] Hero rebuilt: outcome-focused promise, primary CTA « Créer mon premier
+      advertorial », secondary « Voir comment ça fonctionne », no-card note,
+      restrained entrance animation, labelled product preview
+- [x] Problem section (4 common marketing problems, framed as such)
+- [x] Interactive workflow walkthrough (Coller l'URL → Choisir l'angle →
+      Générer → Modifier & publier), accessible tabs, autoplay only when
+      motion is allowed and in view
+- [x] Template gallery: 5 French frameworks (« 5 raisons de… », « J'ai
+      testé… », PAS, Comparatif, Guide d'achat) with funnel stage, best use,
+      example structure and launch/soon labels; interactive cards
+- [x] Capabilities split into « Disponible au lancement » vs « Bientôt »
+- [x] France-first differentiation section (incl. RGPD-conscious wording,
+      no compliance-certification claim)
+- [x] Three pricing cards: Découverte (gratuit), Lanceur (39 €, recommandé),
+      Croissance (79 €, « Bientôt disponible », disabled waitlist CTA);
+      labelled monthly/annual preview toggle, no fake discount, no checkout
+- [x] Comparison section by workflow category (generic AI chat / page builder
+      / freelance-agency / AdvertoAI), no named competitors or invented prices
+- [x] FAQ expanded to the 9 required questions, honest scope answers
+- [x] Final CTA « Votre prochaine campagne mérite mieux… » + footer with
+      Produit / Tarifs / FAQ / legal + contact placeholders
+- [x] Content architecture: navigation, workflow, templates, capabilities,
+      pricing, comparison, FAQ all centralized + Zod-validated in content.ts
+- [x] Restrained, performant motion (CSS + IntersectionObserver, no animation
+      dependency), reduced-motion + no-JS safe, no layout shift
+- [x] Tests: pricing, nav, template data, FAQ, key CTAs, no unsupported
+      claims, Growth-plan purchase safety, reduced-motion/no-JS guards
+- [x] All gates green (lint, typecheck, 37 tests, build); browser-verified
+      interactions and no horizontal overflow at 360/390/1440px
+
 ## Milestone 2 — Authentication & projects (NEXT)
 
 Suggested scope (no AI generation yet):

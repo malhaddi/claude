@@ -37,6 +37,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${geistSans.variable} antialiased`}>
+      <head>
+        {/* Without JS, scroll-reveal elements can never receive their
+            data-visible flag — force them fully visible so no content is
+            hidden. Motion-safe hiding lives in globals.css. */}
+        <noscript>
+          <style>{`.reveal{opacity:1 !important;transform:none !important;}`}</style>
+        </noscript>
+      </head>
       <body className="flex min-h-svh flex-col bg-white font-sans text-slate-900">
         <a
           href="#contenu"
