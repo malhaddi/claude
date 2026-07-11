@@ -6,6 +6,10 @@ import { z } from "zod";
  * and the test suite instead of rendering broken UI.
  */
 
+/** Availability of a feature/template: shipping at launch vs. planned. */
+export const availabilitySchema = z.enum(["launch", "soon"]);
+export type Availability = z.infer<typeof availabilitySchema>;
+
 export const navLinkSchema = z.object({
   href: z
     .string()
@@ -14,23 +18,87 @@ export const navLinkSchema = z.object({
   label: z.string().min(1),
 });
 
-export const stepSchema = z.object({
+/** A call-to-action link. `href` may be null for a disabled/waitlist CTA. */
+export const ctaSchema = z.object({
+  label: z.string().min(1),
+  href: z
+    .string()
+    .regex(/^[/#]/, "CTA links must be internal (start with / or #)")
+    .nullable(),
+});
+
+export const heroSchema = z.object({
+  badge: z.string().min(1),
+  headline: z.string().min(1),
+  promise: z.string().min(1),
+  primaryCta: ctaSchema,
+  secondaryCta: ctaSchema,
+  noCardNote: z.string().min(1),
+  previewLabel: z.string().min(1),
+});
+
+export const problemSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
 });
 
-export const templateExampleSchema = z.object({
+export const workflowStepSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().min(1),
+});
+
+export const templateSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
-  tagline: z.string().min(1),
-  hookExample: z.string().min(1),
-  description: z.string().min(1),
   bestFor: z.string().min(1),
+  funnelStage: z.string().min(1),
+  structure: z.array(z.string().min(1)).min(3),
+  availability: availabilitySchema,
 });
 
-export const benefitSchema = z.object({
+export const capabilitySchema = z.object({
+  label: z.string().min(1),
+  availability: availabilitySchema,
+});
+
+export const differentiatorSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
+});
+
+export const pricingPlanSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    /** Whole-euro monthly price; 0 means free. */
+    priceMonthlyEur: z.number().int().nonnegative(),
+    tagline: z.string().min(1),
+    features: z.array(z.string().min(1)).min(3),
+    badge: z.string().min(1).nullable(),
+    cta: ctaSchema,
+    /** Recommended (highlighted) plan. */
+    recommended: z.boolean(),
+    /** Whether the plan can be started today. Growth is not yet available. */
+    available: z.boolean(),
+  })
+  .refine((plan) => plan.available || plan.cta.href === null, {
+    message: "an unavailable plan must not link to an actionable CTA",
+    path: ["cta", "href"],
+  });
+
+export const comparisonApproachSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  /** Highlight the AdvertoAI column. */
+  highlight: z.boolean(),
+});
+
+export const comparisonRowSchema = z.object({
+  dimension: z.string().min(1),
+  /** One value per approach id, keyed by approach id. */
+  values: z.record(z.string(), z.string().min(1)),
 });
 
 export const faqItemSchema = z.object({
@@ -41,17 +109,28 @@ export const faqItemSchema = z.object({
   answer: z.string().min(1),
 });
 
-export const pricingPlanSchema = z.object({
-  name: z.string().min(1),
-  priceMonthlyEur: z.number().int().positive(),
+export const finalCtaSchema = z.object({
+  title: z.string().min(1),
   description: z.string().min(1),
-  features: z.array(z.string().min(1)).min(3),
-  note: z.string().min(1),
+  cta: ctaSchema,
+});
+
+export const footerGroupSchema = z.object({
+  title: z.string().min(1),
+  links: z.array(navLinkSchema).min(1),
 });
 
 export type NavLink = z.infer<typeof navLinkSchema>;
-export type Step = z.infer<typeof stepSchema>;
-export type TemplateExample = z.infer<typeof templateExampleSchema>;
-export type Benefit = z.infer<typeof benefitSchema>;
-export type FaqItem = z.infer<typeof faqItemSchema>;
+export type Cta = z.infer<typeof ctaSchema>;
+export type Hero = z.infer<typeof heroSchema>;
+export type Problem = z.infer<typeof problemSchema>;
+export type WorkflowStep = z.infer<typeof workflowStepSchema>;
+export type Template = z.infer<typeof templateSchema>;
+export type Capability = z.infer<typeof capabilitySchema>;
+export type Differentiator = z.infer<typeof differentiatorSchema>;
 export type PricingPlan = z.infer<typeof pricingPlanSchema>;
+export type ComparisonApproach = z.infer<typeof comparisonApproachSchema>;
+export type ComparisonRow = z.infer<typeof comparisonRowSchema>;
+export type FaqItem = z.infer<typeof faqItemSchema>;
+export type FinalCta = z.infer<typeof finalCtaSchema>;
+export type FooterGroup = z.infer<typeof footerGroupSchema>;

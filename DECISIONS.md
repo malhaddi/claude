@@ -3,6 +3,63 @@
 Log of the major choices made so far and why. Newest first within each
 milestone.
 
+## Milestone 1.1 — Conversion-focused homepage refinement
+
+### Motion without an animation library
+
+Requirement: restrained, performant, reduced-motion-safe animation. We use
+CSS transitions + a single `IntersectionObserver` (the `Reveal` wrapper)
+rather than Framer Motion. Rationale:
+
+- The needed effects (scroll reveal, entrance rise, sticky-nav transition,
+  progress bars, hover states, smooth `<details>`) are all expressible in CSS.
+- Framer Motion would add a client-side dependency and ship more JS for no
+  material simplification here.
+- **No dependencies were added in this milestone.**
+
+Accessibility of the reveal primitive is layered: the hidden state lives only
+inside `@media (prefers-reduced-motion: no-preference)`, so reduced-motion
+users are never left with invisible content; a `<noscript>` override forces
+visibility without JS; and only opacity/transform animate, so there is no
+cumulative layout shift. Tests assert both guards.
+
+### Client components kept to the minimum
+
+Server-first is preserved. Only four client islands exist: `SiteHeader`
+(sticky + mobile menu), `WorkflowDemo` (auto-advancing accessible tabs),
+`Pricing` (billing-period preview toggle) and `Reveal`. The template gallery
+and FAQ use native `<details>` for interactivity, so they stay server-rendered
+and keyboard-accessible for free.
+
+### Honesty encoded in data + tests
+
+The brief forbids guaranteed results, invented metrics/testimonials, fake
+discounts and any purchase path on the unavailable Growth plan. These are
+enforced structurally, not just by copy review:
+
+- `pricingPlanSchema` refuses an `available: false` plan that carries a
+  non-null CTA href, so Growth can never link to a checkout.
+- `ButtonLink` renders a disabled `<button>` (not a link) when `href` is null.
+- The annual toggle is a clearly-labelled preview and shows exactly 12×
+  the monthly price (no discount claimed) — billing is not implemented.
+- A test scans all marketing copy for ROAS/CAC, percentages and
+  guaranteed-results phrasing, and asserts the "guarantee" FAQ answer denies
+  any guarantee.
+
+### Comparison framed by workflow, not competitors
+
+The comparison names workflow categories (generic AI chat, page builder,
+freelance/agency, AdvertoAI) rather than real products, and carries no prices
+— avoiding defamatory or fabricated claims while still positioning the tool.
+A test asserts no euro amounts appear in the comparison data.
+
+### Richer, still-centralized content model
+
+`content.ts` now holds typed, Zod-validated structures for navigation,
+workflow steps, templates, capabilities, pricing, comparison rows and FAQ.
+Availability is modelled as an explicit `launch | soon` enum so "current vs
+planned" is data, not prose — the UI renders the labels from it.
+
 ## Milestone 1 — Foundation & marketing site
 
 ### Repository reset on this branch
