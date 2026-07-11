@@ -6,10 +6,11 @@ product information into mobile-first advertorial pre-sell pages.
 Core positioning: **« Transformez votre produit en advertorial français prêt à
 convertir. »**
 
-This repository currently contains the application foundation and a
-conversion-focused public marketing website (milestone 1 + the 1.1 homepage
-refinement). The product flow (accounts, projects, AI generation, editing,
-publishing, billing) comes in later milestones — see [TASKS.md](./TASKS.md).
+This repository contains the application foundation, a conversion-focused
+public marketing website (milestone 1 + 1.1) and secure Supabase email/password
+authentication (milestone 2A: register, log in, log out, protected dashboard).
+Project CRUD, AI generation, billing and scraping come in later milestones —
+see [TASKS.md](./TASKS.md).
 
 The homepage is intentionally honest about scope: features not yet built are
 labelled « Bientôt », the Growth plan is a disabled waitlist (no checkout),
@@ -25,12 +26,14 @@ metrics.
 - TypeScript 5, `strict` mode
 - Tailwind CSS v4 (configured in CSS — there is intentionally no
   `tailwind.config.js`)
-- Zod for runtime validation (env vars, marketing content)
+- Zod for runtime validation (env vars, marketing + auth content)
 - Vitest for unit tests
 - lucide-react for icons
+- **Supabase** for authentication — `@supabase/supabase-js` + `@supabase/ssr`
+  (cookie-based sessions, email/password only in this milestone)
 
-Planned but **not** installed yet: Supabase (database + auth), Stripe
-(billing), an AI provider for copy generation.
+Planned but **not** installed yet: Supabase database tables/project CRUD,
+Stripe (billing), an AI provider for copy generation.
 
 ## Getting started
 
@@ -58,25 +61,40 @@ npm run dev                  # http://localhost:3000
 
 ```
 src/
+  proxy.ts                # Next.js 16 Proxy (was middleware): session refresh
+                          # + optimistic auth redirects
   app/
-    layout.tsx            # Root layout: fonts, metadata, header/footer chrome
+    layout.tsx            # Root layout: <html>/<body>, fonts, metadata
     globals.css           # Tailwind v4 entry + design tokens
-    page.tsx              # Marketing homepage (all sections)
-    dashboard/page.tsx    # Placeholder for the future app (not implemented)
+    (marketing)/          # Route group with the public chrome
+      layout.tsx          #   header + footer + skip link
+      page.tsx            #   marketing homepage (all sections)
+    connexion/            # /connexion — login (page + client form + footer)
+    inscription/          # /inscription — register (page + client form)
+    dashboard/page.tsx    # Protected authenticated shell + empty state
+    auth/confirm/route.ts # Email-confirmation callback (code / token_hash)
     not-found.tsx         # Custom French 404 page
     icon.svg              # Favicon
   components/
     layout/               # SiteHeader (client: sticky + mobile menu), SiteFooter
-    marketing/            # Hero (+ HeroPreview), Problem, WorkflowDemo (client),
-                          # TemplateGallery, Capabilities, FranceFirst, Pricing
-                          # (client), Comparison, Faq, FinalCta
+    marketing/            # Hero, Problem, WorkflowDemo, TemplateGallery, …
+    auth/                 # AuthShell, AuthField, PasswordInput (client toggle)
     ui/                   # ButtonLink, SectionHeading, Reveal (client)
   lib/
     content.ts            # ALL French marketing copy, parsed with Zod
     content-schema.ts     # Zod schemas + types for the content
-    env.ts                # Zod-validated public env vars
-    format.ts             # fr-FR formatting helpers (EUR prices)
-    utils.ts              # cx() class-name helper
+    env.ts                # Zod-validated public env vars (site + Supabase)
+    format.ts / utils.ts  # fr-FR formatting / cx() class-name helper
+    auth/
+      content.ts          # French auth copy + messages (Zod-validated)
+      validation.ts       # Email/password Zod rules (shared client + server)
+      errors.ts           # Supabase error → safe French message mapping
+      actions.ts          # signIn / signUp / signOut server actions
+      dal.ts              # getUser() / requireUser() — authoritative guard
+    supabase/
+      client.ts           # Browser client (publishable key)
+      server.ts           # Server client (cookie-based session)
+      proxy.ts            # updateSession() used by src/proxy.ts
     *.test.ts             # Vitest unit tests, colocated with the code
 ```
 
@@ -102,24 +120,84 @@ Conventions:
 
 ## Environment variables
 
-Copy `.env.example` to `.env.local`. No secrets exist in this milestone.
+Copy `.env.example` to `.env.local`. **Every variable is `NEXT_PUBLIC_*` and
+public/safe for the browser — this project never uses a Supabase service-role
+key, secret key or database password.**
 
-| Variable               | Purpose                                             |
-| ---------------------- | --------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL` | Canonical base URL for metadata (defaults to localhost) |
+| Variable                               | Purpose                                              |
+| -------------------------------------- | ---------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`                 | Canonical base URL for metadata + the email-confirmation redirect (defaults to localhost) |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Supabase project URL (Dashboard → Project Settings → API Keys) |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (safe to expose; RLS protects data) |
 
-`.gitignore` ignores every `.env*` file except `.env.example` — never commit
-real credentials.
+The Supabase values fall back to obvious placeholders when unset, so `build`,
+tests and CI never need real credentials. `.gitignore` ignores every `.env*`
+file except `.env.example` — never commit real credentials.
+
+## Supabase authentication setup
+
+Milestone 2A implements email/password auth (register, login, logout, a
+protected `/dashboard`). To run it against a real project:
+
+1. **Create a Supabase project** at [supabase.com](https://supabase.com).
+2. **Copy the keys** — Dashboard → *Project Settings → API Keys*: the
+   **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`, and the **publishable key**
+   → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Put both in `.env.local`.
+   Do **not** copy the service-role/secret key — it is not used here.
+3. **Auth settings** — Dashboard → *Authentication → Providers → Email*: make
+   sure **Email** is enabled. Leave *Confirm email* on for production (default).
+4. **URL configuration** — Dashboard → *Authentication → URL Configuration*:
+   - **Site URL:**
+     - local: `http://localhost:3000`
+     - production: `https://your-domain.com`
+   - **Redirect URLs (allow-list):**
+     - `http://localhost:3000/auth/confirm`
+     - `https://your-domain.com/auth/confirm`
+5. **Email confirmation** — with *Confirm email* enabled, registration shows a
+   « Vérifiez votre boîte mail » message; the confirmation link lands on
+   `/auth/confirm`, which establishes the session and redirects to
+   `/dashboard`. The callback supports both the PKCE `?code=` flow (default
+   email template) and the `?token_hash=&type=` flow (customized template).
+   If you disable *Confirm email*, registration signs the user straight in.
+
+### Create and test an account
+
+```bash
+cp .env.example .env.local   # fill in the two NEXT_PUBLIC_SUPABASE_* values
+npm run dev
+```
+
+- Visit `http://localhost:3000/inscription`, register with an email + a
+  password (≥ 8 chars, one uppercase, one lowercase, one digit).
+- With confirmation on: open the email, click the link → you land on
+  `/dashboard`. With confirmation off: you land on `/dashboard` immediately.
+- Log out via the dashboard button → back to `/connexion`.
+- Log back in at `/connexion`.
+
+### How route protection works
+
+- **`src/proxy.ts`** (Next.js 16 Proxy, formerly middleware) refreshes the
+  session cookie on every request and does *optimistic* redirects
+  (unauthenticated → `/connexion`, authenticated on an auth page →
+  `/dashboard`).
+- **`src/lib/auth/dal.ts`** is the authority: `requireUser()` calls
+  `supabase.auth.getUser()` (which re-validates the token with Supabase) and
+  redirects **before** any protected markup is rendered. The dashboard uses it,
+  so a direct URL visit by an anonymous user never sees protected HTML.
+- Redirect targets are fixed internal paths; no user-supplied redirect
+  parameter is honored (no open-redirect surface).
 
 ## Deployment (Vercel)
 
 1. Push this repository to GitHub.
 2. In Vercel: **Add New → Project**, import the repo. Vercel auto-detects
    Next.js; no build settings needed.
-3. Set the `NEXT_PUBLIC_SITE_URL` environment variable to the production URL
-   (e.g. `https://advertoai.fr`) for Production, and redeploy.
-4. Later milestones will add Supabase/Stripe secrets as server-side env vars
-   in the Vercel dashboard.
+3. Set the environment variables for Production and redeploy:
+   `NEXT_PUBLIC_SITE_URL` (e.g. `https://advertoai.fr`),
+   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+4. Add the production Site URL + `…/auth/confirm` redirect URL in the Supabase
+   dashboard (see *Supabase authentication setup* above).
+5. Later milestones may add server-side secrets (Stripe, AI). None exist today.
 
 ## Quality gates
 

@@ -63,18 +63,43 @@
 - [x] All gates green (lint, typecheck, 37 tests, build); browser-verified
       interactions and no horizontal overflow at 360/390/1440px
 
-## Milestone 2 — Authentication & projects (NEXT)
+## Milestone 2A — Supabase email/password authentication (DONE)
 
-Suggested scope (no AI generation yet):
+- [x] Added `@supabase/supabase-js` + `@supabase/ssr` (no other new deps)
+- [x] Public env vars `NEXT_PUBLIC_SUPABASE_URL` +
+      `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, Zod-validated with placeholders;
+      no service-role/secret key anywhere
+- [x] Browser + server Supabase clients, cookie-based sessions
+- [x] `src/proxy.ts` (Next.js 16 Proxy) — session refresh + optimistic
+      redirects; authoritative guard in `src/lib/auth/dal.ts`
+- [x] `/inscription` — register (email, password, confirm, visibility toggle,
+      client + server validation, loading/disabled state, French errors)
+- [x] `/connexion` — login (French errors, no raw Supabase errors exposed)
+- [x] Logout server action; protected `/dashboard` shell with user email,
+      empty state and "next milestone" message
+- [x] Email confirmation: « Vérifiez votre boîte mail » state +
+      `/auth/confirm` callback (PKCE `code` and `token_hash` flows)
+- [x] Marketing CTAs repointed: Connexion → /connexion, Commencer /
+      primary CTAs → /inscription; legal/contact footer links de-linked
+      (no longer point at the now-protected /dashboard)
+- [x] Auth copy centralized + validated in `src/lib/auth/content.ts`
+- [x] Tests (83 total): env, validation, password rules, confirm mismatch,
+      French error mapping, DAL redirect, authed user, actions (mocked
+      Supabase), form rendering, header auth-link destinations
+- [x] Security review: server-side protection, no open redirects, no
+      credential logging, no service-role key, no secrets committed
+- [x] All gates green (lint, typecheck, test, build); browser-verified
 
-- [ ] Supabase integration (Postgres + Auth), env vars server-side only
-- [ ] Email/password + magic-link sign-up and login pages (French UI)
-- [ ] Protected `/dashboard` shell replacing the placeholder
+## Milestone 2B — Projects (NEXT)
+
+Suggested scope (still no AI generation):
+
+- [ ] Supabase Postgres tables + row-level security policies
 - [ ] Project CRUD: create/rename/delete a project; list projects
 - [ ] Product info form per project (name, URL, description, audience,
       offer) validated with Zod — stored, not yet used for generation
-- [ ] Database schema + row-level security policies
-- [ ] Tests for validation schemas and any server actions
+- [ ] Replace the dashboard empty state with the project list/shell
+- [ ] Tests for the new schemas and server actions
 
 ## Later milestones (not started)
 

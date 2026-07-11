@@ -4,6 +4,8 @@ import { Sparkles } from "lucide-react";
 import {
   footerGroups,
   footerLegalNote,
+  footerPlaceholders,
+  footerPlaceholderTitle,
   siteDescription,
   siteName,
 } from "@/lib/content";
@@ -44,6 +46,19 @@ export function SiteFooter() {
               </ul>
             </nav>
           ))}
+
+          <div>
+            <p className="text-sm font-semibold text-slate-900">
+              {footerPlaceholderTitle}
+            </p>
+            <ul className="mt-3 space-y-2">
+              {footerPlaceholders.map((label) => (
+                <li key={label} className="text-sm text-slate-400">
+                  {label}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         <p className="mt-10 text-xs text-slate-500">{footerLegalNote}</p>

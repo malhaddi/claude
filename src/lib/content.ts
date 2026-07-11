@@ -44,13 +44,12 @@ export const navLinks = z.array(navLinkSchema).min(1).parse([
   { href: "#faq", label: "FAQ" },
 ]);
 
-// Auth / conversion CTAs in the navigation. Both point to the placeholder
-// app for now (no auth implemented yet).
+// Auth / conversion CTAs in the navigation.
 export const navCtas = z
   .object({ login: ctaSchema, signup: ctaSchema })
   .parse({
-    login: { label: "Connexion", href: "/dashboard" },
-    signup: { label: "Commencer gratuitement", href: "/dashboard" },
+    login: { label: "Connexion", href: "/connexion" },
+    signup: { label: "Commencer gratuitement", href: "/inscription" },
   });
 
 export const hero = heroSchema.parse({
@@ -58,7 +57,7 @@ export const hero = heroSchema.parse({
   headline: siteTagline,
   promise:
     "Collez votre URL produit. AdvertoAI structure votre angle, rédige votre page en français et la prépare pour votre trafic Meta et TikTok.",
-  primaryCta: { label: "Créer mon premier advertorial", href: "/dashboard" },
+  primaryCta: { label: "Créer mon premier advertorial", href: "/inscription" },
   secondaryCta: { label: "Voir comment ça fonctionne", href: "#produit" },
   noCardNote: "Aucune carte bancaire requise",
   previewLabel: "Démonstration produit",
@@ -255,7 +254,7 @@ export const pricingPlans = z.array(pricingPlanSchema).length(3).parse([
       "Marque AdvertoAI affichée",
     ],
     badge: null,
-    cta: { label: "Essayer gratuitement", href: "/dashboard" },
+    cta: { label: "Essayer gratuitement", href: "/inscription" },
     recommended: false,
     available: true,
   },
@@ -274,7 +273,7 @@ export const pricingPlans = z.array(pricingPlanSchema).length(3).parse([
       "Marque AdvertoAI retirée",
     ],
     badge: "Recommandé",
-    cta: { label: "Commencer avec Lanceur", href: "/dashboard" },
+    cta: { label: "Commencer avec Lanceur", href: "/inscription" },
     recommended: true,
     available: true,
   },
@@ -443,7 +442,7 @@ export const finalCta = finalCtaSchema.parse({
     "Votre prochaine campagne mérite mieux qu'une fiche produit générique.",
   description:
     "Créez votre premier advertorial français et préparez une vraie page de pré-vente pour votre trafic Meta et TikTok.",
-  cta: { label: "Créer mon premier advertorial", href: "/dashboard" },
+  cta: { label: "Créer mon premier advertorial", href: "/inscription" },
 });
 
 export const footerGroups = z.array(footerGroupSchema).min(2).parse([
@@ -459,19 +458,24 @@ export const footerGroups = z.array(footerGroupSchema).min(2).parse([
   {
     title: "Compte",
     links: [
-      { href: "/dashboard", label: "Commencer gratuitement" },
-      { href: "/dashboard", label: "Connexion" },
-    ],
-  },
-  {
-    title: "Légal",
-    links: [
-      { href: "/dashboard", label: "Mentions légales" },
-      { href: "/dashboard", label: "Politique de confidentialité" },
-      { href: "/dashboard", label: "Contact" },
+      { href: "/inscription", label: "Commencer gratuitement" },
+      { href: "/connexion", label: "Connexion" },
     ],
   },
 ]);
+
+// Legal/contact pages do not exist yet. They are rendered as non-link
+// placeholders (not pointing anywhere) so navigation is never misleading —
+// in particular, they must NOT point to the now-protected /dashboard.
+export const footerPlaceholderTitle = "Légal";
+export const footerPlaceholders = z
+  .array(z.string().min(1))
+  .min(1)
+  .parse([
+    "Mentions légales (à venir)",
+    "Politique de confidentialité (à venir)",
+    "Contact (à venir)",
+  ]);
 
 export const footerLegalNote =
   "Les pages Mentions légales, Politique de confidentialité et Contact seront publiées avant l'ouverture commerciale.";

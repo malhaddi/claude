@@ -3,6 +3,76 @@
 Log of the major choices made so far and why. Newest first within each
 milestone.
 
+## Milestone 2A — Supabase email/password authentication
+
+### Proxy, not middleware (Next.js 16)
+
+Next.js 16 renamed `middleware.ts` to **`proxy.ts`** (same functionality; the
+bundled docs at `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`
+say so explicitly). We use `src/proxy.ts` to refresh the Supabase session
+cookie and perform *optimistic* auth redirects. Per the same docs, the proxy is
+a first check, **not** the authorization authority: the real guard lives in the
+Data Access Layer.
+
+### Authoritative guard in a DAL, rendered before any protected HTML
+
+`src/lib/auth/dal.ts` exposes `getUser()` (memoized with React `cache`) and
+`requireUser()`. Both call `supabase.auth.getUser()`, which **re-validates the
+JWT with the Supabase Auth server** — unlike `getSession()`, which only reads a
+cookie and must not be trusted for authorization. The dashboard calls
+`requireUser()` at the top of the server component, so an unauthenticated
+direct visit redirects to `/connexion` (HTTP 307) with **no protected markup
+ever produced**. Client-side checks are never the protection.
+
+### Publishable key, and no service-role key — ever
+
+Auth uses only `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+These are public by design (row-level security, not key secrecy, protects
+data). The project deliberately never reads a service-role/secret key or DB
+password — a test asserts the env schema does not surface `SUPABASE_SERVICE_ROLE_KEY`.
+(Supabase now calls this the "publishable key"; earlier docs said "anon key".)
+
+### Env placeholders so CI needs no credentials
+
+The Supabase env vars validate through the same Zod layer as the site URL, with
+obvious placeholder defaults (`https://placeholder.supabase.co`,
+`placeholder-publishable-key`). `build`, tests and CI therefore never need real
+credentials. `isSupabaseConfigured` detects the placeholders and the auth
+actions return a clear French "not configured" message instead of failing
+obscurely.
+
+### Route group to separate marketing chrome from app chrome
+
+The marketing header/footer moved from the root layout into an
+`app/(marketing)/layout.tsx` route group. The root layout is now just
+`<html>/<body>` + fonts + metadata. This lets the auth pages and the
+authenticated dashboard render their own chrome without the marketing nav
+(which would otherwise show "Connexion / Commencer" on the logged-in dashboard).
+
+### Safe redirects only
+
+Proxy and the `/auth/confirm` callback redirect to **fixed internal paths**
+(`/connexion`, `/dashboard`) and clear the query string. No user-supplied
+`redirect`/`next` parameter is honored anywhere, eliminating open-redirect
+risk. Supabase errors are mapped to a curated French dictionary
+(`src/lib/auth/errors.ts`); a raw Supabase message is never shown to the user.
+
+### No new test dependencies
+
+The testing requirement (form rendering, redirect, mocked-session behavior) is
+met without adding jsdom or a testing-library: pure logic (validation, error
+mapping, DAL, actions) is unit-tested with Vitest + `vi.mock`, and the login/
+register forms are rendered with the built-in `react-dom/server`
+`renderToStaticMarkup`. Consistent with the project's "minimal dependencies"
+stance.
+
+### Footer legal/contact de-linked
+
+Because `/dashboard` is now protected, the footer's Mentions légales /
+Politique / Contact placeholders (which used to point at `/dashboard`) would
+send anonymous visitors to a login redirect — misleading. They are now rendered
+as non-link "à venir" placeholders until the real pages exist.
+
 ## Milestone 1.1 — Conversion-focused homepage refinement
 
 ### Motion without an animation library

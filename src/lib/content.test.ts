@@ -234,6 +234,35 @@ describe("key CTAs", () => {
   });
 });
 
+describe("auth link destinations", () => {
+  it("points the nav CTAs at the auth routes", () => {
+    expect(navCtas.login.href).toBe("/connexion");
+    expect(navCtas.signup.href).toBe("/inscription");
+  });
+
+  it("points the primary conversion CTAs at registration", () => {
+    expect(hero.primaryCta.href).toBe("/inscription");
+    expect(finalCta.cta.href).toBe("/inscription");
+    const byId = Object.fromEntries(pricingPlans.map((p) => [p.id, p]));
+    expect(byId.discovery.cta.href).toBe("/inscription");
+    expect(byId.launcher.cta.href).toBe("/inscription");
+  });
+
+  it("never links public marketing content to the protected /dashboard", () => {
+    const hrefs = [
+      ...navLinks.map((l) => l.href),
+      navCtas.login.href,
+      navCtas.signup.href,
+      hero.primaryCta.href,
+      hero.secondaryCta.href,
+      finalCta.cta.href,
+      ...pricingPlans.map((p) => p.cta.href),
+      ...footerGroups.flatMap((g) => g.links.map((l) => l.href)),
+    ];
+    expect(hrefs).not.toContain("/dashboard");
+  });
+});
+
 describe("no unsupported performance claims", () => {
   it("never mentions ROAS or CAC", () => {
     expect(claimsHaystack).not.toMatch(/\bROAS\b/i);
