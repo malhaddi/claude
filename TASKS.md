@@ -90,16 +90,37 @@
       credential logging, no service-role key, no secrets committed
 - [x] All gates green (lint, typecheck, test, build); browser-verified
 
-## Milestone 2B — Projects (NEXT)
+## Milestone 2B — Projects, database & RLS (DONE)
 
-Suggested scope (still no AI generation):
+- [x] SQL migration `supabase/migrations/20260711120000_create_projects.sql`:
+      `projects` table, `(user_id, created_at)` index, `updated_at` trigger
+- [x] Row Level Security enabled with four owner-only policies
+      (select/insert/update/delete on `auth.uid() = user_id`)
+- [x] RLS-scoped DAL (`getProjects`, `getProject`) — foreign id returns null
+- [x] Server actions create/update/delete: identity from the session (never
+      a form `user_id`), filtered by id AND user_id, safe French errors
+- [x] Routes `/dashboard` (list), `/dashboard/projets/nouveau`,
+      `/dashboard/projets/[id]` (404 on inaccessible id)
+- [x] Product intake form (name + URL/title/description/benefits/audience/
+      offer/image URL/destination URL), Zod-validated, http(s)-only URLs,
+      loading/disabled/success/error states, French labels & errors
+- [x] Dashboard: welcome + email, "Nouveau projet", project list, empty
+      state, status, creation date, open/edit, delete-with-confirmation,
+      logout, responsive
+- [x] Tests (28 new / 111 total): validation, create/update/delete actions,
+      unauthenticated access, ownership enforcement, inaccessible foreign
+      project, invalid URLs, user_id spoof prevention, dashboard empty +
+      populated states — Supabase mocked, no real credentials needed
+- [x] Security: server-side actions, IDOR-safe, no service-role key, RLS as
+      final layer, no raw DB errors shown; route protection verified (307,
+      no protected markup leaked)
+- [x] All gates green (lint, typecheck, test, build)
 
-- [ ] Supabase Postgres tables + row-level security policies
-- [ ] Project CRUD: create/rename/delete a project; list projects
-- [ ] Product info form per project (name, URL, description, audience,
-      offer) validated with Zod — stored, not yet used for generation
-- [ ] Replace the dashboard empty state with the project list/shell
-- [ ] Tests for the new schemas and server actions
+## Milestone 3 — AI advertorial generation (NEXT)
+
+Out of scope until now: AI generation, Stripe, scraping, Shopify OAuth,
+analytics, teams, publishing. A future milestone will turn a project's stored
+product info into structured French advertorial copy.
 
 ## Later milestones (not started)
 

@@ -7,10 +7,10 @@ Core positioning: **« Transformez votre produit en advertorial français prêt 
 convertir. »**
 
 This repository contains the application foundation, a conversion-focused
-public marketing website (milestone 1 + 1.1) and secure Supabase email/password
-authentication (milestone 2A: register, log in, log out, protected dashboard).
-Project CRUD, AI generation, billing and scraping come in later milestones —
-see [TASKS.md](./TASKS.md).
+public marketing website (milestone 1 + 1.1), secure Supabase email/password
+authentication (milestone 2A) and user-owned **projects** with Row Level
+Security + a product-intake form (milestone 2B). AI generation, billing and
+scraping come in later milestones — see [TASKS.md](./TASKS.md).
 
 The homepage is intentionally honest about scope: features not yet built are
 labelled « Bientôt », the Growth plan is a disabled waitlist (no checkout),
@@ -29,11 +29,12 @@ metrics.
 - Zod for runtime validation (env vars, marketing + auth content)
 - Vitest for unit tests
 - lucide-react for icons
-- **Supabase** for authentication — `@supabase/supabase-js` + `@supabase/ssr`
-  (cookie-based sessions, email/password only in this milestone)
+- **Supabase** for authentication **and database** — `@supabase/supabase-js` +
+  `@supabase/ssr` (cookie-based sessions; projects table with Row Level
+  Security). Email/password auth only; no service-role key is ever used.
 
-Planned but **not** installed yet: Supabase database tables/project CRUD,
-Stripe (billing), an AI provider for copy generation.
+Planned but **not** installed yet: Stripe (billing), an AI provider for copy
+generation, scraping.
 
 ## Getting started
 
@@ -71,7 +72,10 @@ src/
       page.tsx            #   marketing homepage (all sections)
     connexion/            # /connexion — login (page + client form + footer)
     inscription/          # /inscription — register (page + client form)
-    dashboard/page.tsx    # Protected authenticated shell + empty state
+    dashboard/
+      page.tsx            #   protected project list + empty state
+      projets/nouveau/    #   /dashboard/projets/nouveau — create form
+      projets/[id]/       #   /dashboard/projets/[id] — edit form (404 if foreign)
     auth/confirm/route.ts # Email-confirmation callback (code / token_hash)
     not-found.tsx         # Custom French 404 page
     icon.svg              # Favicon
@@ -79,23 +83,27 @@ src/
     layout/               # SiteHeader (client: sticky + mobile menu), SiteFooter
     marketing/            # Hero, Problem, WorkflowDemo, TemplateGallery, …
     auth/                 # AuthShell, AuthField, PasswordInput (client toggle)
+    dashboard/            # DashboardHeader, ProjectList, ProjectForm (client),
+                          # FormField, DeleteProjectButton (client)
     ui/                   # ButtonLink, SectionHeading, Reveal (client)
   lib/
-    content.ts            # ALL French marketing copy, parsed with Zod
-    content-schema.ts     # Zod schemas + types for the content
+    content.ts / content-schema.ts   # French marketing copy + Zod schemas
     env.ts                # Zod-validated public env vars (site + Supabase)
     format.ts / utils.ts  # fr-FR formatting / cx() class-name helper
-    auth/
-      content.ts          # French auth copy + messages (Zod-validated)
-      validation.ts       # Email/password Zod rules (shared client + server)
-      errors.ts           # Supabase error → safe French message mapping
-      actions.ts          # signIn / signUp / signOut server actions
-      dal.ts              # getUser() / requireUser() — authoritative guard
+    auth/                 # content, validation, errors, actions, dal (guard)
+    projects/
+      content.ts          # French projects copy (Zod-validated)
+      types.ts            # Project / ProjectInput row types
+      validation.ts       # Zod schema (name required, http(s)-only URLs)
+      dal.ts              # getProjects() / getProject() — RLS-scoped reads
+      actions.ts          # create / update / delete server actions
     supabase/
       client.ts           # Browser client (publishable key)
       server.ts           # Server client (cookie-based session)
       proxy.ts            # updateSession() used by src/proxy.ts
     *.test.ts             # Vitest unit tests, colocated with the code
+supabase/
+  migrations/             # SQL migrations (projects table + RLS)
 ```
 
 Conventions:
@@ -186,6 +194,56 @@ npm run dev
   so a direct URL visit by an anonymous user never sees protected HTML.
 - Redirect targets are fixed internal paths; no user-supplied redirect
   parameter is honored (no open-redirect surface).
+
+## Database & projects (Milestone 2B)
+
+Logged-in users can create, open, edit and delete their own **projects**
+(product intake for a future advertorial). Ownership is enforced by Row Level
+Security in Postgres — the application is defense-in-depth, RLS is the final
+layer. **No service-role key is used**; the app talks to the DB with the
+publishable key + the user's session, so `auth.uid()` resolves to the
+logged-in user.
+
+### Apply the migration
+
+Migration file: [`supabase/migrations/20260711120000_create_projects.sql`](./supabase/migrations/20260711120000_create_projects.sql).
+
+**Option A — Supabase Dashboard (simplest):** open *SQL Editor → New query*,
+paste the file's contents, and **Run**.
+
+**Option B — Supabase CLI:**
+```bash
+supabase link --project-ref <your-project-ref>
+supabase db push        # applies files in supabase/migrations
+```
+
+The migration creates `public.projects`, an index on `(user_id, created_at)`,
+an `updated_at` trigger, enables RLS, and adds four owner-only policies. It is
+re-runnable (idempotent `if not exists` / `drop policy if exists`).
+
+### Verify RLS is on
+
+- Dashboard → *Authentication → Policies*: `public.projects` should show
+  **RLS enabled** with `projects_select_own`, `projects_insert_own`,
+  `projects_update_own`, `projects_delete_own`.
+- Or in SQL:
+  ```sql
+  select relrowsecurity from pg_class where relname = 'projects';   -- t
+  select policyname, cmd from pg_policies where tablename = 'projects';
+  ```
+
+### Manual two-user security test
+
+1. Register **User A**, create a project, and note its id from the URL
+   `/dashboard/projets/<ID>`.
+2. Register **User B** (different email; use a private window / second browser).
+3. As **User B**, visit `/dashboard` → you see **only B's** projects (A's are
+   absent).
+4. As **User B**, visit `/dashboard/projets/<A's ID>` directly → you get a
+   **404** (no data, no leak — IDOR blocked).
+5. Optional DB check: in the SQL Editor run `select count(*) from projects;`
+   as each user via *Run as → authenticated* (impersonate) — each sees only
+   their own rows.
 
 ## Deployment (Vercel)
 

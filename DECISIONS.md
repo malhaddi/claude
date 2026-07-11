@@ -3,6 +3,57 @@
 Log of the major choices made so far and why. Newest first within each
 milestone.
 
+## Milestone 2B — Projects, database & Row Level Security
+
+### RLS is the final enforcement layer, not the app
+
+The `projects` table enables RLS with four owner-only policies keyed on
+`auth.uid() = user_id`. Because the app uses the **publishable key + the user's
+session** (never the service-role key), every query the app issues is subject
+to those policies. The application checks (`requireUser()`, filtering by
+`user_id`, ownership-scoped DAL) are defense-in-depth on top — even if an app
+check were bypassed, Postgres still refuses cross-user reads/writes.
+
+### Identity from the session, never from the form (no spoofing / IDOR)
+
+Create derives `user_id` from `requireUser()` and ignores any `user_id` in the
+submitted form; the INSERT policy's `WITH CHECK` rejects a mismatch anyway.
+Update/delete bind the project id as a server-action argument and filter by
+`id AND user_id`, so a forged id affects zero rows. Reads go through
+`getProject()`, which is RLS-scoped — a foreign or non-existent id returns
+null and the page calls `notFound()` (HTTP 404). A test suite covers the
+spoof, ownership, and inaccessible-id paths; a live check confirmed protected
+routes 307 to `/connexion` with no protected markup rendered.
+
+### http(s)-only URL validation
+
+The optional URL fields (`product_url`, `product_image_url`,
+`destination_url`) are later rendered as links/images, so the Zod schema
+accepts only `http:`/`https:` URLs (via the `URL` constructor) — blocking
+`javascript:`/`data:` and similar injection vectors. Empty fields normalize to
+`null`.
+
+### Hand-written row types (no generated types, no service-role)
+
+`Project`/`ProjectInput` are defined by hand in `src/lib/projects/types.ts`
+rather than generated from the database, so the build/tests never need a
+Supabase connection or the service-role key. Consistent with the milestone-2A
+"public keys only" stance.
+
+### Testing without real Supabase
+
+Actions and the DAL are unit-tested with a small chainable Supabase
+query-builder mock plus `vi.mock` of `next/navigation`, `@/lib/auth/dal` and
+`@/lib/supabase/server`; the dashboard list is rendered with
+`react-dom/server`. No new test dependency and no real credentials required.
+
+### Delete confirmation without a dependency
+
+The delete control uses a two-step inline confirmation (a client component
+with `useFormStatus`) rather than `window.confirm` (blocked in some
+environments, unstyleable) or a dialog library — keeping the no-extra-deps
+stance while staying keyboard-accessible.
+
 ## Milestone 2A — Supabase email/password authentication
 
 ### Proxy, not middleware (Next.js 16)
