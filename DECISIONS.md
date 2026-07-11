@@ -3,6 +3,133 @@
 Log of the major choices made so far and why. Newest first within each
 milestone.
 
+## Milestone 2A — Supabase email/password authentication
+
+### Proxy, not middleware (Next.js 16)
+
+Next.js 16 renamed `middleware.ts` to **`proxy.ts`** (same functionality; the
+bundled docs at `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`
+say so explicitly). We use `src/proxy.ts` to refresh the Supabase session
+cookie and perform *optimistic* auth redirects. Per the same docs, the proxy is
+a first check, **not** the authorization authority: the real guard lives in the
+Data Access Layer.
+
+### Authoritative guard in a DAL, rendered before any protected HTML
+
+`src/lib/auth/dal.ts` exposes `getUser()` (memoized with React `cache`) and
+`requireUser()`. Both call `supabase.auth.getUser()`, which **re-validates the
+JWT with the Supabase Auth server** — unlike `getSession()`, which only reads a
+cookie and must not be trusted for authorization. The dashboard calls
+`requireUser()` at the top of the server component, so an unauthenticated
+direct visit redirects to `/connexion` (HTTP 307) with **no protected markup
+ever produced**. Client-side checks are never the protection.
+
+### Publishable key, and no service-role key — ever
+
+Auth uses only `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+These are public by design (row-level security, not key secrecy, protects
+data). The project deliberately never reads a service-role/secret key or DB
+password — a test asserts the env schema does not surface `SUPABASE_SERVICE_ROLE_KEY`.
+(Supabase now calls this the "publishable key"; earlier docs said "anon key".)
+
+### Env placeholders so CI needs no credentials
+
+The Supabase env vars validate through the same Zod layer as the site URL, with
+obvious placeholder defaults (`https://placeholder.supabase.co`,
+`placeholder-publishable-key`). `build`, tests and CI therefore never need real
+credentials. `isSupabaseConfigured` detects the placeholders and the auth
+actions return a clear French "not configured" message instead of failing
+obscurely.
+
+### Route group to separate marketing chrome from app chrome
+
+The marketing header/footer moved from the root layout into an
+`app/(marketing)/layout.tsx` route group. The root layout is now just
+`<html>/<body>` + fonts + metadata. This lets the auth pages and the
+authenticated dashboard render their own chrome without the marketing nav
+(which would otherwise show "Connexion / Commencer" on the logged-in dashboard).
+
+### Safe redirects only
+
+Proxy and the `/auth/confirm` callback redirect to **fixed internal paths**
+(`/connexion`, `/dashboard`) and clear the query string. No user-supplied
+`redirect`/`next` parameter is honored anywhere, eliminating open-redirect
+risk. Supabase errors are mapped to a curated French dictionary
+(`src/lib/auth/errors.ts`); a raw Supabase message is never shown to the user.
+
+### No new test dependencies
+
+The testing requirement (form rendering, redirect, mocked-session behavior) is
+met without adding jsdom or a testing-library: pure logic (validation, error
+mapping, DAL, actions) is unit-tested with Vitest + `vi.mock`, and the login/
+register forms are rendered with the built-in `react-dom/server`
+`renderToStaticMarkup`. Consistent with the project's "minimal dependencies"
+stance.
+
+### Footer legal/contact de-linked
+
+Because `/dashboard` is now protected, the footer's Mentions légales /
+Politique / Contact placeholders (which used to point at `/dashboard`) would
+send anonymous visitors to a login redirect — misleading. They are now rendered
+as non-link "à venir" placeholders until the real pages exist.
+
+## Milestone 1.1 — Conversion-focused homepage refinement
+
+### Motion without an animation library
+
+Requirement: restrained, performant, reduced-motion-safe animation. We use
+CSS transitions + a single `IntersectionObserver` (the `Reveal` wrapper)
+rather than Framer Motion. Rationale:
+
+- The needed effects (scroll reveal, entrance rise, sticky-nav transition,
+  progress bars, hover states, smooth `<details>`) are all expressible in CSS.
+- Framer Motion would add a client-side dependency and ship more JS for no
+  material simplification here.
+- **No dependencies were added in this milestone.**
+
+Accessibility of the reveal primitive is layered: the hidden state lives only
+inside `@media (prefers-reduced-motion: no-preference)`, so reduced-motion
+users are never left with invisible content; a `<noscript>` override forces
+visibility without JS; and only opacity/transform animate, so there is no
+cumulative layout shift. Tests assert both guards.
+
+### Client components kept to the minimum
+
+Server-first is preserved. Only four client islands exist: `SiteHeader`
+(sticky + mobile menu), `WorkflowDemo` (auto-advancing accessible tabs),
+`Pricing` (billing-period preview toggle) and `Reveal`. The template gallery
+and FAQ use native `<details>` for interactivity, so they stay server-rendered
+and keyboard-accessible for free.
+
+### Honesty encoded in data + tests
+
+The brief forbids guaranteed results, invented metrics/testimonials, fake
+discounts and any purchase path on the unavailable Growth plan. These are
+enforced structurally, not just by copy review:
+
+- `pricingPlanSchema` refuses an `available: false` plan that carries a
+  non-null CTA href, so Growth can never link to a checkout.
+- `ButtonLink` renders a disabled `<button>` (not a link) when `href` is null.
+- The annual toggle is a clearly-labelled preview and shows exactly 12×
+  the monthly price (no discount claimed) — billing is not implemented.
+- A test scans all marketing copy for ROAS/CAC, percentages and
+  guaranteed-results phrasing, and asserts the "guarantee" FAQ answer denies
+  any guarantee.
+
+### Comparison framed by workflow, not competitors
+
+The comparison names workflow categories (generic AI chat, page builder,
+freelance/agency, AdvertoAI) rather than real products, and carries no prices
+— avoiding defamatory or fabricated claims while still positioning the tool.
+A test asserts no euro amounts appear in the comparison data.
+
+### Richer, still-centralized content model
+
+`content.ts` now holds typed, Zod-validated structures for navigation,
+workflow steps, templates, capabilities, pricing, comparison rows and FAQ.
+Availability is modelled as an explicit `launch | soon` enum so "current vs
+planned" is data, not prose — the UI renders the labels from it.
+
 ## Milestone 1 — Foundation & marketing site
 
 ### Repository reset on this branch

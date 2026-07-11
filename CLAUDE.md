@@ -6,11 +6,18 @@ AdvertoAI helps Shopify and DTC advertisers turn product information into
 mobile-first advertorial pre-sell pages, written in French. Core positioning:
 « Transformez votre produit en advertorial français prêt à convertir. »
 
-Current state: **Milestone 1** — application foundation + public marketing
-website only. No backend, no auth, no AI generation, no billing yet. The
-`/dashboard` route is an intentional "En construction" placeholder. See
-`TASKS.md` for the roadmap and `DECISIONS.md` for the reasoning behind
-technical choices.
+Current state: **Milestone 2A** — application foundation, conversion-focused
+marketing site (M1 + M1.1) and **Supabase email/password authentication**
+(register, login, logout, protected `/dashboard`). No project CRUD, AI
+generation, billing or scraping yet. See `TASKS.md` for the roadmap and
+`DECISIONS.md` for the reasoning behind technical choices.
+
+Auth notes: Next.js 16 uses `src/proxy.ts` (renamed from middleware) for
+session refresh; the authoritative guard is `src/lib/auth/dal.ts`
+(`requireUser()` → `supabase.auth.getUser()`), used by the dashboard before any
+protected markup renders. Only public env vars are used
+(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) — never a
+service-role/secret key.
 
 ## Tech stack
 

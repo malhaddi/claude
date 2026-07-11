@@ -29,18 +29,77 @@
 - [x] Verified in a real browser: no horizontal overflow at 390px/1440px,
       menu/FAQ/anchor interactions, skip link, 404 status codes
 
-## Milestone 2 — Authentication & projects (NEXT)
+## Milestone 1.1 — Conversion-focused homepage refinement (DONE)
 
-Suggested scope (no AI generation yet):
+- [x] Sticky navigation with scroll background/shadow transition; links
+      Produit / Modèles / Tarifs / FAQ + Connexion + Commencer gratuitement
+- [x] Hero rebuilt: outcome-focused promise, primary CTA « Créer mon premier
+      advertorial », secondary « Voir comment ça fonctionne », no-card note,
+      restrained entrance animation, labelled product preview
+- [x] Problem section (4 common marketing problems, framed as such)
+- [x] Interactive workflow walkthrough (Coller l'URL → Choisir l'angle →
+      Générer → Modifier & publier), accessible tabs, autoplay only when
+      motion is allowed and in view
+- [x] Template gallery: 5 French frameworks (« 5 raisons de… », « J'ai
+      testé… », PAS, Comparatif, Guide d'achat) with funnel stage, best use,
+      example structure and launch/soon labels; interactive cards
+- [x] Capabilities split into « Disponible au lancement » vs « Bientôt »
+- [x] France-first differentiation section (incl. RGPD-conscious wording,
+      no compliance-certification claim)
+- [x] Three pricing cards: Découverte (gratuit), Lanceur (39 €, recommandé),
+      Croissance (79 €, « Bientôt disponible », disabled waitlist CTA);
+      labelled monthly/annual preview toggle, no fake discount, no checkout
+- [x] Comparison section by workflow category (generic AI chat / page builder
+      / freelance-agency / AdvertoAI), no named competitors or invented prices
+- [x] FAQ expanded to the 9 required questions, honest scope answers
+- [x] Final CTA « Votre prochaine campagne mérite mieux… » + footer with
+      Produit / Tarifs / FAQ / legal + contact placeholders
+- [x] Content architecture: navigation, workflow, templates, capabilities,
+      pricing, comparison, FAQ all centralized + Zod-validated in content.ts
+- [x] Restrained, performant motion (CSS + IntersectionObserver, no animation
+      dependency), reduced-motion + no-JS safe, no layout shift
+- [x] Tests: pricing, nav, template data, FAQ, key CTAs, no unsupported
+      claims, Growth-plan purchase safety, reduced-motion/no-JS guards
+- [x] All gates green (lint, typecheck, 37 tests, build); browser-verified
+      interactions and no horizontal overflow at 360/390/1440px
 
-- [ ] Supabase integration (Postgres + Auth), env vars server-side only
-- [ ] Email/password + magic-link sign-up and login pages (French UI)
-- [ ] Protected `/dashboard` shell replacing the placeholder
+## Milestone 2A — Supabase email/password authentication (DONE)
+
+- [x] Added `@supabase/supabase-js` + `@supabase/ssr` (no other new deps)
+- [x] Public env vars `NEXT_PUBLIC_SUPABASE_URL` +
+      `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, Zod-validated with placeholders;
+      no service-role/secret key anywhere
+- [x] Browser + server Supabase clients, cookie-based sessions
+- [x] `src/proxy.ts` (Next.js 16 Proxy) — session refresh + optimistic
+      redirects; authoritative guard in `src/lib/auth/dal.ts`
+- [x] `/inscription` — register (email, password, confirm, visibility toggle,
+      client + server validation, loading/disabled state, French errors)
+- [x] `/connexion` — login (French errors, no raw Supabase errors exposed)
+- [x] Logout server action; protected `/dashboard` shell with user email,
+      empty state and "next milestone" message
+- [x] Email confirmation: « Vérifiez votre boîte mail » state +
+      `/auth/confirm` callback (PKCE `code` and `token_hash` flows)
+- [x] Marketing CTAs repointed: Connexion → /connexion, Commencer /
+      primary CTAs → /inscription; legal/contact footer links de-linked
+      (no longer point at the now-protected /dashboard)
+- [x] Auth copy centralized + validated in `src/lib/auth/content.ts`
+- [x] Tests (83 total): env, validation, password rules, confirm mismatch,
+      French error mapping, DAL redirect, authed user, actions (mocked
+      Supabase), form rendering, header auth-link destinations
+- [x] Security review: server-side protection, no open redirects, no
+      credential logging, no service-role key, no secrets committed
+- [x] All gates green (lint, typecheck, test, build); browser-verified
+
+## Milestone 2B — Projects (NEXT)
+
+Suggested scope (still no AI generation):
+
+- [ ] Supabase Postgres tables + row-level security policies
 - [ ] Project CRUD: create/rename/delete a project; list projects
 - [ ] Product info form per project (name, URL, description, audience,
       offer) validated with Zod — stored, not yet used for generation
-- [ ] Database schema + row-level security policies
-- [ ] Tests for validation schemas and any server actions
+- [ ] Replace the dashboard empty state with the project list/shell
+- [ ] Tests for the new schemas and server actions
 
 ## Later milestones (not started)
 
