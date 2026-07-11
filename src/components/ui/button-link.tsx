@@ -15,27 +15,48 @@ const variants = {
 
 export type ButtonLinkVariant = keyof typeof variants;
 
-/** Link styled as a button — the marketing site only navigates, never submits. */
+const baseClasses =
+  "inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2";
+
+/**
+ * Link styled as a button. When `href` is null the control renders as a
+ * disabled `<button>` (used for the not-yet-available Growth plan / waitlist),
+ * so it can never trigger navigation or a purchase.
+ */
 export function ButtonLink({
   href,
   variant = "primary",
   className,
   children,
+  disabledLabel,
 }: {
-  href: string;
+  href: string | null;
   variant?: ButtonLinkVariant;
   className?: string;
   children: React.ReactNode;
+  /** Accessible hint appended when disabled, e.g. "Bientôt disponible". */
+  disabledLabel?: string;
 }) {
+  if (href === null) {
+    return (
+      <button
+        type="button"
+        disabled
+        aria-disabled="true"
+        className={cx(
+          baseClasses,
+          "cursor-not-allowed bg-slate-100 text-slate-400 ring-1 ring-inset ring-slate-200",
+          className,
+        )}
+      >
+        {children}
+        {disabledLabel ? <span className="sr-only"> — {disabledLabel}</span> : null}
+      </button>
+    );
+  }
+
   return (
-    <Link
-      href={href}
-      className={cx(
-        "inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2",
-        variants[variant],
-        className,
-      )}
-    >
+    <Link href={href} className={cx(baseClasses, variants[variant], className)}>
       {children}
     </Link>
   );

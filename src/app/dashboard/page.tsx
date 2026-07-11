@@ -1,38 +1,61 @@
 import type { Metadata } from "next";
-import { Hammer } from "lucide-react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 
-import { ButtonLink } from "@/components/ui/button-link";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { ProjectList } from "@/components/dashboard/project-list";
+import { authContent } from "@/lib/auth/content";
+import { requireUser } from "@/lib/auth/dal";
+import { getProjects } from "@/lib/projects/dal";
+import { projectsContent } from "@/lib/projects/content";
 
 export const metadata: Metadata = {
-  title: "Tableau de bord",
+  title: authContent.dashboard.title,
   robots: { index: false },
 };
 
 /**
- * Placeholder route for the future application (projects, generation,
- * editing, publishing). Intentionally not implemented in this milestone.
+ * Protected dashboard. `requireUser()` verifies the session and redirects to
+ * /connexion BEFORE any authenticated markup is produced. Projects are read
+ * through the RLS-scoped DAL, so only the current user's rows are ever loaded.
  */
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const user = await requireUser();
+  const projects = await getProjects();
+  const c = projectsContent.dashboard;
+
   return (
-    <div className="mx-auto flex max-w-6xl flex-col items-center px-4 py-24 text-center sm:px-6 sm:py-32">
-      <span className="flex size-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-        <Hammer className="size-7" aria-hidden="true" />
-      </span>
-      <p className="mt-6 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
-        En construction
-      </p>
-      <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-        Le tableau de bord arrive bientôt
-      </h1>
-      <p className="mt-4 max-w-md text-base leading-7 text-slate-600">
-        L&apos;espace de travail AdvertoAI — création de compte, projets,
-        génération et publication de vos advertoriaux — sera disponible dans
-        une prochaine version. Cette page est volontairement un simple espace
-        réservé.
-      </p>
-      <ButtonLink href="/" variant="secondary" className="mt-8">
-        Retour à l&apos;accueil
-      </ButtonLink>
+    <div className="min-h-svh bg-slate-50">
+      <DashboardHeader email={user.email} />
+
+      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm text-slate-500">
+              {c.welcome}
+              {user.email ? `, ${user.email}` : ""}
+            </p>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+              {c.projectsTitle}
+            </h1>
+          </div>
+          <Link
+            href="/dashboard/projets/nouveau"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            {c.newProject}
+          </Link>
+        </div>
+
+        <div className="mt-8">
+          <ProjectList projects={projects} />
+        </div>
+
+        <p className="mt-8 text-center text-xs text-slate-400">
+          {c.nextMilestone}
+        </p>
+      </main>
     </div>
   );
 }
