@@ -12,13 +12,27 @@ comparison data id `advertoai`, CSS keyframe `advertoai-rise`) — never
 user-visible. "advertorial"/"advertoriaux" and "page de prévente" are common
 product nouns, not the brand.
 
-Current state: **Milestone 2C** — application foundation, conversion-focused
+Current state: **Milestone 3A** — application foundation, conversion-focused
 marketing site (M1 + M1.1), **Supabase email/password authentication** (2A,
 hardened in 2B.1, **Publy** rebrand in 2B.1), user-owned **projects** with Row
-Level Security + product intake (2B), and a structured **product & audience
-research** step per project (2C: `/dashboard/projets/[id]/recherche`, one row
-per project via `project_research`). No AI generation, billing or scraping yet.
-See `TASKS.md` for the roadmap and `DECISIONS.md` for the reasoning.
+Level Security + product intake (2B), a structured **product & audience
+research** step per project (2C), and **structured French advertorial
+generation** (3A: `/dashboard/projets/[id]/generation`, `advertorial_drafts`).
+No billing or scraping yet. See `TASKS.md` for the roadmap and `DECISIONS.md`
+for the reasoning.
+
+Generation notes (3A): provider-neutral AI seam (`src/lib/ai`, Anthropic
+`claude-opus-4-8`); `ANTHROPIC_API_KEY` is a **server-only** secret (never
+`NEXT_PUBLIC_*`, never logged), gated by `isProviderConfigured()`. Prompt module
+`publy-advertorial-v1` (`src/lib/generation/prompt.ts`) separates user facts vs.
+framing vs. unsupported claims and emits "do not invent" directives for empty
+persuasion fields. Three frameworks with stable keys (`five_reasons`,
+`editorial_test`, `problem_agitation_solution`). Model output is strict-Zod
+validated (HTML rejected), with **one** repair retry then a safe failure (never
+stored). Generation is gated on confirmed user + owned project + 100% research;
+each valid run is a new `advertorial_drafts` row with `generation_version = max
++ 1` (never overwritten/edited). No auto-retry on provider rate limits. Preview
+renders plain structured text (no `dangerouslySetInnerHTML`).
 
 Research notes (2C): ownership enforced three ways — action-level project
 ownership check, RLS `WITH CHECK` (owned project), and a DB ownership trigger;
@@ -53,11 +67,13 @@ service-role/secret key.
 - **TypeScript 5 strict**, `@/*` path alias → `src/*`
 - **Tailwind CSS v4** — configured in `src/app/globals.css` only; do NOT add
   a `tailwind.config.js`
-- **Zod 4** — validates env vars (`src/lib/env.ts`) and marketing content
+- **Zod 4** — validates env vars (`src/lib/env.ts`), content, forms, and AI
+  output (`src/lib/generation/schema.ts`)
 - **Vitest** — unit tests colocated as `src/lib/*.test.ts`, node environment
 - **lucide-react** icons (1.x — no brand icons available)
-- Planned later, NOT installed: Supabase (DB + auth), Stripe (billing), AI
-  provider for generation. Deployment target is Vercel.
+- **@anthropic-ai/sdk** — advertorial generation behind a provider-neutral seam
+  (`src/lib/ai`); `ANTHROPIC_API_KEY` server-only. Tests mock the provider.
+- Planned later, NOT installed: Stripe (billing), scraping. Deployment: Vercel.
 
 ## Folder structure
 
@@ -76,12 +92,24 @@ src/
                           # founding-offer, faq, final-cta
     ui/                   # button-link, section-heading
   lib/
-    content.ts            # ALL French UI copy, Zod-parsed at import
+    content.ts            # ALL French marketing copy, Zod-parsed at import
     content-schema.ts     # Schemas + types for content
-    env.ts                # Zod-validated public env (NEXT_PUBLIC_SITE_URL)
-    format.ts             # fr-FR helpers (formatEur)
+    env.ts                # Zod-validated public env (NEXT_PUBLIC_*)
+    format.ts             # fr-FR helpers (formatEur, formatDateFr)
     utils.ts              # cx() class joiner
+    auth/                 # auth DAL (requireUser), actions, content
+    supabase/             # server + browser Supabase clients
+    projects/             # projects + research: dal, actions, validation,
+                          # research-progress (12-field gate), content
+    ai/                   # provider-neutral AI seam: types, anthropic, provider
+    generation/           # advertorial gen: schema, frameworks, prompt,
+                          # generate (repair-once), dal, actions, content
 ```
+
+Feature dirs mirror one another: an RLS-scoped `dal.ts`, `"use server"`
+`actions.ts` deriving identity from the session, Zod `validation.ts`/`schema.ts`,
+and a Zod-validated `content.ts` per feature (French copy is not centralized in
+`content.ts` — each feature owns its strings).
 
 ## Conventions
 

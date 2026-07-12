@@ -175,15 +175,44 @@ Part B — product & audience research:
       bar, submit button, auth 429/no-retry); 160 total
 - [x] All gates green; existing project RLS/migration untouched; no new env vars
 
-## Milestone 3 — AI advertorial generation (NEXT)
+## Milestone 3A — Structured advertorial generation (DONE)
 
-Out of scope until now: AI generation, Stripe, scraping, Shopify OAuth,
-analytics, teams, publishing. A future milestone will turn a project's stored
-product info + research into structured French advertorial copy.
+- [x] Provider-neutral AI abstraction (`src/lib/ai`): `AiProvider` interface +
+      neutral errors, Anthropic implementation (`claude-opus-4-8`, adaptive
+      thinking, streaming). `ANTHROPIC_API_KEY` is server-only — never exposed,
+      logged, or committed; `isProviderConfigured()` gates the feature
+- [x] Prompt module (`publy-advertorial-v1`): system prompt, per-framework
+      guidance, output contract, safety rules; distinguishes user facts vs.
+      persuasive framing vs. unsupported claims; emits explicit "do not invent"
+      directives for empty proof/guarantee/urgency/competitor fields
+- [x] Three frameworks with stable keys: `five_reasons`, `editorial_test`
+      (editorial-review structure, no fake first person),
+      `problem_agitation_solution`. No comparison/expert/medical/testimonial
+- [x] Strict Zod output schema (headline/subheadline/introduction/
+      `body_sections[]`/CTA/disclaimer); rejects HTML in every field; parse +
+      **one** repair retry, then fail safely (nothing stored)
+- [x] Migration `…_create_advertorial_drafts.sql`: exact columns, unique
+      `(project_id, generation_version)`, two indexes, `updated_at` trigger, DB
+      ownership trigger (project + research belong to the same user/project),
+      RLS + four owner-only policies with project/research `WITH CHECK`
+- [x] Server action `generateAdvertorial`: gates on confirmed user + owned
+      project + 100% research; identity from the session (no form spoofing);
+      version = max + 1; stores only valid output; maps rate limit / failure to
+      French; no auto-retry on provider rate limits
+- [x] RLS-scoped DAL (list summaries, latest, by-id) — foreign ids return null
+- [x] UI: Génération tab unlocks at 100% research; framework picker + optional
+      instructions + pending/disabled submit + error + structured preview (no
+      `dangerouslySetInnerHTML`); version history + per-draft view; Publy design
+- [x] 61 new tests (schema/HTML-reject, framework list, form validation, prompt
+      safety, generate repair/no-retry/rate-limit, action gating/spoofing/
+      storage/version, provider error mapping, tabs/preview/history) — provider
+      mocked, no real API call; 221 total
+- [x] Docs: `.env.example` server-only secret, README (env + generation +
+      migration + manual test), TASKS, DECISIONS, CLAUDE. All gates green
 
 ## Later milestones (not started)
 
-- Advertorial framework selection + AI generation of structured French copy
+- Multiple variants / A/B, additional frameworks
 - Section-based content editor
 - Public advertorial page rendering + publishing flow
 - Stripe subscription (39 €/month founding offer)

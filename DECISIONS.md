@@ -3,6 +3,68 @@
 Log of the major choices made so far and why. Newest first within each
 milestone.
 
+## Milestone 3A — Structured advertorial generation
+
+### Provider-neutral AI seam, one provider today
+
+The app depends only on `AiProvider`/`AiCompletion` and neutral error classes
+(`src/lib/ai/types.ts`); the Anthropic implementation is the sole concrete
+provider, resolved through `getProvider()`. Vendor errors are normalised at the
+edge (`RateLimitError` → `AiRateLimitError`, everything else → `AiProviderError`)
+so no calling code imports the SDK, and swapping/adding a provider is a one-file
+change. Generation is Claude Opus 4.8 with adaptive thinking, streamed via
+`finalMessage()` to avoid timeouts at high `max_tokens`.
+
+### The API key is a server-only secret
+
+`ANTHROPIC_API_KEY` is read from `process.env` on the server only — never a
+`NEXT_PUBLIC_*` var, so it can't be inlined into the browser bundle. It is never
+logged and never included in a thrown error (the provider re-throws neutral
+errors, not the vendor error). `isProviderConfigured()` is a function (not a
+build-time constant) so the check runs per request; unset → the UI shows a clear
+"not configured" message and no request is made. Tests inject a fake key and mock
+the SDK, so CI never calls the real API.
+
+### Model output validated with Zod, not trusted
+
+The model must return JSON matching a strict schema (`schema.ts`); we validate
+ourselves (rather than only relying on the SDK's structured-output mode) so we
+own the contract and can run **exactly one** repair retry that echoes the precise
+validation errors. Every text field rejects HTML tags, so a draft is always
+renderable as plain structured text — the preview never uses
+`dangerouslySetInnerHTML`. An invalid response after one repair fails safely:
+nothing is stored and the user sees a French error.
+
+### Retry policy: repair once, never auto-retry a rate limit
+
+A *schema-invalid* response triggers one repair (provider called at most twice).
+A *provider error* — rate limit, misconfig, transport — returns immediately with
+no retry, so a rate limit means exactly one upstream call. This keeps a single
+generation from silently fanning out into repeated paid calls and maps cleanly to
+the "no auto-retry on rate limits" requirement.
+
+### Gating mirrors the research gate; storage is append-only
+
+Generation requires a confirmed user, an owned project, and 100% research
+completion — reusing `computeResearchProgress` so the bar and the gate can't
+drift. Identity always comes from the session (`user_id`/`project_id`/
+`research_id` in the form are ignored). Each valid generation is a **new** row
+with `generation_version = max + 1` (never overwritten or edited), guaranteed
+unique by a `(project_id, generation_version)` constraint; the history lists
+every version. Ownership is enforced three ways again — action check, RLS
+`WITH CHECK` (owned project *and* matching research), and a DB ownership trigger.
+
+### Prompt versioning + fact/framing/claim separation
+
+The system prompt, framework guidance, output contract and safety rules carry a
+stable `prompt_version` (`publy-advertorial-v1`) stored on every draft, so a draft
+is reproducible against the prompt that made it. The prompt explicitly separates
+three inputs — user facts (usable), persuasive framing (structure/voice only),
+and unsupported claims (kept as the user's stated position, never escalated into
+invented specifics) — and turns every empty persuasion field (proof, guarantee,
+urgency, competitors) into an explicit "do not invent" directive. `editorial_test`
+is an editorial-review structure, never a fabricated first-person testimonial.
+
 ## Milestone 2C — Structured research & auth rate-limit safeguards
 
 ### Ownership enforced three ways (RLS is still final)

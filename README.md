@@ -41,9 +41,11 @@ metrics.
 - **Supabase** for authentication **and database** — `@supabase/supabase-js` +
   `@supabase/ssr` (cookie-based sessions; projects table with Row Level
   Security). Email/password auth only; no service-role key is ever used.
+- **Anthropic Claude** (`@anthropic-ai/sdk`) for advertorial generation, behind
+  a provider-neutral abstraction (`src/lib/ai`). The API key is a server-only
+  secret — never exposed to the browser or logged.
 
-Planned but **not** installed yet: Stripe (billing), an AI provider for copy
-generation, scraping.
+Planned but **not** installed yet: Stripe (billing), scraping.
 
 ## Getting started
 
@@ -140,19 +142,23 @@ Conventions:
 
 ## Environment variables
 
-Copy `.env.example` to `.env.local`. **Every variable is `NEXT_PUBLIC_*` and
+Copy `.env.example` to `.env.local`. The Supabase values are `NEXT_PUBLIC_*` and
 public/safe for the browser — this project never uses a Supabase service-role
-key, secret key or database password.**
+key, secret key or database password. `ANTHROPIC_API_KEY` is the only secret: it
+is **server-only** and must never be prefixed with `NEXT_PUBLIC_`.
 
-| Variable                               | Purpose                                              |
-| -------------------------------------- | ---------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`                 | Canonical base URL for metadata + the email-confirmation redirect (defaults to localhost) |
-| `NEXT_PUBLIC_SUPABASE_URL`             | Supabase project URL (Dashboard → Project Settings → API Keys) |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (safe to expose; RLS protects data) |
+| Variable                               | Scope       | Purpose                                              |
+| -------------------------------------- | ----------- | ---------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`                 | Public      | Canonical base URL for metadata + the email-confirmation redirect (defaults to localhost) |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Public      | Supabase project URL (Dashboard → Project Settings → API Keys) |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public      | Supabase publishable key (safe to expose; RLS protects data) |
+| `ANTHROPIC_API_KEY`                    | Server-only | Anthropic key for advertorial generation. Read only on the server, never inlined into the client bundle, never logged. Unset → generation is disabled with a clear message. |
 
 The Supabase values fall back to obvious placeholders when unset, so `build`,
-tests and CI never need real credentials. `.gitignore` ignores every `.env*`
-file except `.env.example` — never commit real credentials.
+tests and CI never need real credentials; `ANTHROPIC_API_KEY` may be left unset
+too (generation stays disabled, and tests mock the provider). `.gitignore`
+ignores every `.env*` file except `.env.example` — never commit real
+credentials.
 
 ## Supabase authentication setup
 
@@ -346,6 +352,82 @@ drafts still save, and generation stays disabled regardless.
   checks ownership, and RLS + the DB ownership trigger reject it).
 - **User A:** reopen the project → the research remains saved and editable.
 
+## Advertorial generation (Milestone 3A)
+
+A confirmed user can generate **one structured French advertorial draft** from a
+project's product info + research + a chosen framework (+ optional instructions).
+Open a project → the **Génération** tab (`/dashboard/projets/[id]/generation`).
+The tab unlocks **only when the research is 100% complete**; until then it shows
+a « Terminez la recherche » hint and the page links back to the research form.
+
+Three frameworks (stable keys): **`five_reasons`** (« 5 raisons de… »),
+**`editorial_test`** (« J'ai testé… », editorial-review structure — no fake
+first person), **`problem_agitation_solution`**. The model returns strict JSON
+(headline, subheadline, introduction, `body_sections[]`, call to action,
+disclaimer), validated with Zod; an invalid response triggers **one** repair
+retry, then fails safely without storing anything. Every valid generation is a
+**new row** with an incremented `generation_version` (drafts are never
+overwritten or edited), and the history lists every version.
+
+### AI provider configuration
+
+Generation uses the Anthropic Claude API behind a provider-neutral abstraction
+(`src/lib/ai`). Set the server-only `ANTHROPIC_API_KEY` (see *Environment
+variables*). When it is unset the UI shows « La génération par IA n'est pas
+encore configurée… » and no request is made. The key is read from `process.env`
+on the server only, never inlined into the client bundle and never logged. Tests
+mock the provider, so **no real API call is made in CI**.
+
+### Apply the migration
+
+Migration file:
+[`supabase/migrations/20260712120000_create_advertorial_drafts.sql`](./supabase/migrations/20260712120000_create_advertorial_drafts.sql).
+
+- **Dashboard:** *SQL Editor → New query* → paste the file → **Run**.
+- **CLI:** `supabase db push` (applies files in `supabase/migrations`).
+- **Re-runnable:** yes — `create table if not exists`, `create or replace`
+  functions, `drop … if exists` triggers/policies.
+
+It creates `public.advertorial_drafts`, a unique `(project_id,
+generation_version)` constraint (no duplicate versions), indexes on
+`(project_id, generation_version desc)` and `(user_id, created_at desc)`, an
+`updated_at` trigger, a DB-level **ownership trigger** (a draft's `user_id` must
+equal the project owner, and any referenced research must belong to the same
+user *and* the same project), enables RLS, and adds four owner-only policies
+whose insert/update `WITH CHECK` re-verify project + research ownership.
+
+### Verify the table, constraints, trigger, indexes and RLS
+
+```sql
+-- columns
+select column_name from information_schema.columns
+  where table_name = 'advertorial_drafts' order by ordinal_position;
+-- unique (project_id, generation_version) + both indexes
+select indexname, indexdef from pg_indexes where tablename = 'advertorial_drafts';
+-- triggers (updated_at + ownership enforcement)
+select tgname from pg_trigger where tgrelid = 'public.advertorial_drafts'::regclass
+  and not tgisinternal;
+-- RLS on + policies
+select relrowsecurity from pg_class where relname = 'advertorial_drafts';   -- t
+select policyname, cmd from pg_policies where tablename = 'advertorial_drafts';
+```
+
+### Manual test
+
+1. Set `ANTHROPIC_API_KEY` in `.env.local` and restart `npm run dev`.
+2. Create a project, then complete the research to **100%** (all 12 fields).
+3. Open **Génération**, pick a framework, optionally add instructions, and
+   **Générer le brouillon**. The submit button disables while pending (no double
+   submit) and a structured preview appears on success.
+4. Generate again → a **new version** is added to the history; open any past
+   version from the history list.
+5. **Gating:** with research below 100%, the Génération tab is locked and the
+   page shows the « Terminez la recherche » block linking back to the form.
+6. **Two-user security:** User B cannot open User A's drafts
+   (`/dashboard/projets/<A's project>/generation/<A's draft>` → **404**), and the
+   generate action rejects a foreign project (RLS + the DB ownership trigger are
+   the final layer).
+
 ## Deployment (Vercel)
 
 1. Push this repository to GitHub.
@@ -356,7 +438,9 @@ drafts still save, and generation stays disabled regardless.
    `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 4. Add the production Site URL + `…/auth/confirm` redirect URL in the Supabase
    dashboard (see *Supabase authentication setup* above).
-5. Later milestones may add server-side secrets (Stripe, AI). None exist today.
+5. To enable advertorial generation, add the server-only `ANTHROPIC_API_KEY`
+   (Production) and redeploy. Leave it unset to keep generation disabled.
+6. Later milestones may add more server-side secrets (Stripe). None exist today.
 
 ## Quality gates
 

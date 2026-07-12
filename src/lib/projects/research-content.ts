@@ -38,6 +38,7 @@ const researchContentSchema = z.object({
     research: nonEmpty,
     generation: nonEmpty,
     soon: nonEmpty,
+    locked: nonEmpty,
   }),
   page: z.object({
     title: nonEmpty,
@@ -81,6 +82,7 @@ export const researchContent = researchContentSchema.parse({
     research: "Recherche client",
     generation: "Génération",
     soon: "Bientôt",
+    locked: "Terminez la recherche",
   },
   page: {
     title: "Recherche client",
