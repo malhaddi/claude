@@ -145,11 +145,41 @@ Part B — Publy rebrand:
 - [x] Repo-wide search: zero customer-facing AdvertoAI leftovers
 - [x] All gates green (lint, typecheck, 126 tests, build); browser-verified
 
+## Milestone 2C — Structured research + auth rate-limit safeguards (DONE)
+
+Part A — auth rate-limit safeguards:
+- [x] 429 / rate-limit mapped to the exact French message; not mislabeled as a
+      wrong password; internal details never exposed
+- [x] No automatic retry on 429 (single Supabase call per submit)
+- [x] Shared `SubmitButton` disables while pending → prevents double submission
+- [x] Tests: login 429, signup 429, no-retry, disabled-while-pending
+- [x] Email-confirmation enforcement (2B.1) untouched
+
+Part B — product & audience research:
+- [x] Migration `…_create_project_research.sql`: one row per project (unique
+      project_id), user_id index, updated_at trigger, DB ownership trigger,
+      RLS enabled + four owner-only policies (incl. project-owner check)
+- [x] RLS-scoped DAL (`getResearch`) + `saveResearch` upsert (identity from
+      session, ownership verified, `onConflict: project_id`, no duplicates)
+- [x] `/dashboard/projets/[id]` tabs: Informations produit / Recherche client /
+      Génération (disabled « Bientôt »); switch without losing saved data
+- [x] French research form in 5 sections; controlled awareness/tone selects
+      storing stable internal values; Zod validation; draft save; edit; loading
+      + disabled-while-pending; success/safe-error feedback; unsaved-change
+      warning; responsive
+- [x] Transparent progress score over 12 required fields; « Recherche prête »
+      only at 100%; drafts still save; generation stays disabled at 100%
+- [x] Security: session-derived user_id, project ownership check, IDOR-safe,
+      404 for foreign projects, user_id/project_id spoofing blocked, RLS final
+- [x] 34 new tests (research validation/progress/actions/dal, tabs, progress
+      bar, submit button, auth 429/no-retry); 160 total
+- [x] All gates green; existing project RLS/migration untouched; no new env vars
+
 ## Milestone 3 — AI advertorial generation (NEXT)
 
 Out of scope until now: AI generation, Stripe, scraping, Shopify OAuth,
 analytics, teams, publishing. A future milestone will turn a project's stored
-product info into structured French advertorial copy.
+product info + research into structured French advertorial copy.
 
 ## Later milestones (not started)
 

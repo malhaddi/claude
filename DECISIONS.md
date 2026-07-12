@@ -3,6 +3,59 @@
 Log of the major choices made so far and why. Newest first within each
 milestone.
 
+## Milestone 2C — Structured research & auth rate-limit safeguards
+
+### Ownership enforced three ways (RLS is still final)
+
+`project_research` ties a research row to both a `project_id` and a `user_id`.
+Ownership integrity is enforced by (1) the `saveResearch` action verifying the
+project belongs to the session user before writing, (2) RLS insert/update
+`WITH CHECK` clauses that require `auth.uid() = user_id` **and** an owned
+project (`exists (select 1 from projects …)`), and (3) a DB `before insert or
+update` trigger that raises if the research `user_id` ≠ the project's owner.
+Even if the app layer were bypassed, Postgres refuses the write. `project_id`
+therefore can't be repointed to another user's project, and `user_id` is never
+read from the form.
+
+### One row per project via a unique constraint + upsert
+
+`project_id` is `unique`, and `saveResearch` uses
+`upsert(..., { onConflict: "project_id" })`. This makes "create or edit" a
+single idempotent operation and removes the race that concurrent saves could
+otherwise use to create duplicate rows.
+
+### Controlled selects store stable internal values
+
+Awareness level and tone are constrained to allow-lists whose **stable value**
+(e.g. `problem_aware`, `premium`) is stored — never the French label. Zod
+rejects anything off-list. Future logic/AI prompts can depend on the value
+without being coupled to UI wording. Kept to the documented options (no custom
+free-text) for a clean first version.
+
+### Transparent progress, not "row exists = done"
+
+Completion is a plain count of 12 meaningful non-empty fields
+(`research-progress.ts`), shown as a percentage + N/12. A row existing means
+nothing; « Recherche prête » requires 100%. Drafts always save, and the
+generation step stays disabled even at 100% — this milestone ships no AI.
+
+### "Audience principale" has no research column
+
+The task's research form lists "Audience principale", but the enumerated
+`project_research` columns don't include it — it's the project's existing
+`target_audience` (Informations produit). Rather than invent a duplicate
+column, the customer section links to it with a hint, keeping the schema to the
+specified fields.
+
+### Part A: rate-limit safeguards were mostly preserved, then tested
+
+The 2A error mapper already handled 429 before invalid-credentials (so a rate
+limit is never shown as a wrong password) and returned the exact French
+message. The actions call Supabase once (no retry loop). The only change was
+extracting a shared `SubmitButton` that disables while pending (prevents double
+submission) so the behavior is unit-testable; new tests cover login/signup 429
+mapping, no-retry, and the disabled-while-pending state.
+
 ## Milestone 2B.1 — Auth hardening & Publy rebrand
 
 ### Root cause of the unverified-access bug

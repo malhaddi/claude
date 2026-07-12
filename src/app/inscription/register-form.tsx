@@ -6,6 +6,7 @@ import { AlertCircle, MailCheck } from "lucide-react";
 
 import { AuthField } from "@/components/auth/auth-field";
 import { PasswordInput } from "@/components/auth/password-input";
+import { SubmitButton } from "@/components/ui/submit-button";
 import {
   resendConfirmation,
   signUp,
@@ -135,13 +136,12 @@ export function RegisterForm() {
         error={errorFor("confirmPassword")}
       />
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="w-full rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {isPending ? c.register.submitting : c.register.submit}
-      </button>
+      <SubmitButton
+        pending={isPending}
+        idleLabel={c.register.submit}
+        pendingLabel={c.register.submitting}
+        className="w-full"
+      />
     </form>
   );
 }

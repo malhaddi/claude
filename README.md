@@ -16,9 +16,10 @@ convertir. »**
 
 This repository contains the application foundation, a conversion-focused
 public marketing website (milestone 1 + 1.1), secure Supabase email/password
-authentication (milestone 2A) and user-owned **projects** with Row Level
-Security + a product-intake form (milestone 2B). AI generation, billing and
-scraping come in later milestones — see [TASKS.md](./TASKS.md).
+authentication (milestone 2A, hardened in 2B.1), user-owned **projects** with
+Row Level Security + a product-intake form (2B), and a structured **product &
+audience research** step per project (2C). AI generation, billing and scraping
+come in later milestones — see [TASKS.md](./TASKS.md).
 
 The homepage is intentionally honest about scope: features not yet built are
 labelled « Bientôt », the Growth plan is a disabled waitlist (no checkout),
@@ -83,7 +84,8 @@ src/
     dashboard/
       page.tsx            #   protected project list + empty state
       projets/nouveau/    #   /dashboard/projets/nouveau — create form
-      projets/[id]/       #   /dashboard/projets/[id] — edit form (404 if foreign)
+      projets/[id]/       #   /dashboard/projets/[id] — product info (+ tabs)
+      projets/[id]/recherche/  #   research profile (product/audience)
     auth/confirm/route.ts # Email-confirmation callback (code / token_hash)
     not-found.tsx         # Custom French 404 page
     icon.svg              # Favicon
@@ -100,11 +102,13 @@ src/
     format.ts / utils.ts  # fr-FR formatting / cx() class-name helper
     auth/                 # content, validation, errors, actions, dal (guard)
     projects/
-      content.ts          # French projects copy (Zod-validated)
-      types.ts            # Project / ProjectInput row types
-      validation.ts       # Zod schema (name required, http(s)-only URLs)
-      dal.ts              # getProjects() / getProject() — RLS-scoped reads
-      actions.ts          # create / update / delete server actions
+      content.ts / types.ts / validation.ts   # project intake (2B)
+      dal.ts / actions.ts # getProjects/getProject; create/update/delete (2B)
+      research-content.ts # research copy + controlled options (awareness/tone)
+      research-types.ts / research-validation.ts
+      research-progress.ts # transparent completion score (12 required fields)
+      research-dal.ts     # getResearch() — RLS-scoped read
+      research-actions.ts # saveResearch() — ownership-checked upsert
     supabase/
       client.ts           # Browser client (publishable key)
       server.ts           # Server client (cookie-based session)
@@ -284,6 +288,63 @@ re-runnable (idempotent `if not exists` / `drop policy if exists`).
 5. Optional DB check: in the SQL Editor run `select count(*) from projects;`
    as each user via *Run as → authenticated* (impersonate) — each sees only
    their own rows.
+
+## Product & audience research (Milestone 2C)
+
+Each project has one **research profile** (product / customer / offer /
+campaign context) for a future AI step. Open a project → the **Recherche
+client** tab (`/dashboard/projets/[id]/recherche`). The **Génération** tab is
+present but disabled (« Bientôt ») in this milestone, even at 100% research
+completion. This milestone adds **no new environment variables**.
+
+### Apply the migration
+
+Migration file:
+[`supabase/migrations/20260712090000_create_project_research.sql`](./supabase/migrations/20260712090000_create_project_research.sql).
+
+- **Dashboard:** *SQL Editor → New query* → paste the file → **Run**.
+- **CLI:** `supabase db push` (applies files in `supabase/migrations`).
+- **Re-runnable:** yes — `create table if not exists`, `create or replace`
+  functions, `drop … if exists` triggers/policies.
+
+It creates `public.project_research` with a **unique `project_id`** (one row
+per project), a `user_id` index, an `updated_at` trigger, a DB-level
+**ownership trigger** (research `user_id` must equal the project's owner),
+enables RLS, and adds four owner-only policies.
+
+### Verify the table, constraints, trigger, indexes and RLS
+
+```sql
+-- columns
+select column_name from information_schema.columns
+  where table_name = 'project_research' order by ordinal_position;
+-- unique project_id + user_id index
+select indexname, indexdef from pg_indexes where tablename = 'project_research';
+-- triggers (updated_at + ownership enforcement)
+select tgname from pg_trigger where tgrelid = 'public.project_research'::regclass
+  and not tgisinternal;
+-- RLS on + policies
+select relrowsecurity from pg_class where relname = 'project_research';   -- t
+select policyname, cmd from pg_policies where tablename = 'project_research';
+```
+
+### Progress calculation
+
+Completion is a transparent count of **12 required fields** that are non-empty:
+`brand_name, product_category, product_price, customer_awareness_level,
+main_problem, desired_outcome, main_promise, main_objections, proof_points,
+offer_details, preferred_tone, call_to_action`. The UI shows the percentage and
+the *N / 12* count; « Recherche prête » appears **only at 100%**. Incomplete
+drafts still save, and generation stays disabled regardless.
+
+### Manual two-user research security test
+
+- **User A:** open Project A, complete/save research, note the project UUID.
+- **User B** (separate private session): `/dashboard` shows none of A's
+  projects; visiting `/dashboard/projets/<A's UUID>/recherche` → **404**;
+  User B cannot create or update research for A's project (the save action
+  checks ownership, and RLS + the DB ownership trigger reject it).
+- **User A:** reopen the project → the research remains saved and editable.
 
 ## Deployment (Vercel)
 

@@ -12,13 +12,21 @@ comparison data id `advertoai`, CSS keyframe `advertoai-rise`) — never
 user-visible. "advertorial"/"advertoriaux" and "page de prévente" are common
 product nouns, not the brand.
 
-Current state: **Milestone 2B.1** — application foundation, conversion-focused
-marketing site (M1 + M1.1), **Supabase email/password authentication** (2A)
-and user-owned **projects** with Row Level Security + a product-intake form
-(2B). Milestone 2B.1 hardened email-confirmation enforcement (unconfirmed users
-can never reach protected routes) and rebranded the customer-facing app to
-**Publy**. No AI generation, billing or scraping yet. See `TASKS.md` for the
-roadmap and `DECISIONS.md` for the reasoning.
+Current state: **Milestone 2C** — application foundation, conversion-focused
+marketing site (M1 + M1.1), **Supabase email/password authentication** (2A,
+hardened in 2B.1, **Publy** rebrand in 2B.1), user-owned **projects** with Row
+Level Security + product intake (2B), and a structured **product & audience
+research** step per project (2C: `/dashboard/projets/[id]/recherche`, one row
+per project via `project_research`). No AI generation, billing or scraping yet.
+See `TASKS.md` for the roadmap and `DECISIONS.md` for the reasoning.
+
+Research notes (2C): ownership enforced three ways — action-level project
+ownership check, RLS `WITH CHECK` (owned project), and a DB ownership trigger;
+one row per project (`unique(project_id)` + upsert). Controlled awareness/tone
+selects store stable internal values. Progress = 12 required non-empty fields;
+« Recherche prête » only at 100%; generation stays disabled. Auth: shared
+`SubmitButton` disables while pending; 429 maps to the exact rate-limit message
+with no auto-retry.
 
 Auth hardening: `requireUser()` requires a non-null `email_confirmed_at`; the
 proxy clears `sb-*` cookies for unconfirmed sessions; sign-up is

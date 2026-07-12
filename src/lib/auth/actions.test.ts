@@ -123,6 +123,23 @@ describe("signIn", () => {
     );
     expect(result.formError).toBe(authContent.errors.invalidCredentials);
   });
+
+  it("maps a 429 rate-limit to the exact French message and does NOT auto-retry", async () => {
+    const signInWithPassword = vi
+      .fn()
+      .mockResolvedValue({ data: {}, error: { status: 429 } });
+    mockAuth({ signInWithPassword });
+    const result = await signIn(
+      {},
+      form({ email: "user@example.fr", password: "secret" }),
+    );
+    expect(result.formError).toBe(
+      "Trop de tentatives. Veuillez patienter quelques instants avant de réessayer.",
+    );
+    // Not mislabeled as a wrong password, and no automatic retry.
+    expect(result.formError).not.toBe(authContent.errors.invalidCredentials);
+    expect(signInWithPassword).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("signUp", () => {
@@ -198,6 +215,20 @@ describe("signUp", () => {
     const result = await signUp({}, validRegister());
     expect(result.formError).toBe(authContent.errors.weakPassword);
     expect(result.needsConfirmation).toBeUndefined();
+  });
+
+  it("maps a 429 rate-limit to the exact French message and does NOT auto-retry", async () => {
+    const signUpFn = vi
+      .fn()
+      .mockResolvedValue({ data: {}, error: { status: 429 } });
+    mockAuth({ signUp: signUpFn });
+    const result = await signUp({}, validRegister());
+    expect(result.formError).toBe(
+      "Trop de tentatives. Veuillez patienter quelques instants avant de réessayer.",
+    );
+    // A rate limit must never be shown as a neutral "check your inbox" notice.
+    expect(result.needsConfirmation).toBeUndefined();
+    expect(signUpFn).toHaveBeenCalledTimes(1);
   });
 });
 

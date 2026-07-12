@@ -6,6 +6,7 @@ import { AlertCircle } from "lucide-react";
 
 import { AuthField } from "@/components/auth/auth-field";
 import { PasswordInput } from "@/components/auth/password-input";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { signIn, type AuthActionState } from "@/lib/auth/actions";
 import { authContent } from "@/lib/auth/content";
 import { validateLogin, type FieldErrors } from "@/lib/auth/validation";
@@ -66,13 +67,12 @@ export function LoginForm() {
         error={errorFor("password")}
       />
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="w-full rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {isPending ? c.login.submitting : c.login.submit}
-      </button>
+      <SubmitButton
+        pending={isPending}
+        idleLabel={c.login.submit}
+        pendingLabel={c.login.submitting}
+        className="w-full"
+      />
     </form>
   );
 }

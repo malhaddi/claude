@@ -2,19 +2,20 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { ProjectForm } from "@/components/dashboard/project-form";
 import { ProjectTabs } from "@/components/dashboard/project-tabs";
+import { ResearchForm } from "@/components/dashboard/research-form";
 import { requireUser } from "@/lib/auth/dal";
-import { updateProject } from "@/lib/projects/actions";
 import { getProject } from "@/lib/projects/dal";
-import { projectsContent } from "@/lib/projects/content";
+import { saveResearch } from "@/lib/projects/research-actions";
+import { researchContent } from "@/lib/projects/research-content";
+import { getResearch } from "@/lib/projects/research-dal";
 
 export const metadata: Metadata = {
-  title: projectsContent.form.editTitle,
+  title: researchContent.page.title,
   robots: { index: false },
 };
 
-export default async function EditProjectPage({
+export default async function ProjectResearchPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -22,12 +23,11 @@ export default async function EditProjectPage({
   const user = await requireUser();
   const { id } = await params;
 
-  // getProject is RLS-scoped: a foreign or non-existent id returns null, so an
-  // inaccessible project id yields a 404 — no cross-user data disclosure.
+  // Ownership verified via the RLS-scoped DAL: a foreign/non-existent id → 404.
   const project = await getProject(id);
   if (!project) notFound();
 
-  const c = projectsContent.form;
+  const research = await getResearch(project.id);
 
   return (
     <div className="min-h-svh bg-slate-50">
@@ -36,17 +36,18 @@ export default async function EditProjectPage({
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">
           {project.name}
         </h1>
-        <p className="mt-2 text-sm text-slate-600">{c.editSubtitle}</p>
+        <p className="mt-2 text-sm text-slate-600">
+          {researchContent.page.subtitle}
+        </p>
 
         <div className="mt-6">
-          <ProjectTabs projectId={project.id} active="product" />
+          <ProjectTabs projectId={project.id} active="research" />
         </div>
 
         <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <ProjectForm
-            action={updateProject.bind(null, project.id)}
-            project={project}
-            mode="edit"
+          <ResearchForm
+            action={saveResearch.bind(null, project.id)}
+            research={research}
           />
         </div>
       </main>
