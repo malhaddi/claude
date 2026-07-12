@@ -1,18 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Menu, Sparkles, X } from "lucide-react";
 
 import { ButtonLink } from "@/components/ui/button-link";
-import { navLinks, siteName } from "@/lib/content";
+import { Wordmark } from "@/components/ui/wordmark";
+import { navCtas, navLinks, siteName } from "@/lib/content";
+import { cx } from "@/lib/utils";
 
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const closeMenu = () => setMenuOpen(false);
 
+  // Subtle background + shadow transition once the page is scrolled.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
+    <header
+      className={cx(
+        "sticky top-0 z-40 border-b transition-colors duration-300",
+        scrolled || menuOpen
+          ? "border-slate-200 bg-white/90 shadow-sm backdrop-blur"
+          : "border-transparent bg-white/60 backdrop-blur-sm",
+      )}
+    >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link
           href="/"
@@ -22,10 +40,8 @@ export function SiteHeader() {
           <span className="flex size-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
             <Sparkles className="size-4" aria-hidden="true" />
           </span>
-          <span className="text-lg tracking-tight">
-            Adverto<span className="text-indigo-600">AI</span>
-            <span className="sr-only">{siteName} — accueil</span>
-          </span>
+          <Wordmark />
+          <span className="sr-only">{siteName} — accueil</span>
         </Link>
 
         <nav aria-label="Navigation principale" className="hidden md:block">
@@ -34,7 +50,7 @@ export function SiteHeader() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
+                  className="rounded text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-600"
                 >
                   {link.label}
                 </Link>
@@ -44,10 +60,12 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <ButtonLink href="/dashboard" variant="ghost">
-            Connexion
+          <ButtonLink href={navCtas.login.href} variant="ghost">
+            {navCtas.login.label}
           </ButtonLink>
-          <ButtonLink href="/dashboard">Commencer</ButtonLink>
+          <ButtonLink href={navCtas.signup.href}>
+            {navCtas.signup.label}
+          </ButtonLink>
         </div>
 
         <button
@@ -88,10 +106,12 @@ export function SiteHeader() {
             ))}
           </ul>
           <div className="mt-3 flex flex-col gap-2 border-t border-slate-200 pt-3">
-            <ButtonLink href="/dashboard" variant="secondary">
-              Connexion
+            <ButtonLink href={navCtas.login.href} variant="secondary">
+              {navCtas.login.label}
             </ButtonLink>
-            <ButtonLink href="/dashboard">Commencer</ButtonLink>
+            <ButtonLink href={navCtas.signup.href}>
+              {navCtas.signup.label}
+            </ButtonLink>
           </div>
         </nav>
       ) : null}

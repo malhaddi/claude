@@ -2,10 +2,125 @@
 
 @theme inline {
   --font-sans: var(--font-geist-sans);
+  --radius: 1rem;
+}
+
+/*
+ * Publy brand palette (Milestone 2B.1).
+ *
+ * Named brand tokens for new/explicit usage:
+ *   bg-electric / text-electric  → primary action color
+ *   bg-highlight / text-highlight → Lime accent (use sparingly; pair with Ink)
+ *   text-ink / bg-offwhite / border-line → neutrals
+ *
+ * We ALSO remap the Tailwind `indigo` and `slate` scales that the app already
+ * uses to brand values, so the whole UI adopts the palette without editing
+ * every utility class. Electric replaces indigo (main action); Ink/Slate/
+ * Border/Off-white replace the slate neutrals.
+ */
+@theme {
+  /* Named brand tokens */
+  --color-ink: #101828;
+  --color-offwhite: #f7f7f2;
+  --color-electric: #6c5ce7;
+  --color-highlight: #c8ff4d;
+  --color-brand-slate: #667085;
+  --color-line: #e4e7ec;
+
+  /* Electric scale (remaps `indigo-*`) */
+  --color-indigo-50: #efedfd;
+  --color-indigo-100: #e2defb;
+  --color-indigo-200: #c8c1f7;
+  --color-indigo-300: #a79cf1;
+  --color-indigo-500: #7d6fec;
+  --color-indigo-600: #6c5ce7;
+  --color-indigo-700: #5546c9;
+  --color-indigo-900: #2c2470;
+
+  /* Ink / Slate / Border / Off-white (remaps `slate-*`) */
+  --color-slate-50: #f7f7f2;
+  --color-slate-100: #f2f4f7;
+  --color-slate-200: #e4e7ec;
+  --color-slate-300: #d0d5dd;
+  --color-slate-400: #98a2b3;
+  --color-slate-500: #667085;
+  --color-slate-600: #475467;
+  --color-slate-700: #344054;
+  --color-slate-800: #1d2939;
+  --color-slate-900: #101828;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
   }
+}
+
+/*
+ * Scroll-reveal primitive.
+ *
+ * Elements start visible by default (SSR / no-JS safe). Only when motion is
+ * allowed do we hide them, then reveal on intersection via data-visible.
+ * This means:
+ *  - reduced-motion users: never hidden (rule is inside the media query);
+ *  - no-JS users: the <noscript> override in layout.tsx forces them visible;
+ *  - everyone else: a gentle fade + rise, using transform/opacity only, so
+ *    there is no layout shift.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(1.25rem);
+    transition:
+      opacity 0.6s ease-out,
+      transform 0.6s ease-out;
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .reveal[data-visible="true"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  @keyframes advertoai-rise {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .hero-rise {
+    animation: advertoai-rise 0.7s ease-out both;
+    animation-delay: var(--rise-delay, 0ms);
+  }
+}
+
+/*
+ * Smooth native <details> expansion without JavaScript, using a
+ * grid-template-rows 0fr -> 1fr transition on a wrapper. Falls back to an
+ * instant open when motion is reduced.
+ */
+.faq-body {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  details.faq-item .faq-body {
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+  }
+
+  details.faq-item[open] .faq-body {
+    grid-template-rows: 1fr;
+  }
+}
+
+.faq-body > div {
+  overflow: hidden;
 }

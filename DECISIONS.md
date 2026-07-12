@@ -3,6 +3,345 @@
 Log of the major choices made so far and why. Newest first within each
 milestone.
 
+## Milestone 3A — Structured advertorial generation
+
+### Provider-neutral AI seam, one provider today
+
+The app depends only on `AiProvider`/`AiCompletion` and neutral error classes
+(`src/lib/ai/types.ts`); the Anthropic implementation is the sole concrete
+provider, resolved through `getProvider()`. Vendor errors are normalised at the
+edge (`RateLimitError` → `AiRateLimitError`, everything else → `AiProviderError`)
+so no calling code imports the SDK, and swapping/adding a provider is a one-file
+change. Generation is Claude Opus 4.8 with adaptive thinking, streamed via
+`finalMessage()` to avoid timeouts at high `max_tokens`.
+
+### The API key is a server-only secret
+
+`ANTHROPIC_API_KEY` is read from `process.env` on the server only — never a
+`NEXT_PUBLIC_*` var, so it can't be inlined into the browser bundle. It is never
+logged and never included in a thrown error (the provider re-throws neutral
+errors, not the vendor error). `isProviderConfigured()` is a function (not a
+build-time constant) so the check runs per request; unset → the UI shows a clear
+"not configured" message and no request is made. Tests inject a fake key and mock
+the SDK, so CI never calls the real API.
+
+### Model output validated with Zod, not trusted
+
+The model must return JSON matching a strict schema (`schema.ts`); we validate
+ourselves (rather than only relying on the SDK's structured-output mode) so we
+own the contract and can run **exactly one** repair retry that echoes the precise
+validation errors. Every text field rejects HTML tags, so a draft is always
+renderable as plain structured text — the preview never uses
+`dangerouslySetInnerHTML`. An invalid response after one repair fails safely:
+nothing is stored and the user sees a French error.
+
+### Retry policy: repair once, never auto-retry a rate limit
+
+A *schema-invalid* response triggers one repair (provider called at most twice).
+A *provider error* — rate limit, misconfig, transport — returns immediately with
+no retry, so a rate limit means exactly one upstream call. This keeps a single
+generation from silently fanning out into repeated paid calls and maps cleanly to
+the "no auto-retry on rate limits" requirement.
+
+### Gating mirrors the research gate; storage is append-only
+
+Generation requires a confirmed user, an owned project, and 100% research
+completion — reusing `computeResearchProgress` so the bar and the gate can't
+drift. Identity always comes from the session (`user_id`/`project_id`/
+`research_id` in the form are ignored). Each valid generation is a **new** row
+with `generation_version = max + 1` (never overwritten or edited), guaranteed
+unique by a `(project_id, generation_version)` constraint; the history lists
+every version. Ownership is enforced three ways again — action check, RLS
+`WITH CHECK` (owned project *and* matching research), and a DB ownership trigger.
+
+### Prompt versioning + fact/framing/claim separation
+
+The system prompt, framework guidance, output contract and safety rules carry a
+stable `prompt_version` (`publy-advertorial-v1`) stored on every draft, so a draft
+is reproducible against the prompt that made it. The prompt explicitly separates
+three inputs — user facts (usable), persuasive framing (structure/voice only),
+and unsupported claims (kept as the user's stated position, never escalated into
+invented specifics) — and turns every empty persuasion field (proof, guarantee,
+urgency, competitors) into an explicit "do not invent" directive. `editorial_test`
+is an editorial-review structure, never a fabricated first-person testimonial.
+
+## Milestone 2C — Structured research & auth rate-limit safeguards
+
+### Ownership enforced three ways (RLS is still final)
+
+`project_research` ties a research row to both a `project_id` and a `user_id`.
+Ownership integrity is enforced by (1) the `saveResearch` action verifying the
+project belongs to the session user before writing, (2) RLS insert/update
+`WITH CHECK` clauses that require `auth.uid() = user_id` **and** an owned
+project (`exists (select 1 from projects …)`), and (3) a DB `before insert or
+update` trigger that raises if the research `user_id` ≠ the project's owner.
+Even if the app layer were bypassed, Postgres refuses the write. `project_id`
+therefore can't be repointed to another user's project, and `user_id` is never
+read from the form.
+
+### One row per project via a unique constraint + upsert
+
+`project_id` is `unique`, and `saveResearch` uses
+`upsert(..., { onConflict: "project_id" })`. This makes "create or edit" a
+single idempotent operation and removes the race that concurrent saves could
+otherwise use to create duplicate rows.
+
+### Controlled selects store stable internal values
+
+Awareness level and tone are constrained to allow-lists whose **stable value**
+(e.g. `problem_aware`, `premium`) is stored — never the French label. Zod
+rejects anything off-list. Future logic/AI prompts can depend on the value
+without being coupled to UI wording. Kept to the documented options (no custom
+free-text) for a clean first version.
+
+### Transparent progress, not "row exists = done"
+
+Completion is a plain count of 12 meaningful non-empty fields
+(`research-progress.ts`), shown as a percentage + N/12. A row existing means
+nothing; « Recherche prête » requires 100%. Drafts always save, and the
+generation step stays disabled even at 100% — this milestone ships no AI.
+
+### "Audience principale" has no research column
+
+The task's research form lists "Audience principale", but the enumerated
+`project_research` columns don't include it — it's the project's existing
+`target_audience` (Informations produit). Rather than invent a duplicate
+column, the customer section links to it with a hint, keeping the schema to the
+specified fields.
+
+### Part A: rate-limit safeguards were mostly preserved, then tested
+
+The 2A error mapper already handled 429 before invalid-credentials (so a rate
+limit is never shown as a wrong password) and returned the exact French
+message. The actions call Supabase once (no retry loop). The only change was
+extracting a shared `SubmitButton` that disables while pending (prevents double
+submission) so the behavior is unit-testable; new tests cover login/signup 429
+mapping, no-retry, and the disabled-while-pending state.
+
+## Milestone 2B.1 — Auth hardening & Publy rebrand
+
+### Root cause of the unverified-access bug
+
+`requireUser()` only checked `if (!user)`; it never inspected
+`email_confirmed_at`. And `signUp` redirected to `/dashboard` whenever
+`data.session` was truthy. So any session that resolved to a user — including
+an unconfirmed one — passed the guard and reached protected pages.
+
+Fix (defense-in-depth):
+- `requireUser()` now requires a non-null `email_confirmed_at` and redirects
+  unconfirmed users to `/connexion?status=email_non_confirme` **before**
+  rendering protected HTML. `getConfirmedUser()` is used by the auth pages so
+  an unconfirmed user is treated as logged-out (prevents a redirect loop).
+- The proxy treats only confirmed users as authenticated and **deterministically
+  clears `sb-*` cookies** for an unconfirmed session (no network round-trip),
+  so such a session is never usable.
+- `signUp` only redirects a confirmed user with a session; otherwise it signs
+  out any returned session and shows the neutral notice. `signIn` rejects
+  unconfirmed logins (Supabase error + post-success guard).
+
+### Enumeration-safe sign-up
+
+Revealing "an account already exists" enables email enumeration, so the
+already-registered mapping was removed from `mapAuthError` (it now returns the
+generic message) and `signUp` shows the **same neutral notice** for new and
+existing addresses. A safe `resendConfirmation` action always returns a neutral
+result. `isEmailEnumerationError()` centralizes the classification.
+
+### Rebrand via Tailwind token remap (low-risk)
+
+Rather than editing color classes across ~30 components, the Publy palette is
+applied by remapping the Tailwind `indigo` and `slate` scales to brand values
+in `globals.css @theme` (Electric replaces indigo; Ink/Slate/Border/Off-white
+replace slate), plus named `--color-electric/-highlight/-ink/...` tokens for
+new usage. Lime (`bg-highlight`) is used sparingly and always with Ink text
+(the recommended-plan badge; a France-first accent on Ink) for contrast.
+
+### Internal identifiers kept stable on purpose
+
+The customer-facing name is Publy, but these internal identifiers keep their
+`advertoai` names to avoid needless churn/risk (none are user-visible): the npm
+package name, the comparison data id `advertoai` (also its React keys, which
+appear only in the RSC payload), and the CSS keyframe `advertoai-rise`. Routes
+and Supabase cookie/session names are likewise unchanged.
+
+## Milestone 2B — Projects, database & Row Level Security
+
+### RLS is the final enforcement layer, not the app
+
+The `projects` table enables RLS with four owner-only policies keyed on
+`auth.uid() = user_id`. Because the app uses the **publishable key + the user's
+session** (never the service-role key), every query the app issues is subject
+to those policies. The application checks (`requireUser()`, filtering by
+`user_id`, ownership-scoped DAL) are defense-in-depth on top — even if an app
+check were bypassed, Postgres still refuses cross-user reads/writes.
+
+### Identity from the session, never from the form (no spoofing / IDOR)
+
+Create derives `user_id` from `requireUser()` and ignores any `user_id` in the
+submitted form; the INSERT policy's `WITH CHECK` rejects a mismatch anyway.
+Update/delete bind the project id as a server-action argument and filter by
+`id AND user_id`, so a forged id affects zero rows. Reads go through
+`getProject()`, which is RLS-scoped — a foreign or non-existent id returns
+null and the page calls `notFound()` (HTTP 404). A test suite covers the
+spoof, ownership, and inaccessible-id paths; a live check confirmed protected
+routes 307 to `/connexion` with no protected markup rendered.
+
+### http(s)-only URL validation
+
+The optional URL fields (`product_url`, `product_image_url`,
+`destination_url`) are later rendered as links/images, so the Zod schema
+accepts only `http:`/`https:` URLs (via the `URL` constructor) — blocking
+`javascript:`/`data:` and similar injection vectors. Empty fields normalize to
+`null`.
+
+### Hand-written row types (no generated types, no service-role)
+
+`Project`/`ProjectInput` are defined by hand in `src/lib/projects/types.ts`
+rather than generated from the database, so the build/tests never need a
+Supabase connection or the service-role key. Consistent with the milestone-2A
+"public keys only" stance.
+
+### Testing without real Supabase
+
+Actions and the DAL are unit-tested with a small chainable Supabase
+query-builder mock plus `vi.mock` of `next/navigation`, `@/lib/auth/dal` and
+`@/lib/supabase/server`; the dashboard list is rendered with
+`react-dom/server`. No new test dependency and no real credentials required.
+
+### Delete confirmation without a dependency
+
+The delete control uses a two-step inline confirmation (a client component
+with `useFormStatus`) rather than `window.confirm` (blocked in some
+environments, unstyleable) or a dialog library — keeping the no-extra-deps
+stance while staying keyboard-accessible.
+
+## Milestone 2A — Supabase email/password authentication
+
+### Proxy, not middleware (Next.js 16)
+
+Next.js 16 renamed `middleware.ts` to **`proxy.ts`** (same functionality; the
+bundled docs at `node_modules/next/dist/docs/01-app/01-getting-started/16-proxy.md`
+say so explicitly). We use `src/proxy.ts` to refresh the Supabase session
+cookie and perform *optimistic* auth redirects. Per the same docs, the proxy is
+a first check, **not** the authorization authority: the real guard lives in the
+Data Access Layer.
+
+### Authoritative guard in a DAL, rendered before any protected HTML
+
+`src/lib/auth/dal.ts` exposes `getUser()` (memoized with React `cache`) and
+`requireUser()`. Both call `supabase.auth.getUser()`, which **re-validates the
+JWT with the Supabase Auth server** — unlike `getSession()`, which only reads a
+cookie and must not be trusted for authorization. The dashboard calls
+`requireUser()` at the top of the server component, so an unauthenticated
+direct visit redirects to `/connexion` (HTTP 307) with **no protected markup
+ever produced**. Client-side checks are never the protection.
+
+### Publishable key, and no service-role key — ever
+
+Auth uses only `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+These are public by design (row-level security, not key secrecy, protects
+data). The project deliberately never reads a service-role/secret key or DB
+password — a test asserts the env schema does not surface `SUPABASE_SERVICE_ROLE_KEY`.
+(Supabase now calls this the "publishable key"; earlier docs said "anon key".)
+
+### Env placeholders so CI needs no credentials
+
+The Supabase env vars validate through the same Zod layer as the site URL, with
+obvious placeholder defaults (`https://placeholder.supabase.co`,
+`placeholder-publishable-key`). `build`, tests and CI therefore never need real
+credentials. `isSupabaseConfigured` detects the placeholders and the auth
+actions return a clear French "not configured" message instead of failing
+obscurely.
+
+### Route group to separate marketing chrome from app chrome
+
+The marketing header/footer moved from the root layout into an
+`app/(marketing)/layout.tsx` route group. The root layout is now just
+`<html>/<body>` + fonts + metadata. This lets the auth pages and the
+authenticated dashboard render their own chrome without the marketing nav
+(which would otherwise show "Connexion / Commencer" on the logged-in dashboard).
+
+### Safe redirects only
+
+Proxy and the `/auth/confirm` callback redirect to **fixed internal paths**
+(`/connexion`, `/dashboard`) and clear the query string. No user-supplied
+`redirect`/`next` parameter is honored anywhere, eliminating open-redirect
+risk. Supabase errors are mapped to a curated French dictionary
+(`src/lib/auth/errors.ts`); a raw Supabase message is never shown to the user.
+
+### No new test dependencies
+
+The testing requirement (form rendering, redirect, mocked-session behavior) is
+met without adding jsdom or a testing-library: pure logic (validation, error
+mapping, DAL, actions) is unit-tested with Vitest + `vi.mock`, and the login/
+register forms are rendered with the built-in `react-dom/server`
+`renderToStaticMarkup`. Consistent with the project's "minimal dependencies"
+stance.
+
+### Footer legal/contact de-linked
+
+Because `/dashboard` is now protected, the footer's Mentions légales /
+Politique / Contact placeholders (which used to point at `/dashboard`) would
+send anonymous visitors to a login redirect — misleading. They are now rendered
+as non-link "à venir" placeholders until the real pages exist.
+
+## Milestone 1.1 — Conversion-focused homepage refinement
+
+### Motion without an animation library
+
+Requirement: restrained, performant, reduced-motion-safe animation. We use
+CSS transitions + a single `IntersectionObserver` (the `Reveal` wrapper)
+rather than Framer Motion. Rationale:
+
+- The needed effects (scroll reveal, entrance rise, sticky-nav transition,
+  progress bars, hover states, smooth `<details>`) are all expressible in CSS.
+- Framer Motion would add a client-side dependency and ship more JS for no
+  material simplification here.
+- **No dependencies were added in this milestone.**
+
+Accessibility of the reveal primitive is layered: the hidden state lives only
+inside `@media (prefers-reduced-motion: no-preference)`, so reduced-motion
+users are never left with invisible content; a `<noscript>` override forces
+visibility without JS; and only opacity/transform animate, so there is no
+cumulative layout shift. Tests assert both guards.
+
+### Client components kept to the minimum
+
+Server-first is preserved. Only four client islands exist: `SiteHeader`
+(sticky + mobile menu), `WorkflowDemo` (auto-advancing accessible tabs),
+`Pricing` (billing-period preview toggle) and `Reveal`. The template gallery
+and FAQ use native `<details>` for interactivity, so they stay server-rendered
+and keyboard-accessible for free.
+
+### Honesty encoded in data + tests
+
+The brief forbids guaranteed results, invented metrics/testimonials, fake
+discounts and any purchase path on the unavailable Growth plan. These are
+enforced structurally, not just by copy review:
+
+- `pricingPlanSchema` refuses an `available: false` plan that carries a
+  non-null CTA href, so Growth can never link to a checkout.
+- `ButtonLink` renders a disabled `<button>` (not a link) when `href` is null.
+- The annual toggle is a clearly-labelled preview and shows exactly 12×
+  the monthly price (no discount claimed) — billing is not implemented.
+- A test scans all marketing copy for ROAS/CAC, percentages and
+  guaranteed-results phrasing, and asserts the "guarantee" FAQ answer denies
+  any guarantee.
+
+### Comparison framed by workflow, not competitors
+
+The comparison names workflow categories (generic AI chat, page builder,
+freelance/agency, Publy) rather than real products, and carries no prices
+— avoiding defamatory or fabricated claims while still positioning the tool.
+A test asserts no euro amounts appear in the comparison data.
+
+### Richer, still-centralized content model
+
+`content.ts` now holds typed, Zod-validated structures for navigation,
+workflow steps, templates, capabilities, pricing, comparison rows and FAQ.
+Availability is modelled as an explicit `launch | soon` enum so "current vs
+planned" is data, not prose — the UI renders the labels from it.
+
 ## Milestone 1 — Foundation & marketing site
 
 ### Repository reset on this branch
