@@ -1,16 +1,43 @@
 @AGENTS.md
 
-# AdvertoAI — French-first advertorial SaaS
+# Publy — French-first advertorial SaaS
 
-AdvertoAI helps Shopify and DTC advertisers turn product information into
-mobile-first advertorial pre-sell pages, written in French. Core positioning:
-« Transformez votre produit en advertorial français prêt à convertir. »
+Publy helps Shopify and DTC advertisers turn product information into
+mobile-first advertorial / pre-sell pages (« pages de prévente »), written in
+French. Core positioning: « Transformez vos publicités en pages qui vendent. »
 
-Current state: **Milestone 1** — application foundation + public marketing
-website only. No backend, no auth, no AI generation, no billing yet. The
-`/dashboard` route is an intentional "En construction" placeholder. See
-`TASKS.md` for the roadmap and `DECISIONS.md` for the reasoning behind
-technical choices.
+Brand note: the customer-facing name is **Publy**. Internal identifiers keep
+their original `advertoai` names on purpose (npm package `advertoai`,
+comparison data id `advertoai`, CSS keyframe `advertoai-rise`) — never
+user-visible. "advertorial"/"advertoriaux" and "page de prévente" are common
+product nouns, not the brand.
+
+Current state: **Milestone 2B.1** — application foundation, conversion-focused
+marketing site (M1 + M1.1), **Supabase email/password authentication** (2A)
+and user-owned **projects** with Row Level Security + a product-intake form
+(2B). Milestone 2B.1 hardened email-confirmation enforcement (unconfirmed users
+can never reach protected routes) and rebranded the customer-facing app to
+**Publy**. No AI generation, billing or scraping yet. See `TASKS.md` for the
+roadmap and `DECISIONS.md` for the reasoning.
+
+Auth hardening: `requireUser()` requires a non-null `email_confirmed_at`; the
+proxy clears `sb-*` cookies for unconfirmed sessions; sign-up is
+enumeration-safe. Rebrand: brand tokens live in `globals.css @theme`
+(Electric primary, Lime sparingly); internal ids (`advertoai` package/data id,
+`advertoai-rise` keyframe) intentionally unchanged.
+
+Projects notes: the migration lives in `supabase/migrations/`; RLS (four
+owner-only policies on `auth.uid() = user_id`) is the final enforcement layer.
+The app never uses the service-role key. Project logic mirrors the auth
+patterns: RLS-scoped DAL (`src/lib/projects/dal.ts`), server actions that
+derive identity from the session, and Zod validation with http(s)-only URLs.
+
+Auth notes: Next.js 16 uses `src/proxy.ts` (renamed from middleware) for
+session refresh; the authoritative guard is `src/lib/auth/dal.ts`
+(`requireUser()` → `supabase.auth.getUser()`), used by the dashboard before any
+protected markup renders. Only public env vars are used
+(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) — never a
+service-role/secret key.
 
 ## Tech stack
 

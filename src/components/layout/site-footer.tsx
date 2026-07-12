@@ -1,14 +1,21 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 
-import { navLinks, siteDescription, siteName } from "@/lib/content";
+import {
+  footerGroups,
+  footerLegalNote,
+  footerPlaceholders,
+  footerPlaceholderTitle,
+  siteDescription,
+  siteName,
+} from "@/lib/content";
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-slate-200 bg-slate-50">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-2">
+      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+        <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+          <div>
             <p className="flex items-center gap-2 font-bold text-slate-900">
               <span className="flex size-7 items-center justify-center rounded-lg bg-indigo-600 text-white">
                 <Sparkles className="size-3.5" aria-hidden="true" />
@@ -20,51 +27,42 @@ export function SiteFooter() {
             </p>
           </div>
 
-          <nav aria-label="Liens du site">
-            <p className="text-sm font-semibold text-slate-900">Produit</p>
-            <ul className="mt-3 space-y-2">
-              {navLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-slate-600 hover:text-slate-900"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          {footerGroups.map((group) => (
+            <nav key={group.title} aria-label={group.title}>
+              <p className="text-sm font-semibold text-slate-900">
+                {group.title}
+              </p>
+              <ul className="mt-3 space-y-2">
+                {group.links.map((link) => (
+                  <li key={`${group.title}-${link.label}`}>
+                    <Link
+                      href={link.href}
+                      className="rounded text-sm text-slate-600 transition-colors hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
 
           <div>
-            <p className="text-sm font-semibold text-slate-900">Compte</p>
+            <p className="text-sm font-semibold text-slate-900">
+              {footerPlaceholderTitle}
+            </p>
             <ul className="mt-3 space-y-2">
-              <li>
-                <Link
-                  href="/dashboard"
-                  className="text-sm text-slate-600 hover:text-slate-900"
-                >
-                  Commencer
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/dashboard"
-                  className="text-sm text-slate-600 hover:text-slate-900"
-                >
-                  Connexion
-                </Link>
-              </li>
-            </ul>
-            <p className="mt-6 text-sm font-semibold text-slate-900">Légal</p>
-            <ul className="mt-3 space-y-2 text-sm text-slate-400">
-              <li>Mentions légales (à venir)</li>
-              <li>Politique de confidentialité (à venir)</li>
+              {footerPlaceholders.map((label) => (
+                <li key={label} className="text-sm text-slate-400">
+                  {label}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        <p className="mt-10 border-t border-slate-200 pt-6 text-xs text-slate-500">
+        <p className="mt-10 text-xs text-slate-500">{footerLegalNote}</p>
+        <p className="mt-4 border-t border-slate-200 pt-6 text-xs text-slate-500">
           © {new Date().getFullYear()} {siteName}. Tous droits réservés.
         </p>
       </div>

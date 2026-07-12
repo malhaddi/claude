@@ -1,9 +1,9 @@
 ---
 name: verify
-description: Build, serve and visually verify the AdvertoAI site in this sandbox.
+description: Build, serve and visually verify the Publy site in this sandbox.
 ---
 
-# Verifying AdvertoAI changes
+# Verifying Publy changes
 
 ## Build & serve
 
