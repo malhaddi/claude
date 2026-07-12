@@ -9,6 +9,7 @@ import { getProject } from "@/lib/projects/dal";
 import { saveResearch } from "@/lib/projects/research-actions";
 import { researchContent } from "@/lib/projects/research-content";
 import { getResearch } from "@/lib/projects/research-dal";
+import { computeResearchProgress } from "@/lib/projects/research-progress";
 
 export const metadata: Metadata = {
   title: researchContent.page.title,
@@ -28,6 +29,9 @@ export default async function ProjectResearchPage({
   if (!project) notFound();
 
   const research = await getResearch(project.id);
+  // Unlock the generation tab from the saved research (same 12-field gate). A
+  // successful save revalidates this route, so the tab re-renders unlocked.
+  const generationReady = computeResearchProgress(research ?? undefined).ready;
 
   return (
     <div className="min-h-svh bg-slate-50">
@@ -41,7 +45,11 @@ export default async function ProjectResearchPage({
         </p>
 
         <div className="mt-6">
-          <ProjectTabs projectId={project.id} active="research" />
+          <ProjectTabs
+            projectId={project.id}
+            active="research"
+            generationReady={generationReady}
+          />
         </div>
 
         <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

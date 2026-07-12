@@ -65,5 +65,8 @@ export async function saveResearch(
 
   revalidatePath(`/dashboard/projets/${projectId}`);
   revalidatePath(`/dashboard/projets/${projectId}/recherche`);
+  // Saving research can flip the 100% gate, which unlocks the generation tab
+  // and the generation route — refresh its cached render too.
+  revalidatePath(`/dashboard/projets/${projectId}/generation`);
   return { success: true };
 }

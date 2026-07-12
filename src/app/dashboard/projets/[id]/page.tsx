@@ -8,6 +8,8 @@ import { requireUser } from "@/lib/auth/dal";
 import { updateProject } from "@/lib/projects/actions";
 import { getProject } from "@/lib/projects/dal";
 import { projectsContent } from "@/lib/projects/content";
+import { getResearch } from "@/lib/projects/research-dal";
+import { computeResearchProgress } from "@/lib/projects/research-progress";
 
 export const metadata: Metadata = {
   title: projectsContent.form.editTitle,
@@ -27,6 +29,12 @@ export default async function EditProjectPage({
   const project = await getProject(id);
   if (!project) notFound();
 
+  // The generation tab unlocks from the SAVED research (same 12-field gate the
+  // research progress bar and the generation route use), so it reflects the
+  // real state on every tab — not only the generation page.
+  const research = await getResearch(project.id);
+  const generationReady = computeResearchProgress(research ?? undefined).ready;
+
   const c = projectsContent.form;
 
   return (
@@ -39,7 +47,11 @@ export default async function EditProjectPage({
         <p className="mt-2 text-sm text-slate-600">{c.editSubtitle}</p>
 
         <div className="mt-6">
-          <ProjectTabs projectId={project.id} active="product" />
+          <ProjectTabs
+            projectId={project.id}
+            active="product"
+            generationReady={generationReady}
+          />
         </div>
 
         <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
