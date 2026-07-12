@@ -11,8 +11,9 @@ export function FranceFirst() {
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-indigo-200">
-            <ShieldCheck className="size-3.5" aria-hidden="true" />
+          <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-100">
+            {/* Lime accent on Ink — high contrast, used sparingly. */}
+            <ShieldCheck className="size-3.5 text-highlight" aria-hidden="true" />
             Pensé pour le marché francophone
           </p>
           <h2 className="mt-4 text-3xl font-bold tracking-tight text-balance sm:text-4xl">

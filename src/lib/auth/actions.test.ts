@@ -19,10 +19,16 @@ vi.mock("@/lib/env", () => ({
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn() }));
 
 import { createClient } from "@/lib/supabase/server";
-import { signIn, signOut, signUp } from "@/lib/auth/actions";
+import {
+  resendConfirmation,
+  signIn,
+  signOut,
+  signUp,
+} from "@/lib/auth/actions";
 import { authContent } from "@/lib/auth/content";
 
 const mockedCreateClient = vi.mocked(createClient);
+const CONFIRMED_AT = "2026-07-11T10:00:00.000Z";
 
 function form(fields: Record<string, string>): FormData {
   const fd = new FormData();
@@ -37,6 +43,15 @@ function mockAuth(methods: Record<string, unknown>) {
   } as any);
 }
 
+function validRegister(extra: Record<string, string> = {}) {
+  return form({
+    email: "user@example.fr",
+    password: "ValidPass1",
+    confirmPassword: "ValidPass1",
+    ...extra,
+  });
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -48,8 +63,11 @@ describe("signIn", () => {
     expect(mockedCreateClient).not.toHaveBeenCalled();
   });
 
-  it("redirects to /dashboard on success", async () => {
-    const signInWithPassword = vi.fn().mockResolvedValue({ error: null });
+  it("redirects a CONFIRMED user to /dashboard on success", async () => {
+    const signInWithPassword = vi.fn().mockResolvedValue({
+      data: { user: { id: "u1", email_confirmed_at: CONFIRMED_AT } },
+      error: null,
+    });
     mockAuth({ signInWithPassword });
     await expect(
       signIn({}, form({ email: "user@example.fr", password: "secret" })),
@@ -60,11 +78,44 @@ describe("signIn", () => {
     });
   });
 
+  it("rejects an unconfirmed login (Supabase email_not_confirmed error)", async () => {
+    mockAuth({
+      signInWithPassword: vi
+        .fn()
+        .mockResolvedValue({ data: {}, error: { code: "email_not_confirmed" } }),
+    });
+    const result = await signIn(
+      {},
+      form({ email: "user@example.fr", password: "secret" }),
+    );
+    expect(result.formError).toBe(authContent.errors.emailNotConfirmed);
+    expect(result.formError).toBe(
+      "Confirmez votre adresse e-mail avant de vous connecter.",
+    );
+  });
+
+  it("tears down a session if login succeeds but the email is unconfirmed", async () => {
+    const signOutFn = vi.fn().mockResolvedValue({ error: null });
+    mockAuth({
+      signInWithPassword: vi.fn().mockResolvedValue({
+        data: { user: { id: "u1", email_confirmed_at: null } },
+        error: null,
+      }),
+      signOut: signOutFn,
+    });
+    const result = await signIn(
+      {},
+      form({ email: "user@example.fr", password: "secret" }),
+    );
+    expect(signOutFn).toHaveBeenCalled();
+    expect(result.formError).toBe(authContent.errors.emailNotConfirmed);
+  });
+
   it("maps a Supabase error to a safe French message", async () => {
     mockAuth({
       signInWithPassword: vi
         .fn()
-        .mockResolvedValue({ error: { code: "invalid_credentials" } }),
+        .mockResolvedValue({ data: {}, error: { code: "invalid_credentials" } }),
     });
     const result = await signIn(
       {},
@@ -76,67 +127,93 @@ describe("signIn", () => {
 
 describe("signUp", () => {
   it("returns a confirmation-mismatch error", async () => {
-    const result = await signUp(
-      {},
-      form({
-        email: "user@example.fr",
-        password: "ValidPass1",
-        confirmPassword: "Different1",
-      }),
-    );
+    const result = await signUp({}, validRegister({ confirmPassword: "Different1" }));
     expect(result.fieldErrors?.confirmPassword).toBe(
       authContent.validation.confirmMismatch,
     );
   });
 
-  it("signals confirmation needed when no session is returned", async () => {
+  it("shows the neutral notice when confirmation is required (no session)", async () => {
     mockAuth({
-      signUp: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
-    });
-    const result = await signUp(
-      {},
-      form({
-        email: "user@example.fr",
-        password: "ValidPass1",
-        confirmPassword: "ValidPass1",
+      signUp: vi.fn().mockResolvedValue({
+        data: { user: { id: "u1", email_confirmed_at: null }, session: null },
+        error: null,
       }),
-    );
+    });
+    const result = await signUp({}, validRegister());
+    expect(result.needsConfirmation).toBe(true);
+    expect(result.email).toBe("user@example.fr");
+  });
+
+  it("never leaves a usable session for an unconfirmed signup", async () => {
+    const signOutFn = vi.fn().mockResolvedValue({ error: null });
+    mockAuth({
+      signUp: vi.fn().mockResolvedValue({
+        // Session unexpectedly returned for an unconfirmed user.
+        data: {
+          user: { id: "u1", email_confirmed_at: null },
+          session: { access_token: "t" },
+        },
+        error: null,
+      }),
+      signOut: signOutFn,
+    });
+    const result = await signUp({}, validRegister());
+    expect(signOutFn).toHaveBeenCalled();
     expect(result.needsConfirmation).toBe(true);
   });
 
-  it("redirects to /dashboard when a session is returned", async () => {
+  it("redirects to /dashboard only when confirmed AND a session exists", async () => {
     mockAuth({
-      signUp: vi
-        .fn()
-        .mockResolvedValue({ data: { session: { access_token: "t" } }, error: null }),
+      signUp: vi.fn().mockResolvedValue({
+        data: {
+          user: { id: "u1", email_confirmed_at: CONFIRMED_AT },
+          session: { access_token: "t" },
+        },
+        error: null,
+      }),
     });
-    await expect(
-      signUp(
-        {},
-        form({
-          email: "user@example.fr",
-          password: "ValidPass1",
-          confirmPassword: "ValidPass1",
-        }),
-      ),
-    ).rejects.toThrow("REDIRECT:/dashboard");
+    await expect(signUp({}, validRegister())).rejects.toThrow(
+      "REDIRECT:/dashboard",
+    );
   });
 
-  it("maps an already-registered error to French", async () => {
+  it("stays neutral for an already-registered email (no enumeration)", async () => {
     mockAuth({
       signUp: vi
         .fn()
         .mockResolvedValue({ data: {}, error: { code: "user_already_exists" } }),
     });
-    const result = await signUp(
-      {},
-      form({
-        email: "user@example.fr",
-        password: "ValidPass1",
-        confirmPassword: "ValidPass1",
-      }),
-    );
-    expect(result.formError).toBe(authContent.errors.emailAlreadyRegistered);
+    const result = await signUp({}, validRegister());
+    expect(result.needsConfirmation).toBe(true);
+    expect(result.formError).toBeUndefined();
+  });
+
+  it("surfaces a non-enumeration error (weak password)", async () => {
+    mockAuth({
+      signUp: vi
+        .fn()
+        .mockResolvedValue({ data: {}, error: { code: "weak_password" } }),
+    });
+    const result = await signUp({}, validRegister());
+    expect(result.formError).toBe(authContent.errors.weakPassword);
+    expect(result.needsConfirmation).toBeUndefined();
+  });
+});
+
+describe("resendConfirmation", () => {
+  it("is always neutral, even for an invalid address (no Supabase call)", async () => {
+    const result = await resendConfirmation({}, form({ email: "nope" }));
+    expect(result.resent).toBe(true);
+    expect(mockedCreateClient).not.toHaveBeenCalled();
+  });
+
+  it("calls Supabase resend for a valid address and stays neutral", async () => {
+    const resend = vi.fn().mockResolvedValue({ error: null });
+    mockAuth({ resend });
+    const result = await resendConfirmation({}, form({ email: "user@example.fr" }));
+    expect(resend).toHaveBeenCalled();
+    expect(result.resent).toBe(true);
   });
 });
 

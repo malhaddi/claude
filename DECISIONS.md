@@ -3,6 +3,52 @@
 Log of the major choices made so far and why. Newest first within each
 milestone.
 
+## Milestone 2B.1 — Auth hardening & Publy rebrand
+
+### Root cause of the unverified-access bug
+
+`requireUser()` only checked `if (!user)`; it never inspected
+`email_confirmed_at`. And `signUp` redirected to `/dashboard` whenever
+`data.session` was truthy. So any session that resolved to a user — including
+an unconfirmed one — passed the guard and reached protected pages.
+
+Fix (defense-in-depth):
+- `requireUser()` now requires a non-null `email_confirmed_at` and redirects
+  unconfirmed users to `/connexion?status=email_non_confirme` **before**
+  rendering protected HTML. `getConfirmedUser()` is used by the auth pages so
+  an unconfirmed user is treated as logged-out (prevents a redirect loop).
+- The proxy treats only confirmed users as authenticated and **deterministically
+  clears `sb-*` cookies** for an unconfirmed session (no network round-trip),
+  so such a session is never usable.
+- `signUp` only redirects a confirmed user with a session; otherwise it signs
+  out any returned session and shows the neutral notice. `signIn` rejects
+  unconfirmed logins (Supabase error + post-success guard).
+
+### Enumeration-safe sign-up
+
+Revealing "an account already exists" enables email enumeration, so the
+already-registered mapping was removed from `mapAuthError` (it now returns the
+generic message) and `signUp` shows the **same neutral notice** for new and
+existing addresses. A safe `resendConfirmation` action always returns a neutral
+result. `isEmailEnumerationError()` centralizes the classification.
+
+### Rebrand via Tailwind token remap (low-risk)
+
+Rather than editing color classes across ~30 components, the Publy palette is
+applied by remapping the Tailwind `indigo` and `slate` scales to brand values
+in `globals.css @theme` (Electric replaces indigo; Ink/Slate/Border/Off-white
+replace slate), plus named `--color-electric/-highlight/-ink/...` tokens for
+new usage. Lime (`bg-highlight`) is used sparingly and always with Ink text
+(the recommended-plan badge; a France-first accent on Ink) for contrast.
+
+### Internal identifiers kept stable on purpose
+
+The customer-facing name is Publy, but these internal identifiers keep their
+`advertoai` names to avoid needless churn/risk (none are user-visible): the npm
+package name, the comparison data id `advertoai` (also its React keys, which
+appear only in the RSC payload), and the CSS keyframe `advertoai-rise`. Routes
+and Supabase cookie/session names are likewise unchanged.
+
 ## Milestone 2B — Projects, database & Row Level Security
 
 ### RLS is the final enforcement layer, not the app
@@ -170,7 +216,7 @@ enforced structurally, not just by copy review:
 ### Comparison framed by workflow, not competitors
 
 The comparison names workflow categories (generic AI chat, page builder,
-freelance/agency, AdvertoAI) rather than real products, and carries no prices
+freelance/agency, Publy) rather than real products, and carries no prices
 — avoiding defamatory or fabricated claims while still positioning the tool.
 A test asserts no euro amounts appear in the comparison data.
 

@@ -36,8 +36,12 @@ const authContentSchema = z.object({
     submitting: nonEmpty,
     hasAccount: nonEmpty,
     hasAccountCta: nonEmpty,
-    checkInboxTitle: nonEmpty,
-    checkInboxBody: nonEmpty,
+    // Neutral post-signup notice (enumeration-safe — same for new or existing).
+    noticeTitle: nonEmpty,
+    noticeBody: nonEmpty,
+    noticeSignIn: nonEmpty,
+    resendCta: nonEmpty,
+    resendDone: nonEmpty,
   }),
   validation: z.object({
     emailRequired: nonEmpty,
@@ -53,11 +57,15 @@ const authContentSchema = z.object({
   errors: z.object({
     invalidCredentials: nonEmpty,
     emailNotConfirmed: nonEmpty,
-    emailAlreadyRegistered: nonEmpty,
     weakPassword: nonEmpty,
     rateLimited: nonEmpty,
     notConfigured: nonEmpty,
     generic: nonEmpty,
+  }),
+  // Banners shown on /connexion based on a ?status= indicator.
+  notices: z.object({
+    emailNotConfirmed: nonEmpty,
+    confirmationInvalid: nonEmpty,
   }),
   dashboard: z.object({
     title: nonEmpty,
@@ -84,7 +92,7 @@ export const authContent = authContentSchema.parse({
   },
   login: {
     title: "Connexion",
-    subtitle: "Connectez-vous à votre espace AdvertoAI.",
+    subtitle: "Connectez-vous à votre espace Publy.",
     submit: "Se connecter",
     submitting: "Connexion…",
     noAccount: "Pas encore de compte ?",
@@ -100,9 +108,13 @@ export const authContent = authContentSchema.parse({
     submitting: "Création…",
     hasAccount: "Vous avez déjà un compte ?",
     hasAccountCta: "Se connecter",
-    checkInboxTitle: "Vérifiez votre boîte mail",
-    checkInboxBody:
-      "Nous vous avons envoyé un e-mail de confirmation. Cliquez sur le lien qu'il contient pour activer votre compte, puis connectez-vous.",
+    noticeTitle: "Vérifiez votre boîte mail",
+    noticeBody:
+      "Si cette adresse peut être utilisée, vous recevrez un e-mail contenant les prochaines étapes. Cliquez sur le lien qu'il contient pour activer votre compte, puis connectez-vous.",
+    noticeSignIn: "Se connecter",
+    resendCta: "Renvoyer l'e-mail de confirmation",
+    resendDone:
+      "Si l'adresse est valide, un nouvel e-mail de confirmation a été envoyé.",
   },
   validation: {
     emailRequired: "Veuillez saisir votre adresse e-mail.",
@@ -118,9 +130,7 @@ export const authContent = authContentSchema.parse({
   errors: {
     invalidCredentials: "E-mail ou mot de passe incorrect.",
     emailNotConfirmed:
-      "Votre adresse e-mail n'est pas encore confirmée. Vérifiez votre boîte mail.",
-    emailAlreadyRegistered:
-      "Un compte existe déjà avec cette adresse e-mail. Essayez de vous connecter.",
+      "Confirmez votre adresse e-mail avant de vous connecter.",
     weakPassword:
       "Ce mot de passe ne respecte pas les règles requises (8 caractères, majuscule, minuscule, chiffre).",
     rateLimited:
@@ -129,13 +139,19 @@ export const authContent = authContentSchema.parse({
       "L'authentification n'est pas encore configurée sur ce déploiement. Réessayez plus tard.",
     generic: "Une erreur est survenue. Veuillez réessayer.",
   },
+  notices: {
+    emailNotConfirmed:
+      "Confirmez votre adresse e-mail avant de vous connecter.",
+    confirmationInvalid:
+      "Le lien de confirmation est invalide ou a expiré. Veuillez réessayer.",
+  },
   dashboard: {
     title: "Tableau de bord",
     signedInAs: "Connecté en tant que",
     signOut: "Se déconnecter",
     emptyTitle: "Votre espace est prêt",
     emptyBody:
-      "Vous êtes bien connecté. Votre compte AdvertoAI est actif et sécurisé.",
+      "Vous êtes bien connecté. Votre compte Publy est actif et sécurisé.",
     nextMilestone:
       "La création de projets et la génération d'advertoriaux arriveront dans la prochaine étape. Cette page est volontairement un espace vide pour l'instant.",
     backHome: "Retour à l'accueil",

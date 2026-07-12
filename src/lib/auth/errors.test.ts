@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { authContent } from "@/lib/auth/content";
-import { mapAuthError } from "@/lib/auth/errors";
+import { isEmailEnumerationError, mapAuthError } from "@/lib/auth/errors";
 
 const e = authContent.errors;
 
@@ -18,13 +18,22 @@ describe("mapAuthError", () => {
     );
   });
 
-  it("maps an already-registered email (by code and by message)", () => {
-    expect(mapAuthError({ code: "user_already_exists" })).toBe(
-      e.emailAlreadyRegistered,
+  it("does NOT reveal an already-registered email — maps to generic", () => {
+    // Enumeration-safety: mapAuthError must not surface a distinct message.
+    expect(mapAuthError({ code: "user_already_exists" })).toBe(e.generic);
+    expect(mapAuthError({ message: "User already registered" })).toBe(
+      e.generic,
     );
+  });
+
+  it("flags enumeration-class errors so the sign-up flow can neutralize them", () => {
+    expect(isEmailEnumerationError({ code: "user_already_exists" })).toBe(true);
+    expect(isEmailEnumerationError({ code: "email_exists" })).toBe(true);
     expect(
-      mapAuthError({ message: "User already registered" }),
-    ).toBe(e.emailAlreadyRegistered);
+      isEmailEnumerationError({ message: "User already registered" }),
+    ).toBe(true);
+    expect(isEmailEnumerationError({ code: "invalid_credentials" })).toBe(false);
+    expect(isEmailEnumerationError(null)).toBe(false);
   });
 
   it("maps a weak password", () => {

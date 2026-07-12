@@ -5,6 +5,51 @@
   --radius: 1rem;
 }
 
+/*
+ * Publy brand palette (Milestone 2B.1).
+ *
+ * Named brand tokens for new/explicit usage:
+ *   bg-electric / text-electric  → primary action color
+ *   bg-highlight / text-highlight → Lime accent (use sparingly; pair with Ink)
+ *   text-ink / bg-offwhite / border-line → neutrals
+ *
+ * We ALSO remap the Tailwind `indigo` and `slate` scales that the app already
+ * uses to brand values, so the whole UI adopts the palette without editing
+ * every utility class. Electric replaces indigo (main action); Ink/Slate/
+ * Border/Off-white replace the slate neutrals.
+ */
+@theme {
+  /* Named brand tokens */
+  --color-ink: #101828;
+  --color-offwhite: #f7f7f2;
+  --color-electric: #6c5ce7;
+  --color-highlight: #c8ff4d;
+  --color-brand-slate: #667085;
+  --color-line: #e4e7ec;
+
+  /* Electric scale (remaps `indigo-*`) */
+  --color-indigo-50: #efedfd;
+  --color-indigo-100: #e2defb;
+  --color-indigo-200: #c8c1f7;
+  --color-indigo-300: #a79cf1;
+  --color-indigo-500: #7d6fec;
+  --color-indigo-600: #6c5ce7;
+  --color-indigo-700: #5546c9;
+  --color-indigo-900: #2c2470;
+
+  /* Ink / Slate / Border / Off-white (remaps `slate-*`) */
+  --color-slate-50: #f7f7f2;
+  --color-slate-100: #f2f4f7;
+  --color-slate-200: #e4e7ec;
+  --color-slate-300: #d0d5dd;
+  --color-slate-400: #98a2b3;
+  --color-slate-500: #667085;
+  --color-slate-600: #475467;
+  --color-slate-700: #344054;
+  --color-slate-800: #1d2939;
+  --color-slate-900: #101828;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;

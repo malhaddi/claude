@@ -11,9 +11,10 @@ import { createClient } from "@/lib/supabase/server";
  * - PKCE `?code=` → exchangeCodeForSession
  * - `?token_hash=&type=` → verifyOtp (used if the email template is customized)
  *
- * On success → /dashboard. On failure → /connexion. Redirect targets are
- * FIXED internal paths — no user-controlled `next`/redirect parameter is
- * honored, so this cannot be turned into an open redirect.
+ * On success → /dashboard. On failure → /connexion?status=confirmation_invalide.
+ * Redirect targets are FIXED internal paths built from the request origin — no
+ * user-controlled `next`/redirect parameter is honored, so this cannot be
+ * turned into an open redirect.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -22,7 +23,10 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as EmailOtpType | null;
 
   const success = new URL("/dashboard", request.nextUrl.origin);
-  const failure = new URL("/connexion", request.nextUrl.origin);
+  const failure = new URL(
+    "/connexion?status=confirmation_invalide",
+    request.nextUrl.origin,
+  );
 
   const supabase = await createClient();
 

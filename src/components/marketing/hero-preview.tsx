@@ -18,7 +18,7 @@ export function HeroPreview() {
           <span className="size-2.5 rounded-full bg-slate-200" />
           <span className="size-2.5 rounded-full bg-slate-200" />
           <span className="ml-2 flex-1 truncate rounded-md bg-slate-100 px-2 py-1 text-[10px] text-slate-400">
-            advertoai.fr/p/mon-produit
+            publy.fr/p/mon-produit
           </span>
         </div>
 

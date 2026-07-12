@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Sparkles } from "lucide-react";
 
+import { Wordmark } from "@/components/ui/wordmark";
 import { authContent } from "@/lib/auth/content";
 import { siteName } from "@/lib/content";
 
@@ -31,10 +32,8 @@ export function AuthShell({
           <span className="flex size-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
             <Sparkles className="size-4" aria-hidden="true" />
           </span>
-          <span className="text-lg tracking-tight">
-            Adverto<span className="text-indigo-600">AI</span>
-            <span className="sr-only">{siteName}</span>
-          </span>
+          <Wordmark />
+          <span className="sr-only">{siteName}</span>
         </div>
 
         <h1 className="mt-6 text-2xl font-bold tracking-tight text-slate-900">

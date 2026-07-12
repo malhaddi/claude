@@ -1,7 +1,15 @@
-# AdvertoAI
+# Publy
 
-AdvertoAI is a French-first SaaS that helps Shopify and DTC advertisers turn
-product information into mobile-first advertorial pre-sell pages.
+Publy is a French-first SaaS that helps Shopify and DTC advertisers turn
+product information into mobile-first advertorial / pre-sell pages
+(« pages de prévente ») for their paid traffic.
+
+> **Naming note:** the customer-facing brand is **Publy**. Some *internal*
+> identifiers intentionally keep their original `advertoai` names to avoid
+> needless churn/risk: the npm package name (`advertoai`), the comparison
+> data id (`advertoai`), and the CSS keyframe (`advertoai-rise`). These are
+> never shown to users. The common nouns "advertorial"/"advertoriaux" and
+> "page de prévente" are product vocabulary, not the brand.
 
 Core positioning: **« Transformez votre produit en advertorial français prêt à
 convertir. »**
@@ -152,8 +160,9 @@ protected `/dashboard`). To run it against a real project:
    **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`, and the **publishable key**
    → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Put both in `.env.local`.
    Do **not** copy the service-role/secret key — it is not used here.
-3. **Auth settings** — Dashboard → *Authentication → Providers → Email*: make
-   sure **Email** is enabled. Leave *Confirm email* on for production (default).
+3. **Auth settings** — Dashboard → *Authentication → Providers → Email*:
+   **Email must be enabled AND "Confirm email" must be ON** (this is required
+   for the hardened flow — see below).
 4. **URL configuration** — Dashboard → *Authentication → URL Configuration*:
    - **Site URL:**
      - local: `http://localhost:3000`
@@ -161,12 +170,34 @@ protected `/dashboard`). To run it against a real project:
    - **Redirect URLs (allow-list):**
      - `http://localhost:3000/auth/confirm`
      - `https://your-domain.com/auth/confirm`
-5. **Email confirmation** — with *Confirm email* enabled, registration shows a
-   « Vérifiez votre boîte mail » message; the confirmation link lands on
+5. **Email confirmation** — with *Confirm email* enabled, `supabase.auth.signUp`
+   returns a **user but `session: null`** before confirmation. Registration
+   therefore shows a neutral « Vérifiez votre boîte mail » message and creates
+   **no usable application session**. The confirmation link lands on
    `/auth/confirm`, which establishes the session and redirects to
    `/dashboard`. The callback supports both the PKCE `?code=` flow (default
    email template) and the `?token_hash=&type=` flow (customized template).
-   If you disable *Confirm email*, registration signs the user straight in.
+
+### Email-confirmation enforcement (Milestone 2B.1)
+
+Access is refused until the email is confirmed, defense-in-depth:
+
+- **Guard** — `requireUser()` (`src/lib/auth/dal.ts`) calls
+  `supabase.auth.getUser()` and requires a **non-null `email_confirmed_at`**;
+  an unconfirmed user is redirected to `/connexion?status=email_non_confirme`
+  **before any protected HTML renders**.
+- **Proxy** — `src/proxy.ts` treats only confirmed users as authenticated and
+  **clears (`sb-*`) cookies of any unconfirmed session** so it is never usable.
+- **Login** — an unconfirmed login fails with « Confirmez votre adresse e-mail
+  avant de vous connecter. » (both from Supabase's `email_not_confirmed` error
+  and a post-success `email_confirmed_at` guard).
+- **Sign-up is enumeration-safe** — whether the address is new or already
+  registered, the same neutral notice is shown (« Si cette adresse peut être
+  utilisée… »), with links to *Se connecter* and *Renvoyer l'e-mail de
+  confirmation*.
+- **Confirmation callback** rejects malformed/expired tokens → redirects to
+  `/connexion?status=confirmation_invalide`; success → `/dashboard`. Targets
+  are fixed internal paths (no open redirect).
 
 ### Create and test an account
 
@@ -175,12 +206,21 @@ cp .env.example .env.local   # fill in the two NEXT_PUBLIC_SUPABASE_* values
 npm run dev
 ```
 
-- Visit `http://localhost:3000/inscription`, register with an email + a
-  password (≥ 8 chars, one uppercase, one lowercase, one digit).
-- With confirmation on: open the email, click the link → you land on
-  `/dashboard`. With confirmation off: you land on `/dashboard` immediately.
-- Log out via the dashboard button → back to `/connexion`.
-- Log back in at `/connexion`.
+Full manual validation (with *Confirm email* ON):
+
+1. In Supabase → *Authentication → Users*, delete any old unverified test user.
+2. Visit `/inscription` and register a **fresh** address (password ≥ 8 chars,
+   one uppercase, one lowercase, one digit).
+3. Confirm you get the neutral « Vérifiez votre boîte mail » notice and are
+   **not** taken to `/dashboard`. Try opening `/dashboard` directly → you are
+   redirected to `/connexion` (no dashboard access before confirmation).
+4. Try logging in at `/connexion` before confirming → it fails with
+   « Confirmez votre adresse e-mail avant de vous connecter. »
+5. Open the confirmation email and click the link → you land on `/dashboard`.
+6. Create / edit / delete a project — all should work; open a project you own.
+7. Log out via the dashboard button → back to `/connexion`; log back in.
+8. Confirm the entire visible UI reads **Publy** (header, auth, dashboard,
+   footer, favicon) and no customer-facing "AdvertoAI" text remains.
 
 ### How route protection works
 
@@ -251,7 +291,7 @@ re-runnable (idempotent `if not exists` / `drop policy if exists`).
 2. In Vercel: **Add New → Project**, import the repo. Vercel auto-detects
    Next.js; no build settings needed.
 3. Set the environment variables for Production and redeploy:
-   `NEXT_PUBLIC_SITE_URL` (e.g. `https://advertoai.fr`),
+   `NEXT_PUBLIC_SITE_URL` (e.g. `https://publy.fr`),
    `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 4. Add the production Site URL + `…/auth/confirm` redirect URL in the Supabase
    dashboard (see *Supabase authentication setup* above).

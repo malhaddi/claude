@@ -50,7 +50,7 @@
       Croissance (79 €, « Bientôt disponible », disabled waitlist CTA);
       labelled monthly/annual preview toggle, no fake discount, no checkout
 - [x] Comparison section by workflow category (generic AI chat / page builder
-      / freelance-agency / AdvertoAI), no named competitors or invented prices
+      / freelance-agency / Publy), no named competitors or invented prices
 - [x] FAQ expanded to the 9 required questions, honest scope answers
 - [x] Final CTA « Votre prochaine campagne mérite mieux… » + footer with
       Produit / Tarifs / FAQ / legal + contact placeholders
@@ -115,6 +115,35 @@
       final layer, no raw DB errors shown; route protection verified (307,
       no protected markup leaked)
 - [x] All gates green (lint, typecheck, test, build)
+
+## Milestone 2B.1 — Auth hardening & Publy rebrand (DONE)
+
+Part A — authentication hardening:
+- [x] Root cause fixed: `requireUser()` now requires a non-null
+      `email_confirmed_at` (it previously only checked `!user`); `signUp` no
+      longer redirects to /dashboard for an unconfirmed session
+- [x] Sign-up creates no usable session before confirmation; neutral
+      « Vérifiez votre boîte mail » notice; unconfirmed sessions are signed out
+- [x] Login rejects unconfirmed users with « Confirmez votre adresse e-mail
+      avant de vous connecter. »
+- [x] Proxy clears `sb-*` cookies for unconfirmed sessions; guard redirects
+      before any protected HTML renders (dashboard + project pages)
+- [x] Enumeration-safe sign-up + duplicate handling; resend-confirmation action
+- [x] Confirmation callback: safe failure → `/connexion?status=confirmation_invalide`,
+      success → `/dashboard`, fixed internal redirects only
+- [x] 15 new auth tests (confirmation enforcement, neutrality, callback, etc.)
+
+Part B — Publy rebrand:
+- [x] Brand → **Publy**; new positioning/headline/promise; three wordmarks +
+      favicon (A→P) replaced; metadata, OG and mock URLs (publy.fr) updated
+- [x] Tailwind v4 brand tokens in `globals.css` (Ink/Off-white/Electric/Lime/
+      Slate/Border); Electric = primary, Lime used sparingly (recommended
+      badge, France-first accent); reduced-motion + responsive preserved
+- [x] Auth, dashboard, pricing and project UI say Publy; RLS/CRUD unchanged
+- [x] Internal ids kept stable on purpose: package `advertoai`, comparison id
+      `advertoai`, CSS keyframe `advertoai-rise`, routes, cookie names
+- [x] Repo-wide search: zero customer-facing AdvertoAI leftovers
+- [x] All gates green (lint, typecheck, 126 tests, build); browser-verified
 
 ## Milestone 3 — AI advertorial generation (NEXT)
 

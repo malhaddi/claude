@@ -14,7 +14,7 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
   title: {
-    default: `${siteName} — Advertoriaux français prêts à convertir`,
+    default: `${siteName} — Pages de prévente françaises pour trafic payant`,
     template: `%s | ${siteName}`,
   },
   description: siteDescription,

@@ -28,13 +28,15 @@ import {
  * - Planned features are clearly labelled "Bientôt" / "soon".
  */
 
-export const siteName = "AdvertoAI";
+export const siteName = "Publy";
 
-export const siteTagline =
-  "Transformez votre produit en advertorial français prêt à convertir.";
+export const siteTagline = "Transformez vos publicités en pages qui vendent.";
+
+export const brandPromise =
+  "La plateforme française de pages de prévente pour trafic payant.";
 
 export const siteDescription =
-  "AdvertoAI transforme votre URL produit en advertorial français : structuration de l'angle, rédaction de la page et préparation pour votre trafic Meta et TikTok. Pensé pour les marques Shopify et DTC francophones.";
+  "Publy transforme votre URL produit en page de prévente française : structuration de l'angle, rédaction en français et préparation pour votre trafic Meta et TikTok. Pensé pour les marques Shopify et DTC francophones.";
 
 // Section anchors shown in the navigation.
 export const navLinks = z.array(navLinkSchema).min(1).parse([
@@ -53,10 +55,10 @@ export const navCtas = z
   });
 
 export const hero = heroSchema.parse({
-  badge: "Advertoriaux français pour Shopify & DTC",
+  badge: brandPromise,
   headline: siteTagline,
   promise:
-    "Collez votre URL produit. AdvertoAI structure votre angle, rédige votre page en français et la prépare pour votre trafic Meta et TikTok.",
+    "Collez votre URL produit, choisissez un angle et créez une page de prévente en français, pensée pour votre trafic Meta et TikTok.",
   primaryCta: { label: "Créer mon premier advertorial", href: "/inscription" },
   secondaryCta: { label: "Voir comment ça fonctionne", href: "#produit" },
   noCardNote: "Aucune carte bancaire requise",
@@ -112,7 +114,7 @@ export const workflowSteps = z.array(workflowStepSchema).length(4).parse([
     label: "Étape 3",
     title: "Générez la page",
     description:
-      "AdvertoAI rédige un advertorial structuré en français, pensé pour le marché francophone — pas une traduction.",
+      "Publy rédige un advertorial structuré en français, pensé pour le marché francophone — pas une traduction.",
   },
   {
     id: "publish",
@@ -221,7 +223,7 @@ export const differentiators = z.array(differentiatorSchema).min(4).parse([
   {
     title: "Des objections et un ton de confiance localisés",
     description:
-      "Les doutes d'un acheteur francophone et les formulations qui rassurent lui sont propres. AdvertoAI les adresse avec les bons mots.",
+      "Les doutes d'un acheteur francophone et les formulations qui rassurent lui sont propres. Publy les adresse avec les bons mots.",
   },
   {
     title: "Une présentation d'offre en euros",
@@ -236,7 +238,7 @@ export const differentiators = z.array(differentiatorSchema).min(4).parse([
   {
     title: "Un tracking pensé RGPD",
     description:
-      "La configuration du suivi est conçue en gardant le RGPD à l'esprit. AdvertoAI ne fournit pas de certification de conformité : la responsabilité juridique reste la vôtre.",
+      "La configuration du suivi est conçue en gardant le RGPD à l'esprit. Publy ne fournit pas de certification de conformité : la responsabilité juridique reste la vôtre.",
   },
 ]);
 
@@ -247,11 +249,11 @@ export const pricingPlans = z.array(pricingPlanSchema).length(3).parse([
     id: "discovery",
     name: "Découverte",
     priceMonthlyEur: 0,
-    tagline: "Pour tester AdvertoAI sans engagement.",
+    tagline: "Pour tester Publy sans engagement.",
     features: [
       "1 brouillon d'advertorial",
       "Aperçu de la page",
-      "Marque AdvertoAI affichée",
+      "Marque Publy affichée",
     ],
     badge: null,
     cta: { label: "Essayer gratuitement", href: "/inscription" },
@@ -270,7 +272,7 @@ export const pricingPlans = z.array(pricingPlanSchema).length(3).parse([
       "Édition du texte et des images",
       "Configuration du Pixel Meta",
       "Aperçu mobile",
-      "Marque AdvertoAI retirée",
+      "Marque Publy retirée",
     ],
     badge: "Recommandé",
     cta: { label: "Commencer avec Lanceur", href: "/inscription" },
@@ -311,7 +313,7 @@ export const comparisonApproaches = z
     { id: "generic-ai", label: "Chat IA générique", highlight: false },
     { id: "page-builder", label: "Constructeur de page", highlight: false },
     { id: "agency", label: "Freelance / agence", highlight: false },
-    { id: "advertoai", label: "AdvertoAI", highlight: true },
+    { id: "advertoai", label: "Publy", highlight: true },
   ]);
 
 export const comparisonRows = z.array(comparisonRowSchema).min(6).parse([
@@ -398,7 +400,7 @@ export const faqItems = z.array(faqItemSchema).min(9).parse([
   {
     question: "Est-ce réservé à Shopify ?",
     answer:
-      "Non. AdvertoAI est pensé en priorité pour les marques Shopify et DTC, mais la page advertorial est hébergée par nos soins : vous pouvez y envoyer votre trafic quelle que soit la plateforme de votre boutique, puis rediriger vers votre fiche produit.",
+      "Non. Publy est pensé en priorité pour les marques Shopify et DTC, mais la page advertorial est hébergée par nos soins : vous pouvez y envoyer votre trafic quelle que soit la plateforme de votre boutique, puis rediriger vers votre fiche produit.",
   },
   {
     question: "Puis-je modifier le texte ?",
@@ -418,12 +420,12 @@ export const faqItems = z.array(faqItemSchema).min(9).parse([
   {
     question: "Est-ce que l'outil garantit de meilleures conversions ?",
     answer:
-      "Non. Aucun outil ne peut garantir vos conversions. AdvertoAI vous fait gagner du temps et structure vos pages selon des cadres éprouvés, mais vos résultats dépendent de votre produit, de votre offre, de votre trafic et de votre marché.",
+      "Non. Aucun outil ne peut garantir vos conversions. Publy vous fait gagner du temps et structure vos pages selon des cadres éprouvés, mais vos résultats dépendent de votre produit, de votre offre, de votre trafic et de votre marché.",
   },
   {
     question: "Où la page sera-t-elle publiée ?",
     answer:
-      "Votre advertorial devient une page publique hébergée par AdvertoAI, accessible via une URL dédiée. Vous y dirigez votre trafic publicitaire, sans toucher au code ni au thème de votre boutique.",
+      "Votre advertorial devient une page publique hébergée par Publy, accessible via une URL dédiée. Vous y dirigez votre trafic publicitaire, sans toucher au code ni au thème de votre boutique.",
   },
   {
     question: "Puis-je annuler mon abonnement ?",

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, Sparkles, X } from "lucide-react";
 
 import { ButtonLink } from "@/components/ui/button-link";
+import { Wordmark } from "@/components/ui/wordmark";
 import { navCtas, navLinks, siteName } from "@/lib/content";
 import { cx } from "@/lib/utils";
 
@@ -39,10 +40,8 @@ export function SiteHeader() {
           <span className="flex size-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
             <Sparkles className="size-4" aria-hidden="true" />
           </span>
-          <span className="text-lg tracking-tight">
-            Adverto<span className="text-indigo-600">AI</span>
-            <span className="sr-only">{siteName} — accueil</span>
-          </span>
+          <Wordmark />
+          <span className="sr-only">{siteName} — accueil</span>
         </Link>
 
         <nav aria-label="Navigation principale" className="hidden md:block">

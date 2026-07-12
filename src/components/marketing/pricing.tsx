@@ -98,7 +98,7 @@ export function Pricing() {
                       className={cx(
                         "rounded-full px-3 py-1 text-xs font-semibold",
                         plan.recommended
-                          ? "bg-indigo-600 text-white"
+                          ? "bg-highlight text-ink" // Lime accent for the recommended plan
                           : "bg-amber-50 text-amber-700",
                       )}
                     >

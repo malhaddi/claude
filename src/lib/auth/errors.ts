@@ -15,6 +15,25 @@ export interface SupabaseAuthErrorLike {
 
 const e = authContent.errors;
 
+/**
+ * True for errors that would reveal whether an email is already registered.
+ * The sign-up flow suppresses these and shows a neutral notice instead, to
+ * prevent email enumeration.
+ */
+export function isEmailEnumerationError(
+  error: SupabaseAuthErrorLike | null | undefined,
+): boolean {
+  if (!error) return false;
+  const code = (error.code ?? "").toLowerCase();
+  const message = (error.message ?? "").toLowerCase();
+  return (
+    code === "user_already_exists" ||
+    code === "email_exists" ||
+    message.includes("already registered") ||
+    message.includes("already been registered")
+  );
+}
+
 export function mapAuthError(error: SupabaseAuthErrorLike | null | undefined): string {
   if (!error) return e.generic;
 
@@ -37,15 +56,9 @@ export function mapAuthError(error: SupabaseAuthErrorLike | null | undefined): s
     return e.emailNotConfirmed;
   }
 
-  // Account already exists (sign-up).
-  if (
-    code === "user_already_exists" ||
-    code === "email_exists" ||
-    message.includes("already registered") ||
-    message.includes("already been registered")
-  ) {
-    return e.emailAlreadyRegistered;
-  }
+  // Note: "already registered" is intentionally NOT mapped to a distinct
+  // message — the sign-up flow handles it neutrally (see isEmailEnumerationError)
+  // to avoid email enumeration.
 
   // Password rejected by Supabase policy.
   if (code === "weak_password" || message.includes("password")) {

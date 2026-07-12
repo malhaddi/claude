@@ -172,7 +172,7 @@ describe("pricing", () => {
 });
 
 describe("comparison", () => {
-  it("compares four approaches and highlights AdvertoAI only", () => {
+  it("compares four approaches and highlights Publy only", () => {
     expect(comparisonApproaches).toHaveLength(4);
     const highlighted = comparisonApproaches.filter((a) => a.highlight);
     expect(highlighted).toHaveLength(1);

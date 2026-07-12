@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { AuthShell } from "@/components/auth/auth-shell";
 import { authContent } from "@/lib/auth/content";
-import { getUser } from "@/lib/auth/dal";
+import { getConfirmedUser } from "@/lib/auth/dal";
 import { RegisterFooter, RegisterForm } from "./register-form";
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function InscriptionPage() {
-  if (await getUser()) redirect("/dashboard");
+  if (await getConfirmedUser()) redirect("/dashboard");
 
   return (
     <AuthShell

@@ -6,11 +6,65 @@ import { AlertCircle, MailCheck } from "lucide-react";
 
 import { AuthField } from "@/components/auth/auth-field";
 import { PasswordInput } from "@/components/auth/password-input";
-import { signUp, type AuthActionState } from "@/lib/auth/actions";
+import {
+  resendConfirmation,
+  signUp,
+  type AuthActionState,
+} from "@/lib/auth/actions";
 import { authContent } from "@/lib/auth/content";
 import { validateRegister, type FieldErrors } from "@/lib/auth/validation";
 
 const c = authContent;
+
+/** Neutral post-signup notice (same whether the email is new or existing). */
+function ConfirmationNotice({ email }: { email?: string }) {
+  const [state, formAction, isPending] = useActionState<
+    AuthActionState,
+    FormData
+  >(resendConfirmation, {});
+
+  return (
+    <div
+      role="status"
+      className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-center"
+    >
+      <span className="mx-auto flex size-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+        <MailCheck className="size-5" aria-hidden="true" />
+      </span>
+      <h2 className="mt-3 text-base font-semibold text-slate-900">
+        {c.register.noticeTitle}
+      </h2>
+      <p className="mt-2 text-sm text-slate-600">{c.register.noticeBody}</p>
+
+      {state.resent ? (
+        <p className="mt-3 text-sm font-medium text-emerald-700">
+          {c.register.resendDone}
+        </p>
+      ) : null}
+
+      <div className="mt-5 flex flex-col items-center gap-3">
+        <Link
+          href="/connexion"
+          className="text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+        >
+          {c.register.noticeSignIn}
+        </Link>
+        {email ? (
+          <form action={formAction}>
+            <input type="hidden" name="email" value={email} />
+            <button
+              type="submit"
+              disabled={isPending}
+              className="text-sm font-medium text-slate-500 underline underline-offset-2 hover:text-slate-700 disabled:opacity-60"
+            >
+              {c.register.resendCta}
+            </button>
+          </form>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 export function RegisterForm() {
   const [state, formAction, isPending] = useActionState<
@@ -37,22 +91,9 @@ export function RegisterForm() {
   const errorFor = (field: string) =>
     clientErrors[field] ?? state.fieldErrors?.[field];
 
-  // Confirmation email sent: replace the form with an inbox message.
+  // Neutral notice replaces the form after any submit that "succeeds".
   if (state.needsConfirmation) {
-    return (
-      <div
-        role="status"
-        className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-center"
-      >
-        <span className="mx-auto flex size-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-          <MailCheck className="size-5" aria-hidden="true" />
-        </span>
-        <h2 className="mt-3 text-base font-semibold text-slate-900">
-          {c.register.checkInboxTitle}
-        </h2>
-        <p className="mt-2 text-sm text-slate-600">{c.register.checkInboxBody}</p>
-      </div>
-    );
+    return <ConfirmationNotice email={state.email} />;
   }
 
   return (

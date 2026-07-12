@@ -15,9 +15,9 @@ describe("parseEnv", () => {
 
   it("accepts a valid site URL", () => {
     expect(
-      parseEnv({ NEXT_PUBLIC_SITE_URL: "https://advertoai.fr" })
+      parseEnv({ NEXT_PUBLIC_SITE_URL: "https://publy.fr" })
         .NEXT_PUBLIC_SITE_URL,
-    ).toBe("https://advertoai.fr");
+    ).toBe("https://publy.fr");
   });
 
   it("rejects a malformed site URL", () => {

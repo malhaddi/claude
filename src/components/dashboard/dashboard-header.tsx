@@ -1,5 +1,6 @@
 import { LogOut, Sparkles } from "lucide-react";
 
+import { Wordmark } from "@/components/ui/wordmark";
 import { signOut } from "@/lib/auth/actions";
 import { siteName } from "@/lib/content";
 import { projectsContent } from "@/lib/projects/content";
@@ -14,10 +15,8 @@ export function DashboardHeader({ email }: { email?: string | null }) {
           <span className="flex size-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
             <Sparkles className="size-4" aria-hidden="true" />
           </span>
-          <span className="text-lg tracking-tight">
-            Adverto<span className="text-indigo-600">AI</span>
-            <span className="sr-only">{siteName}</span>
-          </span>
+          <Wordmark />
+          <span className="sr-only">{siteName}</span>
         </span>
 
         <div className="flex items-center gap-3">

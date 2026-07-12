@@ -14,7 +14,7 @@ export function Capabilities() {
         <Reveal>
           <SectionHeading
             eyebrow="Capacités"
-            title="Ce que fait AdvertoAI — et ce qui arrive ensuite"
+            title="Ce que fait Publy — et ce qui arrive ensuite"
             description="Nous distinguons clairement ce qui est prévu dès le lancement de ce qui est en préparation."
           />
         </Reveal>

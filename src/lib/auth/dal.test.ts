@@ -16,9 +16,20 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { createClient } from "@/lib/supabase/server";
-import { getUser, requireUser } from "@/lib/auth/dal";
+import {
+  getConfirmedUser,
+  isEmailConfirmed,
+  requireUser,
+} from "@/lib/auth/dal";
 
 const mockedCreateClient = vi.mocked(createClient);
+
+const CONFIRMED = {
+  id: "u1",
+  email: "user@example.fr",
+  email_confirmed_at: "2026-07-11T10:00:00.000Z",
+};
+const UNCONFIRMED = { id: "u2", email: "new@example.fr", email_confirmed_at: null };
 
 function setUser(user: unknown) {
   mockedCreateClient.mockResolvedValue({
@@ -31,16 +42,28 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("getUser", () => {
-  it("returns null when there is no session", async () => {
-    setUser(null);
-    expect(await getUser()).toBeNull();
+describe("isEmailConfirmed", () => {
+  it("is true only for a non-null email_confirmed_at", () => {
+    expect(isEmailConfirmed(CONFIRMED as never)).toBe(true);
+    expect(isEmailConfirmed(UNCONFIRMED as never)).toBe(false);
+    expect(isEmailConfirmed(null)).toBe(false);
+  });
+});
+
+describe("getConfirmedUser", () => {
+  it("returns the user when confirmed", async () => {
+    setUser(CONFIRMED);
+    expect(await getConfirmedUser()).toEqual(CONFIRMED);
   });
 
-  it("returns the user when authenticated", async () => {
-    const user = { id: "u1", email: "user@example.fr" };
-    setUser(user);
-    expect(await getUser()).toEqual(user);
+  it("returns null for an unconfirmed user", async () => {
+    setUser(UNCONFIRMED);
+    expect(await getConfirmedUser()).toBeNull();
+  });
+
+  it("returns null when signed out", async () => {
+    setUser(null);
+    expect(await getConfirmedUser()).toBeNull();
   });
 });
 
@@ -50,9 +73,15 @@ describe("requireUser", () => {
     await expect(requireUser()).rejects.toThrow("REDIRECT:/connexion");
   });
 
-  it("returns the user when authenticated (no redirect)", async () => {
-    const user = { id: "u1", email: "user@example.fr" };
-    setUser(user);
-    expect(await requireUser()).toEqual(user);
+  it("redirects an UNCONFIRMED user with a status indicator", async () => {
+    setUser(UNCONFIRMED);
+    await expect(requireUser()).rejects.toThrow(
+      "REDIRECT:/connexion?status=email_non_confirme",
+    );
+  });
+
+  it("returns the user only when confirmed (no redirect)", async () => {
+    setUser(CONFIRMED);
+    expect(await requireUser()).toEqual(CONFIRMED);
   });
 });
