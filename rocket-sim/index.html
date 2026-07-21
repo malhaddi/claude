@@ -151,17 +151,39 @@
     color: var(--ink);
     font-weight: 500;
   }
-  .readout {
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    color: var(--amber-2);
+  .numbox {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
     background: rgba(255, 122, 60, .10);
-    border: 1px solid rgba(255, 122, 60, .28);
+    border: 1px solid rgba(255, 122, 60, .30);
     border-radius: 7px;
     padding: 3px 9px;
-    font-size: .86rem;
-    min-width: 78px;
+    transition: .15s;
+  }
+  .numbox:focus-within {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 2px rgba(255, 122, 60, .25);
+  }
+  .numin {
+    width: 44px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--amber-2);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: .9rem;
     text-align: right;
+    padding: 0;
+    -moz-appearance: textfield;
+  }
+  .numin::-webkit-outer-spin-button,
+  .numin::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .numbox .unit {
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    color: var(--muted);
   }
   input[type="range"] {
     -webkit-appearance: none;
@@ -313,8 +335,12 @@
 
       <div class="field angle-field">
         <div class="row">
-          <label for="angle">Angle de tir</label>
-          <span class="readout"><span id="angleOut">45</span>°</span>
+          <label for="angleNum">Angle de tir</label>
+          <div class="numbox">
+            <input class="numin" type="number" id="angleNum" min="5" max="85" step="1" value="45"
+                   inputmode="numeric" aria-label="Angle de tir en degrés">
+            <span class="unit">°</span>
+          </div>
         </div>
         <div class="row-dial">
           <svg class="dial" width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
@@ -332,8 +358,12 @@
 
       <div class="field">
         <div class="row">
-          <label for="speed">Vitesse initiale</label>
-          <span class="readout"><span id="speedOut">60</span> m/s</span>
+          <label for="speedNum">Vitesse initiale</label>
+          <div class="numbox">
+            <input class="numin" type="number" id="speedNum" min="10" max="150" step="1" value="60"
+                   inputmode="numeric" aria-label="Vitesse initiale en mètres par seconde">
+            <span class="unit">m/s</span>
+          </div>
         </div>
         <input type="range" id="speed" min="10" max="150" step="1" value="60">
       </div>
@@ -391,7 +421,7 @@
   // ---- inputs / state ----
   const els = {
     angle: $("angle"), speed: $("speed"),
-    angleOut: $("angleOut"), speedOut: $("speedOut"),
+    angleNum: $("angleNum"), speedNum: $("speedNum"),
     needle: $("needle"),
     hudAlt: $("hudAlt"), hudVel: $("hudVel"), hudDist: $("hudDist"),
     rRange: $("rRange"), rApex: $("rApex"), rTime: $("rTime"), rImp: $("rImp"),
@@ -767,19 +797,32 @@
   }
 
   // ---- input wiring ----
-  function syncAngle() {
-    state.angle = +els.angle.value;
-    els.angleOut.textContent = state.angle;
-    els.needle.setAttribute("transform", `rotate(${-state.angle} 6 46)`);
-    if (!state.flying) { reset(); }
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+  function applyAngle(a, writeNum) {
+    a = clamp(Math.round(a), 5, 85);
+    state.angle = a;
+    els.angle.value = a;
+    if (writeNum) els.angleNum.value = a;
+    els.needle.setAttribute("transform", `rotate(${-a} 6 46)`);
+    if (!state.flying) reset();
   }
-  function syncSpeed() {
-    state.speed = +els.speed.value;
-    els.speedOut.textContent = state.speed;
-    if (!state.flying) { reset(); }
+  function applySpeed(v, writeNum) {
+    v = clamp(Math.round(v), 10, 150);
+    state.speed = v;
+    els.speed.value = v;
+    if (writeNum) els.speedNum.value = v;
+    if (!state.flying) reset();
   }
-  els.angle.addEventListener("input", syncAngle);
-  els.speed.addEventListener("input", syncSpeed);
+
+  // sliders drive the number fields
+  els.angle.addEventListener("input", () => applyAngle(+els.angle.value, true));
+  els.speed.addEventListener("input", () => applySpeed(+els.speed.value, true));
+  // typing drives the sliders (don't rewrite the field mid-type; normalise on blur)
+  els.angleNum.addEventListener("input", () => { const v = parseFloat(els.angleNum.value); if (!isNaN(v)) applyAngle(v, false); });
+  els.speedNum.addEventListener("input", () => { const v = parseFloat(els.speedNum.value); if (!isNaN(v)) applySpeed(v, false); });
+  els.angleNum.addEventListener("change", () => applyAngle(parseFloat(els.angleNum.value) || 45, true));
+  els.speedNum.addEventListener("change", () => applySpeed(parseFloat(els.speedNum.value) || 60, true));
 
   $("planets").addEventListener("click", (e) => {
     const b = e.target.closest("button");
