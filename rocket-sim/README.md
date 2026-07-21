@@ -37,14 +37,27 @@ start rocket-sim/index.html         # Windows
   - 🖱️ **Glisse sur le terrain pour pivoter la caméra à 360°** (orbite libre en
     yaw, inclinaison en pitch) et choisir le point de vue qui t'intéresse.
 
+### Interception au sommet (missile 2)
+
+Quand **« Interception au sommet »** est coché (par défaut), un **second missile**
+part de **l'extrémité de l'axe Z** en même temps que le missile 1, avec une
+vitesse balistique calculée pour qu'ils **entrent en collision pile au sommet**
+de la parabole (à `t = T/2`). Astuce&nbsp;: les deux missiles partagent la même
+altitude à chaque instant et ne diffèrent que sur l'axe Z, si bien que le missile
+2 « glisse » le long de Z pour percuter le missile 1 au point le plus haut. Le
+spectacle se voit surtout en **Vue 3/4**. Décoche l'option pour revenir au vol
+libre avec atterrissage au sol.
+
 ### Impact dynamique
 
-Au contact du sol, l'explosion (flash, onde de choc et gerbe d'étincelles) est
-**d'autant plus vive, large et fournie que la vitesse d'impact est grande**.
+À la collision (ou au contact du sol), l'explosion — flash, onde de choc et
+gerbe d'étincelles — est **d'autant plus vive, large et fournie que la vitesse
+est grande**.
 
-Les indicateurs affichent en direct l'altitude, la vitesse et la distance ;
-le panneau de résultats donne la portée, l'altitude maximale, le temps de vol et
-la vitesse d'impact.
+Les indicateurs affichent en direct l'**altitude**, la **vitesse**, la
+**distance** et le **temps** ; le panneau de résultats donne la portée,
+l'altitude maximale, l'instant de collision / temps de vol et la vitesse
+d'impact (ou de rapprochement).
 
 ## Le modèle physique
 

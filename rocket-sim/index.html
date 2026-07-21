@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Simulateur de trajectoire de missile</title>
+  <title>Simulateur d'interception de missile</title>
   <style>
     html, body { margin: 0; background: #05070e; }
   </style>
@@ -61,7 +61,7 @@
     font-family: var(--font-mono); font-size: .72rem; background: rgba(8,14,26,.66); border: 1px solid var(--line);
     border-radius: 7px; padding: 4px 8px; backdrop-filter: blur(6px); display: flex; gap: 7px; align-items: baseline; width: max-content;
   }
-  .chip .k { color: var(--muted); text-transform: uppercase; letter-spacing: .1em; font-size: .6rem; }
+  .chip .k { color: var(--muted); text-transform: uppercase; letter-spacing: .1em; font-size: .6rem; min-width: 30px; }
   .chip .v { color: var(--cyan); font-variant-numeric: tabular-nums; }
 
   .orbit-hint {
@@ -120,6 +120,9 @@
   }
   .sel:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
 
+  .chk { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: .8rem; color: var(--ink); cursor: pointer; user-select: none; padding: 6px 0; }
+  .chk input { accent-color: var(--cyan); width: 16px; height: 16px; cursor: pointer; }
+
   .dg-actions { flex-direction: row; align-items: center; gap: 10px; margin-left: auto; }
   .btn {
     font-family: var(--font-ui); font-weight: 600; font-size: .9rem; padding: 10px 16px; border-radius: 9px;
@@ -144,7 +147,7 @@
 
   <div class="brand">
     <p class="eyebrow">Contrôle de mission</p>
-    <h1>Trajectoire de missile</h1>
+    <h1>Interception de missile</h1>
   </div>
 
   <div class="tabs" role="tablist" aria-label="Choix de la vue">
@@ -156,6 +159,7 @@
     <div class="chip"><span class="k">Alt</span><span class="v" id="hudAlt">0 m</span></div>
     <div class="chip"><span class="k">Vit</span><span class="v" id="hudVel">0 m/s</span></div>
     <div class="chip"><span class="k">Dist</span><span class="v" id="hudDist">0 m</span></div>
+    <div class="chip"><span class="k">Temps</span><span class="v" id="hudTime">0.0 s</span></div>
   </div>
 
   <div class="orbit-hint" id="orbitHint">⟳ Glisse pour pivoter le terrain à 360°</div>
@@ -164,8 +168,8 @@
     <div class="stats">
       <div class="stat impact"><span class="l">Portée</span><span class="n"><span id="rRange">—</span><span class="u">m</span></span></div>
       <div class="stat"><span class="l">Alt. max</span><span class="n"><span id="rApex">—</span><span class="u">m</span></span></div>
-      <div class="stat"><span class="l">Temps</span><span class="n"><span id="rTime">—</span><span class="u">s</span></span></div>
-      <div class="stat"><span class="l">V. impact</span><span class="n"><span id="rImp">—</span><span class="u">m/s</span></span></div>
+      <div class="stat"><span class="l" id="lTime">Temps</span><span class="n"><span id="rTime">—</span><span class="u">s</span></span></div>
+      <div class="stat"><span class="l" id="lImp">V. impact</span><span class="n"><span id="rImp">—</span><span class="u">m/s</span></span></div>
     </div>
 
     <div class="dock">
@@ -203,6 +207,11 @@
         </select>
       </div>
 
+      <div class="dg">
+        <span class="dg-label">Missile 2</span>
+        <label class="chk"><input type="checkbox" id="intercept" checked> Interception au sommet</label>
+      </div>
+
       <div class="dg dg-actions">
         <button class="btn btn-launch" id="launch">🚀 Lancer</button>
         <button class="btn btn-reset" id="reset">Réinit.</button>
@@ -225,16 +234,16 @@
   const els = {
     angle: $("angle"), speed: $("speed"), azim: $("azim"),
     angleNum: $("angleNum"), speedNum: $("speedNum"), azimNum: $("azimNum"),
-    hudAlt: $("hudAlt"), hudVel: $("hudVel"), hudDist: $("hudDist"),
-    rRange: $("rRange"), rApex: $("rApex"), rTime: $("rTime"), rImp: $("rImp"),
+    hudAlt: $("hudAlt"), hudVel: $("hudVel"), hudDist: $("hudDist"), hudTime: $("hudTime"),
+    rRange: $("rRange"), rApex: $("rApex"), rTime: $("rTime"), rImp: $("rImp"), lImp: $("lImp"), lTime: $("lTime"),
   };
 
   const state = {
-    angle: 45, azim: 0, speed: 60, g: 9.81,
+    angle: 45, azim: 0, speed: 60, g: 9.81, intercept: true,
     vh: 0, vx: 0, vy0: 0, vz: 0, T: 0, range: 0, apex: 0,
+    xl: 0, zl: 0, ext: 1, axisLen: 1, v2z: 0, tEnd: 0, collisionSpeed: 0, impactSpeed: 0,
     t: 0, flying: false, finished: false,
-    animStart: 0, animDur: 0,
-    burstStart: -1, burstDur: 600, impactSpeed: 0, particles: [],
+    animStart: 0, animDur: 0, burstStart: -1, burstDur: 600, particles: [],
     view: "profile",
     camYaw: 35 * Math.PI / 180, camPitch: 26 * Math.PI / 180,
     stars: [],
@@ -253,7 +262,7 @@
     draw();
   }
 
-  // ---- physics (true 3D) ----
+  // ---- physics (true 3D + intercept) ----
   function recompute() {
     const el = state.angle * Math.PI / 180, az = state.azim * Math.PI / 180, v = state.speed, g = state.g;
     state.vh = v * Math.cos(el);
@@ -261,14 +270,30 @@
     state.vx = state.vh * Math.cos(az);
     state.vz = state.vh * Math.sin(az);
     state.T = (2 * state.vy0) / g;
-    state.range = state.vh * state.T;              // ground distance magnitude
+    state.range = state.vh * state.T;
     state.apex = (state.vy0 * state.vy0) / (2 * g);
+    state.xl = state.vx * state.T; state.zl = state.vz * state.T;
+    state.ext = Math.max(Math.abs(state.xl), Math.abs(state.zl), state.apex, 1);
+    state.axisLen = state.ext;
+    // missile 2 leaves the Z-axis tip (0,0,axisLen) and intercepts the apex at t=T/2
+    state.v2z = state.vz - 2 * state.axisLen / state.T;
+    state.tEnd = state.intercept ? state.T / 2 : state.T;
+    state.collisionSpeed = Math.abs(2 * state.axisLen / state.T);          // closing speed (along Z) at apex
+    state.impactSpeed = state.intercept ? state.collisionSpeed : Math.hypot(state.vh, state.vy0);
   }
-  const posGround = (t) => state.vh * t;                          // distance along ground track
-  const posY = (t) => state.vy0 * t - 0.5 * state.g * t * t;      // altitude
-  const posX3 = (t) => state.vx * t;                             // world X
-  const posZ3 = (t) => state.vz * t;                             // world Z
+  // missile 1
+  const posGround = (t) => state.vh * t;
+  const posY = (t) => state.vy0 * t - 0.5 * state.g * t * t;
+  const posX3 = (t) => state.vx * t;
+  const posZ3 = (t) => state.vz * t;
   const velAt = (t) => Math.hypot(state.vh, state.vy0 - state.g * t);
+  // missile 2 (shares X and Y with missile 1, differs only in Z)
+  const m2Z = (t) => state.axisLen + state.v2z * t;
+
+  function impactWorld() {
+    if (state.intercept) { const th = state.T / 2; return { x: posX3(th), y: state.apex, z: posZ3(th) }; }
+    return { x: state.xl, y: 0, z: state.zl };
+  }
 
   function niceStep(raw) {
     if (raw <= 0 || !isFinite(raw)) return 1;
@@ -279,7 +304,6 @@
                    : Math.abs(n) >= 10 ? n.toFixed(0) : n.toFixed(1);
   const MONO = () => getComputedStyle(document.body).getPropertyValue("--font-mono");
 
-  // ---- dispatcher ----
   function draw() {
     if (!W || !H) return;
     if (state.view === "iso") drawIso(); else drawProfile();
@@ -303,7 +327,6 @@
     const sky = ctx.createLinearGradient(0, 0, 0, f.groundY);
     sky.addColorStop(0, "#05070f"); sky.addColorStop(0.7, "#0a1120"); sky.addColorStop(1, "#111d33");
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-
     for (const s of state.stars) { ctx.globalAlpha = s.a; ctx.fillStyle = "#cfe3ff"; ctx.beginPath(); ctx.arc(s.x * W, s.y * f.groundY, s.r, 0, Math.PI * 2); ctx.fill(); }
     ctx.globalAlpha = 1;
 
@@ -311,7 +334,6 @@
     glow.addColorStop(0, "rgba(255,122,60,.16)"); glow.addColorStop(1, "rgba(255,122,60,0)");
     ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
 
-    // grid
     ctx.font = "10px " + MONO(); ctx.lineWidth = 1;
     const stepX = niceStep(Math.max(state.range, 1) / 6);
     for (let x = 0; x <= state.range * 1.02 + stepX; x += stepX) {
@@ -326,23 +348,21 @@
       ctx.fillStyle = "rgba(133,147,179,.6)"; ctx.textAlign = "left"; ctx.fillText(fmt(y), 4, Y + 3);
     }
 
-    // ground
     ctx.fillStyle = "#0c1526"; ctx.fillRect(0, f.groundY, W, H - f.groundY);
     ctx.strokeStyle = "rgba(70,230,210,.5)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, f.groundY + 0.5); ctx.lineTo(W, f.groundY + 0.5); ctx.stroke();
 
-    // pad
     const px = f.sx(0), py = f.groundY;
     ctx.fillStyle = "#26364f"; ctx.beginPath(); ctx.moveTo(px - 14, py); ctx.lineTo(px - 9, py - 9); ctx.lineTo(px + 9, py - 9); ctx.lineTo(px + 14, py); ctx.closePath(); ctx.fill();
     ctx.fillStyle = "#3a4d6b"; ctx.fillRect(px - 12, py - 3, 24, 3);
 
-    // predicted arc
+    // predicted full arc (to ground)
     if (state.range > 0.5) {
       ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(70,230,210,.28)"; ctx.lineWidth = 1.5; ctx.beginPath();
       for (let i = 0; i <= 120; i++) { const t = (i / 120) * state.T, X = f.sx(posGround(t)), Y = f.sy(Math.max(posY(t), 0)); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }
       ctx.stroke(); ctx.restore();
     }
-    // travelled arc
-    const tNow = Math.min(state.t, state.T);
+    // travelled arc up to tEnd
+    const tNow = Math.min(state.t, state.tEnd);
     if ((state.flying || state.finished) && tNow > 0) {
       ctx.save(); ctx.strokeStyle = "#46e6d2"; ctx.lineWidth = 2.4; ctx.shadowColor = "rgba(70,230,210,.7)"; ctx.shadowBlur = 8; ctx.beginPath();
       for (let i = 0; i <= 90; i++) { const t = (i / 90) * tNow, X = f.sx(posGround(t)), Y = f.sy(Math.max(posY(t), 0)); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }
@@ -350,18 +370,19 @@
     }
 
     if (state.finished) {
-      const ix = f.sx(state.range), iy = f.groundY;
-      ctx.save(); ctx.setLineDash([3, 5]); ctx.strokeStyle = "rgba(255,122,60,.5)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ix, 24); ctx.lineTo(ix, iy); ctx.stroke(); ctx.restore();
+      const w = impactWorld();
+      const ix = f.sx(state.intercept ? state.range / 2 : state.range);
+      const iy = state.intercept ? f.sy(state.apex) : f.groundY;
+      if (!state.intercept) { ctx.save(); ctx.setLineDash([3, 5]); ctx.strokeStyle = "rgba(255,122,60,.5)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ix, 24); ctx.lineTo(ix, f.groundY); ctx.stroke(); ctx.restore(); }
       drawBurst(ix, iy);
-      impactLabel(ix, iy);
+      impactLabel(ix, iy, state.intercept ? "COLLISION · " + fmt(state.apex) + " m" : "IMPACT · " + fmt(state.range) + " m");
     }
 
-    if (state.flying && state.t < state.T) {
+    if (state.flying && state.t < state.tEnd) {
       const t = state.t, X = f.sx(posGround(t)), Y = f.sy(posY(t));
-      const rot = Math.atan2(-(state.vy0 - state.g * t), state.vh);
-      drawMissile(X, Y, rot, true);
+      drawMissile(X, Y, Math.atan2(-(state.vy0 - state.g * t), state.vh), true, 1);
     } else if (!state.flying && !state.finished) {
-      drawMissile(f.sx(0), f.groundY - 13, -state.angle * Math.PI / 180, false);
+      drawMissile(f.sx(0), f.groundY - 13, -state.angle * Math.PI / 180, false, 1);
     }
   }
 
@@ -384,16 +405,13 @@
     for (const s of state.stars) { ctx.globalAlpha = s.a; ctx.fillStyle = "#cfe3ff"; ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2); ctx.fill(); }
     ctx.globalAlpha = 1;
 
-    const xl = state.vx * state.T, zl = state.vz * state.T;                 // landing point
-    const ext = Math.max(Math.abs(xl), Math.abs(zl), state.apex, 1);
-    const axisLen = ext;
+    const xl = state.xl, zl = state.zl, axisLen = state.axisLen, ext = state.ext;
     const pad = 0.14 * ext;
     const gx0 = Math.min(0, xl) - pad, gx1 = Math.max(0, xl, axisLen) + pad;
-    const gz0 = Math.min(0, zl) - pad, gz1 = Math.max(0, zl, axisLen) + pad;
+    const gz0 = Math.min(0, zl, 0) - pad, gz1 = Math.max(0, zl, axisLen) + pad;
     const Ymax = Math.max(state.apex * 1.12, 1);
     const N = 80;
 
-    // fit
     const pts = [];
     const add = (x, y, z) => pts.push(proj(x, y, z));
     add(gx0, 0, gz0); add(gx1, 0, gz0); add(gx1, 0, gz1); add(gx0, 0, gz1);
@@ -409,29 +427,22 @@
     const oy = mT + (areaH - bh * s) / 2 - vmin * s;
     const S = (x, y, z) => { const p = proj(x, y, z); return { X: ox + p.u * s, Y: oy + p.v * s }; };
 
-    // ground plane
+    // ground
     const c1 = S(gx0, 0, gz0), c2 = S(gx1, 0, gz0), c3 = S(gx1, 0, gz1), c4 = S(gx0, 0, gz1);
     ctx.fillStyle = "rgba(16,26,46,.55)";
     ctx.beginPath(); ctx.moveTo(c1.X, c1.Y); ctx.lineTo(c2.X, c2.Y); ctx.lineTo(c3.X, c3.Y); ctx.lineTo(c4.X, c4.Y); ctx.closePath(); ctx.fill();
 
-    // grid
     ctx.font = "10px " + MONO(); ctx.lineWidth = 1;
-    const stepX = niceStep(ext / 5);
-    for (let x = Math.ceil(gx0 / stepX) * stepX; x <= gx1 + 1e-6; x += stepX) {
-      const a = S(x, 0, gz0), b = S(x, 0, gz1); ctx.strokeStyle = "rgba(120,140,180,.12)"; ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke();
-    }
-    for (let z = Math.ceil(gz0 / stepX) * stepX; z <= gz1 + 1e-6; z += stepX) {
-      const a = S(gx0, 0, z), b = S(gx1, 0, z); ctx.strokeStyle = "rgba(120,140,180,.09)"; ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke();
-    }
+    const stepG = niceStep(ext / 5);
+    for (let x = Math.ceil(gx0 / stepG) * stepG; x <= gx1 + 1e-6; x += stepG) { const a = S(x, 0, gz0), b = S(x, 0, gz1); ctx.strokeStyle = "rgba(120,140,180,.12)"; ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke(); }
+    for (let z = Math.ceil(gz0 / stepG) * stepG; z <= gz1 + 1e-6; z += stepG) { const a = S(gx0, 0, z), b = S(gx1, 0, z); ctx.strokeStyle = "rgba(120,140,180,.09)"; ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke(); }
 
-    // ground track (missile's path projected on the floor)
+    // missile 1 ground track
     if (state.range > 0.5) {
       const a = S(0, 0, 0), b = S(xl, 0, zl);
-      ctx.save(); ctx.setLineDash([2, 4]); ctx.strokeStyle = "rgba(255,157,92,.55)"; ctx.lineWidth = 1.4;
-      ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke(); ctx.restore();
+      ctx.save(); ctx.setLineDash([2, 4]); ctx.strokeStyle = "rgba(70,230,210,.5)"; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke(); ctx.restore();
     }
-
-    // vertical drop lines from arc to floor
+    // drop lines
     if (state.range > 0.5) {
       ctx.strokeStyle = "rgba(70,230,210,.12)"; ctx.lineWidth = 1;
       for (let i = 1; i < N; i += 6) { const t = (i / N) * state.T, top = S(posX3(t), posY(t), posZ3(t)), bot = S(posX3(t), 0, posZ3(t)); ctx.beginPath(); ctx.moveTo(top.X, top.Y); ctx.lineTo(bot.X, bot.Y); ctx.stroke(); }
@@ -442,48 +453,73 @@
     isoAxis(S, 0, 0, 0, 0, Ymax, 0, "#8fd6ff", "Y · altitude");
     isoAxis(S, 0, 0, 0, 0, 0, axisLen, "#9b8cff", "Z");
 
-    // X ticks along X axis
     ctx.font = "10px " + MONO(); ctx.fillStyle = "rgba(255,157,92,.7)"; ctx.textAlign = "center"; ctx.textBaseline = "top";
-    for (let x = stepX; x <= axisLen - stepX * 0.3; x += stepX) { const p = S(x, 0, 0); ctx.fillText(fmt(x), p.X, p.Y + 3); }
-    // Z ticks along Z axis
+    for (let x = stepG; x <= axisLen - stepG * 0.3; x += stepG) { const p = S(x, 0, 0); ctx.fillText(fmt(x), p.X, p.Y + 3); }
     ctx.fillStyle = "rgba(155,140,255,.75)"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
-    for (let z = stepX; z <= axisLen - stepX * 0.3; z += stepX) { const p = S(0, 0, z); ctx.fillText(fmt(z), p.X + 4, p.Y); }
-    // Y ticks along Y axis
+    for (let z = stepG; z <= axisLen - stepG * 0.3; z += stepG) { const p = S(0, 0, z); ctx.fillText(fmt(z), p.X + 4, p.Y); }
     const stepY = niceStep(state.apex / 3 || 1);
     ctx.fillStyle = "rgba(143,214,255,.75)"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
     for (let y = stepY; y <= Ymax - stepY * 0.4; y += stepY) { const p = S(0, y, 0); ctx.fillText(fmt(y), p.X - 6, p.Y); }
     ctx.textBaseline = "alphabetic";
 
-    // origin
     const o = S(0, 0, 0); ctx.fillStyle = "#3a4d6b"; ctx.beginPath(); ctx.arc(o.X, o.Y, 4, 0, Math.PI * 2); ctx.fill();
+    // missile 2 launch pad at Z-axis tip
+    const o2 = S(0, 0, axisLen); ctx.fillStyle = "#4a3a2a"; ctx.beginPath(); ctx.arc(o2.X, o2.Y, 4, 0, Math.PI * 2); ctx.fill();
 
-    // predicted arc
+    // predicted arcs (dashed)
     if (state.range > 0.5) {
-      ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(70,230,210,.32)"; ctx.lineWidth = 1.5; ctx.beginPath();
+      ctx.save(); ctx.setLineDash([4, 6]); ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(70,230,210,.32)"; ctx.beginPath();
       for (let i = 0; i <= N; i++) { const t = (i / N) * state.T, p = S(posX3(t), Math.max(posY(t), 0), posZ3(t)); i ? ctx.lineTo(p.X, p.Y) : ctx.moveTo(p.X, p.Y); }
-      ctx.stroke(); ctx.restore();
+      ctx.stroke();
+      if (state.intercept) {
+        ctx.strokeStyle = "rgba(255,157,92,.4)"; ctx.beginPath();
+        for (let i = 0; i <= N; i++) { const t = (i / N) * state.tEnd, p = S(posX3(t), Math.max(posY(t), 0), m2Z(t)); i ? ctx.lineTo(p.X, p.Y) : ctx.moveTo(p.X, p.Y); }
+        ctx.stroke();
+      }
+      ctx.restore();
     }
-    // travelled arc
-    const tNow = Math.min(state.t, state.T);
+
+    // travelled arcs (bright)
+    const tNow = Math.min(state.t, state.tEnd);
     if ((state.flying || state.finished) && tNow > 0) {
-      ctx.save(); ctx.strokeStyle = "#46e6d2"; ctx.lineWidth = 2.6; ctx.shadowColor = "rgba(70,230,210,.7)"; ctx.shadowBlur = 8; ctx.beginPath();
+      ctx.save(); ctx.lineWidth = 2.6; ctx.shadowBlur = 8;
+      ctx.strokeStyle = "#46e6d2"; ctx.shadowColor = "rgba(70,230,210,.7)"; ctx.beginPath();
       for (let i = 0; i <= 70; i++) { const t = (i / 70) * tNow, p = S(posX3(t), Math.max(posY(t), 0), posZ3(t)); i ? ctx.lineTo(p.X, p.Y) : ctx.moveTo(p.X, p.Y); }
-      ctx.stroke(); ctx.restore();
+      ctx.stroke();
+      if (state.intercept) {
+        ctx.strokeStyle = "#ff9d5c"; ctx.shadowColor = "rgba(255,157,92,.7)"; ctx.beginPath();
+        for (let i = 0; i <= 70; i++) { const t = (i / 70) * tNow, p = S(posX3(t), Math.max(posY(t), 0), m2Z(t)); i ? ctx.lineTo(p.X, p.Y) : ctx.moveTo(p.X, p.Y); }
+        ctx.stroke();
+      }
+      ctx.restore();
     }
 
-    // impact
-    if (state.finished) { const p = S(xl, 0, zl); drawBurst(p.X, p.Y); impactLabel(p.X, p.Y); }
+    // impact / collision burst
+    if (state.finished) {
+      const w = impactWorld(); const p = S(w.x, w.y, w.z);
+      drawBurst(p.X, p.Y);
+      impactLabel(p.X, p.Y, state.intercept ? "COLLISION · " + fmt(state.apex) + " m" : "IMPACT · " + fmt(state.range) + " m");
+    }
 
-    // missile
-    if (state.flying && state.t < state.T) {
-      const t = state.t, p = S(posX3(t), posY(t), posZ3(t));
-      const t2 = Math.min(t + 0.012, state.T), p2 = S(posX3(t2), Math.max(posY(t2), 0), posZ3(t2));
-      drawMissile(p.X, p.Y, Math.atan2(p2.Y - p.Y, p2.X - p.X), true);
+    // missiles
+    if (state.flying && state.t < state.tEnd) {
+      const t = state.t, t2 = Math.min(t + 0.012, state.tEnd);
+      const p1 = S(posX3(t), posY(t), posZ3(t)), p1b = S(posX3(t2), Math.max(posY(t2), 0), posZ3(t2));
+      if (state.intercept) {
+        const q = S(posX3(t), posY(t), m2Z(t)), qb = S(posX3(t2), Math.max(posY(t2), 0), m2Z(t2));
+        drawMissile(q.X, q.Y, Math.atan2(qb.Y - q.Y, qb.X - q.X), true, 2);
+      }
+      drawMissile(p1.X, p1.Y, Math.atan2(p1b.Y - p1.Y, p1b.X - p1.X), true, 1);
     } else if (!state.flying && !state.finished) {
-      const p = S(0, 0, 0);
       const el = state.angle * Math.PI / 180, az = state.azim * Math.PI / 180;
-      const p2 = S(Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az));
-      drawMissile(p.X, p.Y, Math.atan2(p2.Y - p.Y, p2.X - p.X), false);
+      const p = S(0, 0, 0), pb = S(Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az));
+      drawMissile(p.X, p.Y, Math.atan2(pb.Y - p.Y, pb.X - p.X), false, 1);
+      if (state.intercept) {
+        // missile 2 resting on the Z-axis tip, aimed at the apex
+        const w = impactWorld(); const q = S(0, 0, axisLen), qb = S(w.x, w.y, w.z);
+        drawMissile(q.X, q.Y, Math.atan2(qb.Y - q.Y, qb.X - q.X), false, 2);
+      }
     }
   }
 
@@ -502,49 +538,46 @@
   }
 
   // =======================================================================
-  //  MISSILE + IMPACT BURST (shared by both views)
+  //  MISSILE + IMPACT BURST
   // =======================================================================
-  function drawMissile(x, y, rot, thrusting) {
+  function drawMissile(x, y, rot, thrusting, variant) {
+    const nose1 = "#ff8a4c", nose2 = "#ff4536", band = "#46e6d2", plume = ["190,245,255", "90,200,255", "80,120,255"];
+    const c = variant === 2
+      ? { na: "#7fe3ff", nb: "#2b9bd6", band: "#ff9d5c", plume: ["255,230,190", "255,170,90", "255,110,60"] }
+      : { na: nose1, nb: nose2, band: band, plume: plume };
     ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
-    // plasma exhaust
     if (thrusting) {
       const flick = 16 + Math.random() * 16;
       const g = ctx.createLinearGradient(-14, 0, -14 - flick, 0);
-      g.addColorStop(0, "rgba(190,245,255,.95)"); g.addColorStop(0.35, "rgba(90,200,255,.85)");
-      g.addColorStop(0.7, "rgba(80,120,255,.5)"); g.addColorStop(1, "rgba(80,120,255,0)");
+      g.addColorStop(0, "rgba(" + c.plume[0] + ",.95)"); g.addColorStop(0.35, "rgba(" + c.plume[1] + ",.85)");
+      g.addColorStop(0.7, "rgba(" + c.plume[2] + ",.5)"); g.addColorStop(1, "rgba(" + c.plume[2] + ",0)");
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.moveTo(-13, -3); ctx.lineTo(-14 - flick, 0); ctx.lineTo(-13, 3); ctx.closePath(); ctx.fill();
     }
-    // swept tail fins
     ctx.fillStyle = "#2a3550";
     ctx.beginPath(); ctx.moveTo(-7, -3.4); ctx.lineTo(-17, -9); ctx.lineTo(-8, -1.6); ctx.closePath(); ctx.fill();
     ctx.beginPath(); ctx.moveTo(-7, 3.4); ctx.lineTo(-17, 9); ctx.lineTo(-8, 1.6); ctx.closePath(); ctx.fill();
-    // body
     const body = ctx.createLinearGradient(0, -4.4, 0, 4.4);
     body.addColorStop(0, "#eef2fa"); body.addColorStop(0.45, "#aab4c8"); body.addColorStop(1, "#586582");
     ctx.fillStyle = body;
     ctx.beginPath();
     ctx.moveTo(-13, -4.2); ctx.lineTo(9, -4.2); ctx.lineTo(21, 0); ctx.lineTo(9, 4.2); ctx.lineTo(-13, 4.2);
     ctx.quadraticCurveTo(-15.5, 0, -13, -4.2); ctx.closePath(); ctx.fill();
-    // warhead nose cone
     const nose = ctx.createLinearGradient(9, 0, 21, 0);
-    nose.addColorStop(0, "#ff8a4c"); nose.addColorStop(1, "#ff4536");
+    nose.addColorStop(0, c.na); nose.addColorStop(1, c.nb);
     ctx.fillStyle = nose;
     ctx.beginPath(); ctx.moveTo(9, -4.2); ctx.lineTo(21, 0); ctx.lineTo(9, 4.2); ctx.closePath(); ctx.fill();
-    // accent band + sensor
-    ctx.fillStyle = "#46e6d2"; ctx.fillRect(4, -4.2, 2.4, 8.4);
+    ctx.fillStyle = c.band; ctx.fillRect(4, -4.2, 2.4, 8.4);
     ctx.fillStyle = "#0b1020"; ctx.beginPath(); ctx.arc(-2, 0, 1.9, 0, Math.PI * 2); ctx.fill();
-    // top ridge highlight
     ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 0.8;
     ctx.beginPath(); ctx.moveTo(-12, -2.6); ctx.lineTo(8, -2.6); ctx.stroke();
     ctx.restore();
   }
 
-  function intensity() { return clamp((state.impactSpeed - 10) / 140, 0, 1); }
+  const intensity = () => clamp((state.impactSpeed - 10) / 140, 0, 1);
 
   function spawnBurst() {
-    const inten = intensity();
-    const count = Math.round(10 + inten * 48);
+    const inten = intensity(), count = Math.round(10 + inten * 48);
     state.particles = [];
     for (let i = 0; i < count; i++) state.particles.push({ ang: -Math.random() * Math.PI, spd: 0.35 + Math.random() * 0.75, hue: Math.random() });
     state.burstDur = 480 + inten * 640;
@@ -556,7 +589,6 @@
     const inten = intensity();
     const life = (performance.now() - state.burstStart) / state.burstDur;
     const maxR = 22 + inten * 82;
-
     if (life < 0.5) {
       const fl = 1 - life / 0.5, r = (11 + inten * 44) * (0.4 + life * 1.6);
       const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
@@ -568,31 +600,28 @@
     if (life < 1) {
       ctx.save(); ctx.globalAlpha = (1 - life) * (0.45 + 0.5 * inten); ctx.strokeStyle = "#ffb347";
       ctx.lineWidth = (2 + inten * 3.5) * (1 - life) + 0.4; ctx.beginPath(); ctx.arc(cx, cy, 6 + life * maxR, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
-
       const e = 1 - Math.pow(1 - life, 2);
       for (const p of state.particles) {
         const dist = p.spd * maxR * e;
         const gx = cx + Math.cos(p.ang) * dist;
-        const gy = cy + Math.sin(p.ang) * dist + 0.42 * maxR * e * e;   // gravity sag
+        const gy = cy + Math.sin(p.ang) * dist + 0.42 * maxR * e * e;
         const tail = 5 + inten * 7;
         const col = p.hue < 0.3 ? "255,255,220" : p.hue < 0.7 ? "255,180,90" : "255,90,50";
         ctx.strokeStyle = "rgba(" + col + "," + (1 - life) + ")"; ctx.lineWidth = 1 + inten * 1.3;
         ctx.beginPath(); ctx.moveTo(gx - Math.cos(p.ang) * tail, gy - Math.sin(p.ang) * tail); ctx.lineTo(gx, gy); ctx.stroke();
       }
     }
-    // crater
     ctx.fillStyle = "#ff7a3c"; ctx.beginPath(); ctx.arc(cx, cy, 3.4 + inten * 3.2, 0, Math.PI * 2); ctx.fill();
   }
 
-  function impactLabel(cx, cy) {
-    const label = "IMPACT · " + fmt(state.range) + " m";
+  function impactLabel(cx, cy, text) {
     ctx.font = "600 11px " + MONO();
-    const w = ctx.measureText(label).width + 16;
+    const w = ctx.measureText(text).width + 16;
     let bx = Math.max(4, Math.min(cx - w / 2, W - w - 4)), by = cy - 34;
     ctx.fillStyle = "rgba(255,122,60,.16)"; ctx.strokeStyle = "rgba(255,122,60,.6)"; ctx.lineWidth = 1;
     roundRect(bx, by, w, 20, 6); ctx.fill(); ctx.stroke();
     ctx.fillStyle = "#ffb347"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(label, bx + w / 2, by + 10.5); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.fillText(text, bx + w / 2, by + 10.5); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 
   function roundRect(x, y, w, h, r) {
@@ -603,14 +632,17 @@
 
   // ---- HUD / results ----
   function updateHud() {
-    let alt = 0, vel = state.speed, dist = 0;
-    if (state.flying && state.t <= state.T) { alt = Math.max(posY(state.t), 0); vel = velAt(state.t); dist = posGround(state.t); }
-    else if (state.finished) { alt = 0; vel = state.impactSpeed; dist = state.range; }
-    els.hudAlt.textContent = fmt(alt) + " m"; els.hudVel.textContent = fmt(vel) + " m/s"; els.hudDist.textContent = fmt(dist) + " m";
+    let alt = 0, vel = state.speed, dist = 0, tm = 0;
+    if (state.flying && state.t <= state.tEnd) { alt = Math.max(posY(state.t), 0); vel = velAt(state.t); dist = posGround(state.t); tm = state.t; }
+    else if (state.finished) { alt = state.intercept ? state.apex : 0; vel = velAt(state.tEnd); dist = state.intercept ? state.range / 2 : state.range; tm = state.tEnd; }
+    els.hudAlt.textContent = fmt(alt) + " m"; els.hudVel.textContent = fmt(vel) + " m/s";
+    els.hudDist.textContent = fmt(dist) + " m"; els.hudTime.textContent = tm.toFixed(1) + " s";
   }
   function showResults() {
     els.rRange.textContent = fmt(state.range); els.rApex.textContent = fmt(state.apex);
-    els.rTime.textContent = state.T.toFixed(1); els.rImp.textContent = fmt(state.impactSpeed);
+    els.rTime.textContent = state.tEnd.toFixed(1); els.rImp.textContent = fmt(state.impactSpeed);
+    els.lTime.textContent = state.intercept ? "Collision à" : "Temps";
+    els.lImp.textContent = state.intercept ? "V. rapproch." : "V. impact";
   }
   function clearResults() { els.rRange.textContent = els.rApex.textContent = els.rTime.textContent = els.rImp.textContent = "—"; }
 
@@ -620,17 +652,16 @@
     recompute(); if (state.range < 0.5) return;
     cancelAnimationFrame(raf);
     state.flying = true; state.finished = false; state.t = 0; state.burstStart = -1;
-    state.impactSpeed = velAt(state.T);
-    state.animDur = Math.min(Math.max(state.T * 0.35, 1.6), 4) * 1000;
-    if (reduceMotion) { state.t = state.T; state.flying = false; state.finished = true; spawnBurst(); showResults(); draw(); return; }
+    state.animDur = Math.min(Math.max(state.tEnd * 0.45, 1.4), 3.5) * 1000;
+    if (reduceMotion) { state.t = state.tEnd; state.flying = false; state.finished = true; spawnBurst(); showResults(); draw(); return; }
     state.animStart = performance.now(); raf = requestAnimationFrame(tick);
   }
   function tick(now) {
     const p = (now - state.animStart) / state.animDur;
-    state.t = Math.min(p, 1) * state.T; draw();
+    state.t = Math.min(p, 1) * state.tEnd; draw();
     if (p < 1) { raf = requestAnimationFrame(tick); }
     else {
-      state.flying = false; state.finished = true; state.t = state.T;
+      state.flying = false; state.finished = true; state.t = state.tEnd;
       spawnBurst(); showResults(); draw();
       raf = requestAnimationFrame(function fade(n) { draw(); if (n - state.burstStart < state.burstDur) raf = requestAnimationFrame(fade); });
     }
@@ -657,6 +688,7 @@
   els.azimNum.addEventListener("change", () => applyAzim(parseFloat(els.azimNum.value) || 0, true));
 
   $("planet").addEventListener("change", (e) => { state.g = +e.target.value; if (!state.flying) reset(); });
+  $("intercept").addEventListener("change", (e) => { state.intercept = e.target.checked; reset(); });
   $("launch").addEventListener("click", launch);
   $("reset").addEventListener("click", reset);
 
@@ -674,7 +706,7 @@
   tabProfile.addEventListener("click", () => setView("profile"));
   tabIso.addEventListener("click", () => setView("iso"));
 
-  // ---- camera orbit (drag on canvas in 3/4 view) ----
+  // ---- camera orbit ----
   let dragging = false, lastX = 0, lastY = 0;
   canvas.addEventListener("pointerdown", (e) => {
     if (state.view !== "iso") return;
