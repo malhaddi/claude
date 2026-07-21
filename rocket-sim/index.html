@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Simulateur de trajectoire de fusée</title>
+  <title>Simulateur de trajectoire de missile</title>
   <style>
     html, body { margin: 0; background: #05070e; }
   </style>
@@ -26,50 +26,31 @@
   html, body { height: 100%; margin: 0; }
 
   .app {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--font-ui);
-    -webkit-font-smoothing: antialiased;
+    position: fixed; inset: 0; overflow: hidden;
+    background: var(--bg); color: var(--ink);
+    font-family: var(--font-ui); -webkit-font-smoothing: antialiased;
   }
-  #stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 
-  /* ---------- top-left brand + live telemetry ---------- */
-  .brand {
-    position: absolute; top: 12px; left: 14px;
-    pointer-events: none;
-    text-shadow: 0 1px 8px rgba(0,0,0,.7);
-  }
+  .brand { position: absolute; top: 12px; left: 14px; pointer-events: none; text-shadow: 0 1px 8px rgba(0,0,0,.7); }
   .brand .eyebrow {
-    margin: 0;
-    font-family: var(--font-mono);
-    font-size: .64rem;
-    letter-spacing: .24em;
-    text-transform: uppercase;
-    color: var(--amber);
-    display: flex; align-items: center; gap: 8px;
+    margin: 0; font-family: var(--font-mono); font-size: .64rem; letter-spacing: .24em;
+    text-transform: uppercase; color: var(--amber); display: flex; align-items: center; gap: 8px;
   }
   .brand .eyebrow::before {
     content: ""; width: 7px; height: 7px; border-radius: 50%;
-    background: var(--amber); box-shadow: 0 0 10px var(--amber);
-    animation: blink 1.6s ease-in-out infinite;
+    background: var(--amber); box-shadow: 0 0 10px var(--amber); animation: blink 1.6s ease-in-out infinite;
   }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
   .brand h1 { margin: 3px 0 0; font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em; }
 
-  /* ---------- view tabs (top-right) ---------- */
   .tabs {
-    position: absolute; top: 12px; right: 14px;
-    display: inline-flex; gap: 3px; padding: 3px;
-    background: rgba(8,14,26,.66); border: 1px solid var(--line);
-    border-radius: 9px; backdrop-filter: blur(6px);
+    position: absolute; top: 12px; right: 14px; display: inline-flex; gap: 3px; padding: 3px;
+    background: rgba(8,14,26,.66); border: 1px solid var(--line); border-radius: 9px; backdrop-filter: blur(6px);
   }
   .tab {
-    font-family: var(--font-mono); font-size: .72rem; letter-spacing: .04em;
-    color: var(--muted); background: transparent; border: none; cursor: pointer;
-    padding: 6px 11px; border-radius: 7px; transition: .15s;
+    font-family: var(--font-mono); font-size: .72rem; letter-spacing: .04em; color: var(--muted);
+    background: transparent; border: none; cursor: pointer; padding: 6px 11px; border-radius: 7px; transition: .15s;
   }
   .tab:hover { color: var(--ink); }
   .tab.is-on { background: rgba(70,230,210,.14); color: var(--ink); box-shadow: inset 0 0 0 1px rgba(70,230,210,.35); }
@@ -77,23 +58,25 @@
 
   .hud { position: absolute; top: 52px; left: 14px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
   .chip {
-    font-family: var(--font-mono); font-size: .72rem;
-    background: rgba(8,14,26,.66); border: 1px solid var(--line);
-    border-radius: 7px; padding: 4px 8px; backdrop-filter: blur(6px);
-    display: flex; gap: 7px; align-items: baseline; width: max-content;
+    font-family: var(--font-mono); font-size: .72rem; background: rgba(8,14,26,.66); border: 1px solid var(--line);
+    border-radius: 7px; padding: 4px 8px; backdrop-filter: blur(6px); display: flex; gap: 7px; align-items: baseline; width: max-content;
   }
   .chip .k { color: var(--muted); text-transform: uppercase; letter-spacing: .1em; font-size: .6rem; }
   .chip .v { color: var(--cyan); font-variant-numeric: tabular-nums; }
 
-  /* ---------- bottom bar: results + controls ---------- */
-  .bottombar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; }
+  .orbit-hint {
+    position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--dockh, 120px) + 10px);
+    font-family: var(--font-mono); font-size: .68rem; color: var(--muted);
+    background: rgba(8,14,26,.6); border: 1px solid var(--line); border-radius: 20px; padding: 4px 12px;
+    backdrop-filter: blur(6px); pointer-events: none; display: none; white-space: nowrap;
+  }
+  .app.is-iso .orbit-hint { display: block; }
 
+  .bottombar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; }
   .stats { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 14px 8px; }
   .stat {
-    font-family: var(--font-mono); font-size: .72rem;
-    background: rgba(8,14,26,.72); border: 1px solid var(--line);
-    border-radius: 7px; padding: 4px 9px; backdrop-filter: blur(6px);
-    display: flex; gap: 7px; align-items: baseline;
+    font-family: var(--font-mono); font-size: .72rem; background: rgba(8,14,26,.72); border: 1px solid var(--line);
+    border-radius: 7px; padding: 4px 9px; backdrop-filter: blur(6px); display: flex; gap: 7px; align-items: baseline;
   }
   .stat .l { color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-size: .58rem; }
   .stat .n { color: var(--cyan); font-variant-numeric: tabular-nums; }
@@ -101,57 +84,46 @@
   .stat.impact .n { color: var(--amber-2); }
 
   .dock {
-    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 18px;
-    padding: 12px 14px 14px;
-    background: rgba(8,12,22,.86);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid var(--line);
+    display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; padding: 12px 14px 14px;
+    background: rgba(8,12,22,.86); backdrop-filter: blur(12px); border-top: 1px solid var(--line);
   }
   .dg { display: flex; flex-direction: column; gap: 7px; }
   .dg-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .dg-label { font-size: .66rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); font-family: var(--font-mono); }
+  .dg-label { font-size: .66rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-family: var(--font-mono); }
 
   .numbox {
-    display: inline-flex; align-items: baseline; gap: 4px;
-    background: rgba(255,122,60,.10); border: 1px solid rgba(255,122,60,.30);
-    border-radius: 7px; padding: 3px 8px; transition: .15s;
+    display: inline-flex; align-items: baseline; gap: 4px; background: rgba(255,122,60,.10);
+    border: 1px solid rgba(255,122,60,.30); border-radius: 7px; padding: 3px 8px; transition: .15s;
   }
   .numbox:focus-within { border-color: var(--amber); box-shadow: 0 0 0 2px rgba(255,122,60,.25); }
   .numin {
-    width: 42px; background: transparent; border: none; outline: none;
-    color: var(--amber-2); font-family: var(--font-mono); font-variant-numeric: tabular-nums;
-    font-size: .9rem; text-align: right; padding: 0; -moz-appearance: textfield;
+    width: 46px; background: transparent; border: none; outline: none; color: var(--amber-2);
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: .9rem; text-align: right; padding: 0; -moz-appearance: textfield;
   }
   .numin::-webkit-outer-spin-button, .numin::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .numbox .unit { font-family: var(--font-mono); font-size: .7rem; color: var(--muted); }
 
   input[type="range"] {
-    -webkit-appearance: none; appearance: none; width: 160px; height: 4px;
-    border-radius: 4px; background: var(--line); outline: none; accent-color: var(--amber);
+    -webkit-appearance: none; appearance: none; width: 150px; height: 4px; border-radius: 4px;
+    background: var(--line); outline: none; accent-color: var(--amber);
   }
   input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
-    background: var(--amber); border: 3px solid #1a1206;
-    box-shadow: 0 0 0 1px var(--amber), 0 0 10px rgba(255,122,60,.6); cursor: pointer;
+    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--amber);
+    border: 3px solid #1a1206; box-shadow: 0 0 0 1px var(--amber), 0 0 10px rgba(255,122,60,.6); cursor: pointer;
   }
-  input[type="range"]::-moz-range-thumb {
-    width: 16px; height: 16px; border-radius: 50%; background: var(--amber);
-    border: 3px solid #1a1206; cursor: pointer;
-  }
+  input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--amber); border: 3px solid #1a1206; cursor: pointer; }
   input[type="range"]:focus-visible { box-shadow: 0 0 0 2px var(--cyan); }
 
   .sel {
-    font-family: var(--font-mono); font-size: .8rem;
-    background: rgba(255,255,255,.04); color: var(--ink);
+    font-family: var(--font-mono); font-size: .8rem; background: rgba(255,255,255,.04); color: var(--ink);
     border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; cursor: pointer;
   }
   .sel:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
 
   .dg-actions { flex-direction: row; align-items: center; gap: 10px; margin-left: auto; }
   .btn {
-    font-family: var(--font-ui); font-weight: 600; font-size: .9rem;
-    padding: 10px 16px; border-radius: 9px; border: 1px solid transparent; cursor: pointer; transition: .15s;
-    white-space: nowrap;
+    font-family: var(--font-ui); font-weight: 600; font-size: .9rem; padding: 10px 16px; border-radius: 9px;
+    border: 1px solid transparent; cursor: pointer; transition: .15s; white-space: nowrap;
   }
   .btn-launch { background: linear-gradient(180deg, var(--amber-2), var(--amber)); color: #22140a; box-shadow: 0 6px 18px rgba(255,122,60,.28); }
   .btn-launch:hover { filter: brightness(1.07); transform: translateY(-1px); }
@@ -160,19 +132,19 @@
   .btn-reset:hover { border-color: var(--muted); color: var(--ink); }
   .btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 
-  @media (max-width: 520px) {
+  @media (max-width: 560px) {
     .dg-actions { margin-left: 0; width: 100%; }
     .dg-actions .btn-launch { flex: 1; }
-    input[type="range"] { width: 132px; }
+    input[type="range"] { width: 128px; }
   }
 </style>
 
-<div class="app">
+<div class="app" id="app">
   <canvas id="stage"></canvas>
 
   <div class="brand">
     <p class="eyebrow">Contrôle de mission</p>
-    <h1>Trajectoire de fusée</h1>
+    <h1>Trajectoire de missile</h1>
   </div>
 
   <div class="tabs" role="tablist" aria-label="Choix de la vue">
@@ -186,6 +158,8 @@
     <div class="chip"><span class="k">Dist</span><span class="v" id="hudDist">0 m</span></div>
   </div>
 
+  <div class="orbit-hint" id="orbitHint">⟳ Glisse pour pivoter le terrain à 360°</div>
+
   <div class="bottombar" id="bottombar">
     <div class="stats">
       <div class="stat impact"><span class="l">Portée</span><span class="n"><span id="rRange">—</span><span class="u">m</span></span></div>
@@ -197,10 +171,18 @@
     <div class="dock">
       <div class="dg">
         <div class="dg-top">
-          <span class="dg-label">Angle de tir</span>
-          <span class="numbox"><input class="numin" type="number" id="angleNum" min="5" max="85" step="1" value="45" inputmode="numeric" aria-label="Angle en degrés"><span class="unit">°</span></span>
+          <span class="dg-label">Angle XY · élévation</span>
+          <span class="numbox"><input class="numin" type="number" id="angleNum" min="5" max="85" step="1" value="45" inputmode="numeric" aria-label="Angle XY, élévation en degrés"><span class="unit">°</span></span>
         </div>
-        <input type="range" id="angle" min="5" max="85" step="1" value="45" aria-label="Angle de tir">
+        <input type="range" id="angle" min="5" max="85" step="1" value="45" aria-label="Angle XY, élévation">
+      </div>
+
+      <div class="dg">
+        <div class="dg-top">
+          <span class="dg-label">Angle XZ · azimut</span>
+          <span class="numbox"><input class="numin" type="number" id="azimNum" min="-180" max="180" step="1" value="0" inputmode="numeric" aria-label="Angle XZ, azimut en degrés"><span class="unit">°</span></span>
+        </div>
+        <input type="range" id="azim" min="-180" max="180" step="1" value="0" aria-label="Angle XZ, azimut">
       </div>
 
       <div class="dg">
@@ -233,29 +215,31 @@
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);
+  const app = $("app");
   const canvas = $("stage");
   const ctx = canvas.getContext("2d");
   const bottombar = $("bottombar");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
   const els = {
-    angle: $("angle"), speed: $("speed"),
-    angleNum: $("angleNum"), speedNum: $("speedNum"),
+    angle: $("angle"), speed: $("speed"), azim: $("azim"),
+    angleNum: $("angleNum"), speedNum: $("speedNum"), azimNum: $("azimNum"),
     hudAlt: $("hudAlt"), hudVel: $("hudVel"), hudDist: $("hudDist"),
     rRange: $("rRange"), rApex: $("rApex"), rTime: $("rTime"), rImp: $("rImp"),
   };
 
   const state = {
-    angle: 45, speed: 60, g: 9.81,
-    vx: 0, vy0: 0, T: 0, range: 0, apex: 0,
+    angle: 45, azim: 0, speed: 60, g: 9.81,
+    vh: 0, vx: 0, vy0: 0, vz: 0, T: 0, range: 0, apex: 0,
     t: 0, flying: false, finished: false,
-    animStart: 0, animDur: 0, burstStart: -1,
+    animStart: 0, animDur: 0,
+    burstStart: -1, burstDur: 600, impactSpeed: 0, particles: [],
     view: "profile",
+    camYaw: 35 * Math.PI / 180, camPitch: 26 * Math.PI / 180,
     stars: [],
   };
-  for (let i = 0; i < 90; i++) {
-    state.stars.push({ x: Math.random(), y: Math.random() * 0.7, r: Math.random() * 1.3 + 0.3, a: Math.random() * 0.6 + 0.2 });
-  }
+  for (let i = 0; i < 90; i++) state.stars.push({ x: Math.random(), y: Math.random() * 0.7, r: Math.random() * 1.3 + 0.3, a: Math.random() * 0.6 + 0.2 });
 
   let W = 0, H = 0, dpr = 1;
   function resize() {
@@ -265,21 +249,26 @@
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (bottombar) app.style.setProperty("--dockh", bottombar.offsetHeight + "px");
     draw();
   }
 
-  // ---- physics ----
+  // ---- physics (true 3D) ----
   function recompute() {
-    const rad = state.angle * Math.PI / 180, v = state.speed, g = state.g;
-    state.vx = v * Math.cos(rad);
-    state.vy0 = v * Math.sin(rad);
+    const el = state.angle * Math.PI / 180, az = state.azim * Math.PI / 180, v = state.speed, g = state.g;
+    state.vh = v * Math.cos(el);
+    state.vy0 = v * Math.sin(el);
+    state.vx = state.vh * Math.cos(az);
+    state.vz = state.vh * Math.sin(az);
     state.T = (2 * state.vy0) / g;
-    state.range = (v * v * Math.sin(2 * rad)) / g;
+    state.range = state.vh * state.T;              // ground distance magnitude
     state.apex = (state.vy0 * state.vy0) / (2 * g);
   }
-  const posX = (t) => state.vx * t;
-  const posY = (t) => state.vy0 * t - 0.5 * state.g * t * t;
-  const velAt = (t) => Math.hypot(state.vx, state.vy0 - state.g * t);
+  const posGround = (t) => state.vh * t;                          // distance along ground track
+  const posY = (t) => state.vy0 * t - 0.5 * state.g * t * t;      // altitude
+  const posX3 = (t) => state.vx * t;                             // world X
+  const posZ3 = (t) => state.vz * t;                             // world Z
+  const velAt = (t) => Math.hypot(state.vh, state.vy0 - state.g * t);
 
   function niceStep(raw) {
     if (raw <= 0 || !isFinite(raw)) return 1;
@@ -288,8 +277,18 @@
   }
   const fmt = (n) => Math.abs(n) >= 100 ? Math.round(n).toLocaleString("fr-FR")
                    : Math.abs(n) >= 10 ? n.toFixed(0) : n.toFixed(1);
+  const MONO = () => getComputedStyle(document.body).getPropertyValue("--font-mono");
 
-  // ---- world <-> screen ----
+  // ---- dispatcher ----
+  function draw() {
+    if (!W || !H) return;
+    if (state.view === "iso") drawIso(); else drawProfile();
+    updateHud();
+  }
+
+  // =======================================================================
+  //  PROFILE (side) VIEW
+  // =======================================================================
   function frame() {
     const padL = 46, padR = 24, padT = 24;
     const padB = (bottombar ? bottombar.offsetHeight : 90) + 12;
@@ -299,150 +298,301 @@
     return { groundY, padL, scale, sx: (x) => padL + x * scale, sy: (y) => groundY - y * scale };
   }
 
-  // ---- drawing ----
-  function draw() {
-    if (!W || !H) return;
-    if (state.view === "iso") drawIso(); else drawProfile();
-    updateHud();
-  }
-
   function drawProfile() {
     const f = frame();
-
     const sky = ctx.createLinearGradient(0, 0, 0, f.groundY);
     sky.addColorStop(0, "#05070f"); sky.addColorStop(0.7, "#0a1120"); sky.addColorStop(1, "#111d33");
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
 
-    for (const s of state.stars) {
-      ctx.globalAlpha = s.a; ctx.fillStyle = "#cfe3ff";
-      ctx.beginPath(); ctx.arc(s.x * W, s.y * f.groundY, s.r, 0, Math.PI * 2); ctx.fill();
-    }
+    for (const s of state.stars) { ctx.globalAlpha = s.a; ctx.fillStyle = "#cfe3ff"; ctx.beginPath(); ctx.arc(s.x * W, s.y * f.groundY, s.r, 0, Math.PI * 2); ctx.fill(); }
     ctx.globalAlpha = 1;
 
     const glow = ctx.createRadialGradient(W - 60, f.groundY, 8, W - 60, f.groundY, 220);
     glow.addColorStop(0, "rgba(255,122,60,.16)"); glow.addColorStop(1, "rgba(255,122,60,0)");
     ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
 
-    drawGrid(f);
-
-    ctx.fillStyle = "#0c1526"; ctx.fillRect(0, f.groundY, W, H - f.groundY);
-    ctx.strokeStyle = "rgba(70,230,210,.5)"; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(0, f.groundY + 0.5); ctx.lineTo(W, f.groundY + 0.5); ctx.stroke();
-
-    drawPad(f);
-
-    if (state.range > 0.5) {
-      ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(70,230,210,.28)"; ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      for (let i = 0; i <= 120; i++) {
-        const t = (i / 120) * state.T, X = f.sx(posX(t)), Y = f.sy(Math.max(posY(t), 0));
-        i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
-      }
-      ctx.stroke(); ctx.restore();
-    }
-
-    const tNow = Math.min(state.t, state.T);
-    if ((state.flying || state.finished) && tNow > 0) {
-      ctx.save(); ctx.strokeStyle = "#46e6d2"; ctx.lineWidth = 2.4;
-      ctx.shadowColor = "rgba(70,230,210,.7)"; ctx.shadowBlur = 8;
-      ctx.beginPath();
-      const steps = 90;
-      for (let i = 0; i <= steps; i++) {
-        const t = (i / steps) * tNow, X = f.sx(posX(t)), Y = f.sy(Math.max(posY(t), 0));
-        i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
-      }
-      ctx.stroke(); ctx.restore();
-    }
-
-    if (state.finished) drawImpact(f);
-
-    if (state.flying && state.t < state.T) {
-      const t = state.t, X = f.sx(posX(t)), Y = f.sy(posY(t));
-      const rot = Math.atan2(-(state.vy0 - state.g * t), state.vx);
-      drawRocket(X, Y, rot, true);
-    } else if (!state.flying && !state.finished) {
-      drawRocket(f.sx(0), f.groundY - 12, -state.angle * Math.PI / 180, false);
-    }
-  }
-
-  function drawGrid(f) {
-    ctx.font = "10px " + getComputedStyle(document.body).getPropertyValue("--font-mono");
+    // grid
+    ctx.font = "10px " + MONO(); ctx.lineWidth = 1;
     const stepX = niceStep(Math.max(state.range, 1) / 6);
-    ctx.lineWidth = 1;
     for (let x = 0; x <= state.range * 1.02 + stepX; x += stepX) {
-      const X = f.sx(x);
-      if (X > W - 10) break;
-      ctx.strokeStyle = "rgba(120,140,180,.10)";
-      ctx.beginPath(); ctx.moveTo(X, 20); ctx.lineTo(X, f.groundY); ctx.stroke();
-      ctx.fillStyle = "rgba(133,147,179,.7)"; ctx.textAlign = "center";
-      ctx.fillText(fmt(x), X, f.groundY + 14);
+      const X = f.sx(x); if (X > W - 10) break;
+      ctx.strokeStyle = "rgba(120,140,180,.10)"; ctx.beginPath(); ctx.moveTo(X, 20); ctx.lineTo(X, f.groundY); ctx.stroke();
+      ctx.fillStyle = "rgba(133,147,179,.7)"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.fillText(fmt(x), X, f.groundY + 14);
     }
     const stepY = niceStep(Math.max(state.apex, 1) / 4);
     for (let y = stepY; y <= state.apex * 1.05 + stepY; y += stepY) {
-      const Y = f.sy(y);
-      if (Y < 18) break;
-      ctx.strokeStyle = "rgba(120,140,180,.08)";
-      ctx.beginPath(); ctx.moveTo(38, Y); ctx.lineTo(W, Y); ctx.stroke();
-      ctx.fillStyle = "rgba(133,147,179,.6)"; ctx.textAlign = "left";
-      ctx.fillText(fmt(y), 4, Y + 3);
+      const Y = f.sy(y); if (Y < 18) break;
+      ctx.strokeStyle = "rgba(120,140,180,.08)"; ctx.beginPath(); ctx.moveTo(38, Y); ctx.lineTo(W, Y); ctx.stroke();
+      ctx.fillStyle = "rgba(133,147,179,.6)"; ctx.textAlign = "left"; ctx.fillText(fmt(y), 4, Y + 3);
+    }
+
+    // ground
+    ctx.fillStyle = "#0c1526"; ctx.fillRect(0, f.groundY, W, H - f.groundY);
+    ctx.strokeStyle = "rgba(70,230,210,.5)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, f.groundY + 0.5); ctx.lineTo(W, f.groundY + 0.5); ctx.stroke();
+
+    // pad
+    const px = f.sx(0), py = f.groundY;
+    ctx.fillStyle = "#26364f"; ctx.beginPath(); ctx.moveTo(px - 14, py); ctx.lineTo(px - 9, py - 9); ctx.lineTo(px + 9, py - 9); ctx.lineTo(px + 14, py); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#3a4d6b"; ctx.fillRect(px - 12, py - 3, 24, 3);
+
+    // predicted arc
+    if (state.range > 0.5) {
+      ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(70,230,210,.28)"; ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let i = 0; i <= 120; i++) { const t = (i / 120) * state.T, X = f.sx(posGround(t)), Y = f.sy(Math.max(posY(t), 0)); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }
+      ctx.stroke(); ctx.restore();
+    }
+    // travelled arc
+    const tNow = Math.min(state.t, state.T);
+    if ((state.flying || state.finished) && tNow > 0) {
+      ctx.save(); ctx.strokeStyle = "#46e6d2"; ctx.lineWidth = 2.4; ctx.shadowColor = "rgba(70,230,210,.7)"; ctx.shadowBlur = 8; ctx.beginPath();
+      for (let i = 0; i <= 90; i++) { const t = (i / 90) * tNow, X = f.sx(posGround(t)), Y = f.sy(Math.max(posY(t), 0)); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); }
+      ctx.stroke(); ctx.restore();
+    }
+
+    if (state.finished) {
+      const ix = f.sx(state.range), iy = f.groundY;
+      ctx.save(); ctx.setLineDash([3, 5]); ctx.strokeStyle = "rgba(255,122,60,.5)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ix, 24); ctx.lineTo(ix, iy); ctx.stroke(); ctx.restore();
+      drawBurst(ix, iy);
+      impactLabel(ix, iy);
+    }
+
+    if (state.flying && state.t < state.T) {
+      const t = state.t, X = f.sx(posGround(t)), Y = f.sy(posY(t));
+      const rot = Math.atan2(-(state.vy0 - state.g * t), state.vh);
+      drawMissile(X, Y, rot, true);
+    } else if (!state.flying && !state.finished) {
+      drawMissile(f.sx(0), f.groundY - 13, -state.angle * Math.PI / 180, false);
     }
   }
 
-  function drawPad(f) {
-    const x = f.sx(0), y = f.groundY;
-    ctx.fillStyle = "#26364f";
-    ctx.beginPath(); ctx.moveTo(x - 14, y); ctx.lineTo(x - 9, y - 9); ctx.lineTo(x + 9, y - 9); ctx.lineTo(x + 14, y); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#3a4d6b"; ctx.fillRect(x - 12, y - 3, 24, 3);
+  // =======================================================================
+  //  3/4 (isometric, orbitable) VIEW
+  // =======================================================================
+  function proj(x, y, z) {
+    const cy = Math.cos(state.camYaw), sy = Math.sin(state.camYaw);
+    const cp = Math.cos(state.camPitch), sp = Math.sin(state.camPitch);
+    const x1 = x * cy + z * sy;
+    const z1 = -x * sy + z * cy;
+    const y2 = y * cp - z1 * sp;
+    return { u: x1, v: -y2 };
   }
 
-  function drawRocket(x, y, rot, thrusting) {
+  function drawIso() {
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, "#05070f"); sky.addColorStop(1, "#0a1526");
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    for (const s of state.stars) { ctx.globalAlpha = s.a; ctx.fillStyle = "#cfe3ff"; ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2); ctx.fill(); }
+    ctx.globalAlpha = 1;
+
+    const xl = state.vx * state.T, zl = state.vz * state.T;                 // landing point
+    const ext = Math.max(Math.abs(xl), Math.abs(zl), state.apex, 1);
+    const axisLen = ext;
+    const pad = 0.14 * ext;
+    const gx0 = Math.min(0, xl) - pad, gx1 = Math.max(0, xl, axisLen) + pad;
+    const gz0 = Math.min(0, zl) - pad, gz1 = Math.max(0, zl, axisLen) + pad;
+    const Ymax = Math.max(state.apex * 1.12, 1);
+    const N = 80;
+
+    // fit
+    const pts = [];
+    const add = (x, y, z) => pts.push(proj(x, y, z));
+    add(gx0, 0, gz0); add(gx1, 0, gz0); add(gx1, 0, gz1); add(gx0, 0, gz1);
+    add(axisLen, 0, 0); add(0, Ymax, 0); add(0, 0, axisLen);
+    for (let i = 0; i <= N; i++) { const t = (i / N) * state.T; add(posX3(t), Math.max(posY(t), 0), posZ3(t)); }
+    let umin = Infinity, umax = -Infinity, vmin = Infinity, vmax = -Infinity;
+    for (const p of pts) { if (p.u < umin) umin = p.u; if (p.u > umax) umax = p.u; if (p.v < vmin) vmin = p.v; if (p.v > vmax) vmax = p.v; }
+    const mL = 22, mR = 92, mT = 56, mB = (bottombar ? bottombar.offsetHeight : 90) + 30;
+    const areaW = Math.max(W - mL - mR, 40), areaH = Math.max(H - mT - mB, 40);
+    const bw = Math.max(umax - umin, 1e-6), bh = Math.max(vmax - vmin, 1e-6);
+    const s = Math.min(areaW / bw, areaH / bh) * 0.92;
+    const ox = mL + (areaW - bw * s) / 2 - umin * s;
+    const oy = mT + (areaH - bh * s) / 2 - vmin * s;
+    const S = (x, y, z) => { const p = proj(x, y, z); return { X: ox + p.u * s, Y: oy + p.v * s }; };
+
+    // ground plane
+    const c1 = S(gx0, 0, gz0), c2 = S(gx1, 0, gz0), c3 = S(gx1, 0, gz1), c4 = S(gx0, 0, gz1);
+    ctx.fillStyle = "rgba(16,26,46,.55)";
+    ctx.beginPath(); ctx.moveTo(c1.X, c1.Y); ctx.lineTo(c2.X, c2.Y); ctx.lineTo(c3.X, c3.Y); ctx.lineTo(c4.X, c4.Y); ctx.closePath(); ctx.fill();
+
+    // grid
+    ctx.font = "10px " + MONO(); ctx.lineWidth = 1;
+    const stepX = niceStep(ext / 5);
+    for (let x = Math.ceil(gx0 / stepX) * stepX; x <= gx1 + 1e-6; x += stepX) {
+      const a = S(x, 0, gz0), b = S(x, 0, gz1); ctx.strokeStyle = "rgba(120,140,180,.12)"; ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke();
+    }
+    for (let z = Math.ceil(gz0 / stepX) * stepX; z <= gz1 + 1e-6; z += stepX) {
+      const a = S(gx0, 0, z), b = S(gx1, 0, z); ctx.strokeStyle = "rgba(120,140,180,.09)"; ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke();
+    }
+
+    // ground track (missile's path projected on the floor)
+    if (state.range > 0.5) {
+      const a = S(0, 0, 0), b = S(xl, 0, zl);
+      ctx.save(); ctx.setLineDash([2, 4]); ctx.strokeStyle = "rgba(255,157,92,.55)"; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke(); ctx.restore();
+    }
+
+    // vertical drop lines from arc to floor
+    if (state.range > 0.5) {
+      ctx.strokeStyle = "rgba(70,230,210,.12)"; ctx.lineWidth = 1;
+      for (let i = 1; i < N; i += 6) { const t = (i / N) * state.T, top = S(posX3(t), posY(t), posZ3(t)), bot = S(posX3(t), 0, posZ3(t)); ctx.beginPath(); ctx.moveTo(top.X, top.Y); ctx.lineTo(bot.X, bot.Y); ctx.stroke(); }
+    }
+
+    // axes
+    isoAxis(S, 0, 0, 0, axisLen, 0, 0, "#ff9d5c", "X");
+    isoAxis(S, 0, 0, 0, 0, Ymax, 0, "#8fd6ff", "Y · altitude");
+    isoAxis(S, 0, 0, 0, 0, 0, axisLen, "#9b8cff", "Z");
+
+    // X ticks along X axis
+    ctx.font = "10px " + MONO(); ctx.fillStyle = "rgba(255,157,92,.7)"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+    for (let x = stepX; x <= axisLen - stepX * 0.3; x += stepX) { const p = S(x, 0, 0); ctx.fillText(fmt(x), p.X, p.Y + 3); }
+    // Z ticks along Z axis
+    ctx.fillStyle = "rgba(155,140,255,.75)"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    for (let z = stepX; z <= axisLen - stepX * 0.3; z += stepX) { const p = S(0, 0, z); ctx.fillText(fmt(z), p.X + 4, p.Y); }
+    // Y ticks along Y axis
+    const stepY = niceStep(state.apex / 3 || 1);
+    ctx.fillStyle = "rgba(143,214,255,.75)"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (let y = stepY; y <= Ymax - stepY * 0.4; y += stepY) { const p = S(0, y, 0); ctx.fillText(fmt(y), p.X - 6, p.Y); }
+    ctx.textBaseline = "alphabetic";
+
+    // origin
+    const o = S(0, 0, 0); ctx.fillStyle = "#3a4d6b"; ctx.beginPath(); ctx.arc(o.X, o.Y, 4, 0, Math.PI * 2); ctx.fill();
+
+    // predicted arc
+    if (state.range > 0.5) {
+      ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(70,230,210,.32)"; ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let i = 0; i <= N; i++) { const t = (i / N) * state.T, p = S(posX3(t), Math.max(posY(t), 0), posZ3(t)); i ? ctx.lineTo(p.X, p.Y) : ctx.moveTo(p.X, p.Y); }
+      ctx.stroke(); ctx.restore();
+    }
+    // travelled arc
+    const tNow = Math.min(state.t, state.T);
+    if ((state.flying || state.finished) && tNow > 0) {
+      ctx.save(); ctx.strokeStyle = "#46e6d2"; ctx.lineWidth = 2.6; ctx.shadowColor = "rgba(70,230,210,.7)"; ctx.shadowBlur = 8; ctx.beginPath();
+      for (let i = 0; i <= 70; i++) { const t = (i / 70) * tNow, p = S(posX3(t), Math.max(posY(t), 0), posZ3(t)); i ? ctx.lineTo(p.X, p.Y) : ctx.moveTo(p.X, p.Y); }
+      ctx.stroke(); ctx.restore();
+    }
+
+    // impact
+    if (state.finished) { const p = S(xl, 0, zl); drawBurst(p.X, p.Y); impactLabel(p.X, p.Y); }
+
+    // missile
+    if (state.flying && state.t < state.T) {
+      const t = state.t, p = S(posX3(t), posY(t), posZ3(t));
+      const t2 = Math.min(t + 0.012, state.T), p2 = S(posX3(t2), Math.max(posY(t2), 0), posZ3(t2));
+      drawMissile(p.X, p.Y, Math.atan2(p2.Y - p.Y, p2.X - p.X), true);
+    } else if (!state.flying && !state.finished) {
+      const p = S(0, 0, 0);
+      const el = state.angle * Math.PI / 180, az = state.azim * Math.PI / 180;
+      const p2 = S(Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az));
+      drawMissile(p.X, p.Y, Math.atan2(p2.Y - p.Y, p2.X - p.X), false);
+    }
+  }
+
+  function isoAxis(S, ax, ay, az, bx, by, bz, color, label) {
+    const p0 = S(ax, ay, az), p1 = S(bx, by, bz);
+    ctx.strokeStyle = color; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(p0.X, p0.Y); ctx.lineTo(p1.X, p1.Y); ctx.stroke();
+    const ang = Math.atan2(p1.Y - p0.Y, p1.X - p0.X);
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(p1.X, p1.Y);
+    ctx.lineTo(p1.X - 9 * Math.cos(ang - 0.4), p1.Y - 9 * Math.sin(ang - 0.4));
+    ctx.lineTo(p1.X - 9 * Math.cos(ang + 0.4), p1.Y - 9 * Math.sin(ang + 0.4));
+    ctx.closePath(); ctx.fill();
+    ctx.font = "600 11px " + MONO(); const w = ctx.measureText(label).width;
+    ctx.fillStyle = color; ctx.textBaseline = "middle"; ctx.textAlign = "left";
+    let lx = p1.X + 8; if (lx + w > W - 4) lx = p1.X - 8 - w;
+    ctx.fillText(label, lx, p1.Y); ctx.textBaseline = "alphabetic";
+  }
+
+  // =======================================================================
+  //  MISSILE + IMPACT BURST (shared by both views)
+  // =======================================================================
+  function drawMissile(x, y, rot, thrusting) {
     ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+    // plasma exhaust
     if (thrusting) {
-      const flick = 10 + Math.random() * 10;
-      const fl = ctx.createLinearGradient(-11, 0, -11 - flick, 0);
-      fl.addColorStop(0, "rgba(255,220,120,.95)"); fl.addColorStop(0.5, "rgba(255,122,60,.85)"); fl.addColorStop(1, "rgba(255,60,20,0)");
-      ctx.fillStyle = fl;
-      ctx.beginPath(); ctx.moveTo(-10, -4); ctx.lineTo(-11 - flick, 0); ctx.lineTo(-10, 4); ctx.closePath(); ctx.fill();
+      const flick = 16 + Math.random() * 16;
+      const g = ctx.createLinearGradient(-14, 0, -14 - flick, 0);
+      g.addColorStop(0, "rgba(190,245,255,.95)"); g.addColorStop(0.35, "rgba(90,200,255,.85)");
+      g.addColorStop(0.7, "rgba(80,120,255,.5)"); g.addColorStop(1, "rgba(80,120,255,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.moveTo(-13, -3); ctx.lineTo(-14 - flick, 0); ctx.lineTo(-13, 3); ctx.closePath(); ctx.fill();
     }
-    ctx.fillStyle = "#ff7a3c";
-    ctx.beginPath(); ctx.moveTo(-8, -3.5); ctx.lineTo(-13, -8); ctx.lineTo(-8, -1.5); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(-8, 3.5); ctx.lineTo(-13, 8); ctx.lineTo(-8, 1.5); ctx.closePath(); ctx.fill();
-    const body = ctx.createLinearGradient(0, -5, 0, 5);
-    body.addColorStop(0, "#f4f7ff"); body.addColorStop(0.5, "#cdd6e6"); body.addColorStop(1, "#93a0b8");
+    // swept tail fins
+    ctx.fillStyle = "#2a3550";
+    ctx.beginPath(); ctx.moveTo(-7, -3.4); ctx.lineTo(-17, -9); ctx.lineTo(-8, -1.6); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-7, 3.4); ctx.lineTo(-17, 9); ctx.lineTo(-8, 1.6); ctx.closePath(); ctx.fill();
+    // body
+    const body = ctx.createLinearGradient(0, -4.4, 0, 4.4);
+    body.addColorStop(0, "#eef2fa"); body.addColorStop(0.45, "#aab4c8"); body.addColorStop(1, "#586582");
     ctx.fillStyle = body;
-    ctx.beginPath(); ctx.moveTo(-10, -5); ctx.lineTo(8, -5); ctx.quadraticCurveTo(16, 0, 8, 5); ctx.lineTo(-10, 5); ctx.quadraticCurveTo(-13, 0, -10, -5); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#ff7a3c";
-    ctx.beginPath(); ctx.moveTo(8, -5); ctx.quadraticCurveTo(16, 0, 8, 5); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#46e6d2";
-    ctx.beginPath(); ctx.arc(-1, 0, 2.4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-13, -4.2); ctx.lineTo(9, -4.2); ctx.lineTo(21, 0); ctx.lineTo(9, 4.2); ctx.lineTo(-13, 4.2);
+    ctx.quadraticCurveTo(-15.5, 0, -13, -4.2); ctx.closePath(); ctx.fill();
+    // warhead nose cone
+    const nose = ctx.createLinearGradient(9, 0, 21, 0);
+    nose.addColorStop(0, "#ff8a4c"); nose.addColorStop(1, "#ff4536");
+    ctx.fillStyle = nose;
+    ctx.beginPath(); ctx.moveTo(9, -4.2); ctx.lineTo(21, 0); ctx.lineTo(9, 4.2); ctx.closePath(); ctx.fill();
+    // accent band + sensor
+    ctx.fillStyle = "#46e6d2"; ctx.fillRect(4, -4.2, 2.4, 8.4);
+    ctx.fillStyle = "#0b1020"; ctx.beginPath(); ctx.arc(-2, 0, 1.9, 0, Math.PI * 2); ctx.fill();
+    // top ridge highlight
+    ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(-12, -2.6); ctx.lineTo(8, -2.6); ctx.stroke();
     ctx.restore();
   }
 
-  function drawImpact(f) {
-    const x = f.sx(state.range), y = f.groundY;
-    ctx.save(); ctx.setLineDash([3, 5]); ctx.strokeStyle = "rgba(255,122,60,.5)"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x, 24); ctx.lineTo(x, y); ctx.stroke(); ctx.restore();
+  function intensity() { return clamp((state.impactSpeed - 10) / 140, 0, 1); }
 
-    if (state.burstStart >= 0) {
-      const dt = (performance.now() - state.burstStart) / 700;
-      if (dt < 1) {
-        ctx.save(); ctx.globalAlpha = 1 - dt; ctx.strokeStyle = "#ffb347"; ctx.lineWidth = 3 * (1 - dt) + 0.5;
-        ctx.beginPath(); ctx.arc(x, y, 6 + dt * 34, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+  function spawnBurst() {
+    const inten = intensity();
+    const count = Math.round(10 + inten * 48);
+    state.particles = [];
+    for (let i = 0; i < count; i++) state.particles.push({ ang: -Math.random() * Math.PI, spd: 0.35 + Math.random() * 0.75, hue: Math.random() });
+    state.burstDur = 480 + inten * 640;
+    state.burstStart = performance.now();
+  }
+
+  function drawBurst(cx, cy) {
+    if (state.burstStart < 0) return;
+    const inten = intensity();
+    const life = (performance.now() - state.burstStart) / state.burstDur;
+    const maxR = 22 + inten * 82;
+
+    if (life < 0.5) {
+      const fl = 1 - life / 0.5, r = (11 + inten * 44) * (0.4 + life * 1.6);
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g.addColorStop(0, "rgba(255,255,242," + (0.92 * fl) + ")");
+      g.addColorStop(0.4, "rgba(255,190,110," + (0.6 * fl) + ")");
+      g.addColorStop(1, "rgba(255,90,40,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    }
+    if (life < 1) {
+      ctx.save(); ctx.globalAlpha = (1 - life) * (0.45 + 0.5 * inten); ctx.strokeStyle = "#ffb347";
+      ctx.lineWidth = (2 + inten * 3.5) * (1 - life) + 0.4; ctx.beginPath(); ctx.arc(cx, cy, 6 + life * maxR, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+
+      const e = 1 - Math.pow(1 - life, 2);
+      for (const p of state.particles) {
+        const dist = p.spd * maxR * e;
+        const gx = cx + Math.cos(p.ang) * dist;
+        const gy = cy + Math.sin(p.ang) * dist + 0.42 * maxR * e * e;   // gravity sag
+        const tail = 5 + inten * 7;
+        const col = p.hue < 0.3 ? "255,255,220" : p.hue < 0.7 ? "255,180,90" : "255,90,50";
+        ctx.strokeStyle = "rgba(" + col + "," + (1 - life) + ")"; ctx.lineWidth = 1 + inten * 1.3;
+        ctx.beginPath(); ctx.moveTo(gx - Math.cos(p.ang) * tail, gy - Math.sin(p.ang) * tail); ctx.lineTo(gx, gy); ctx.stroke();
       }
     }
-    ctx.fillStyle = "#ff7a3c"; ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = "#ffb347"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(x - 6, y - 6); ctx.lineTo(x + 6, y - 6); ctx.stroke();
+    // crater
+    ctx.fillStyle = "#ff7a3c"; ctx.beginPath(); ctx.arc(cx, cy, 3.4 + inten * 3.2, 0, Math.PI * 2); ctx.fill();
+  }
 
+  function impactLabel(cx, cy) {
     const label = "IMPACT · " + fmt(state.range) + " m";
-    ctx.font = "600 11px " + getComputedStyle(document.body).getPropertyValue("--font-mono");
+    ctx.font = "600 11px " + MONO();
     const w = ctx.measureText(label).width + 16;
-    let bx = Math.max(4, Math.min(x - w / 2, W - w - 4));
-    const by = y - 30;
+    let bx = Math.max(4, Math.min(cx - w / 2, W - w - 4)), by = cy - 34;
     ctx.fillStyle = "rgba(255,122,60,.16)"; ctx.strokeStyle = "rgba(255,122,60,.6)"; ctx.lineWidth = 1;
     roundRect(bx, by, w, 20, 6); ctx.fill(); ctx.stroke();
     ctx.fillStyle = "#ffb347"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(label, bx + w / 2, by + 10.5); ctx.textBaseline = "alphabetic";
+    ctx.fillText(label, bx + w / 2, by + 10.5); ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
   }
 
   function roundRect(x, y, w, h, r) {
@@ -451,237 +601,60 @@
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
   }
 
-  // ---- 3/4 (isometric) view ----
-  const ISO = {};
-  (function () {
-    const yaw = 35 * Math.PI / 180, pitch = 26 * Math.PI / 180;
-    ISO.cy = Math.cos(yaw); ISO.sy = Math.sin(yaw);
-    ISO.cp = Math.cos(pitch); ISO.sp = Math.sin(pitch);
-  })();
-  const MONO = () => getComputedStyle(document.body).getPropertyValue("--font-mono");
-  function proj(x, y, z) {
-    const x1 = x * ISO.cy + z * ISO.sy;
-    const z1 = -x * ISO.sy + z * ISO.cy;
-    const y2 = y * ISO.cp - z1 * ISO.sp;
-    return { u: x1, v: -y2 };
-  }
-
-  function drawIso() {
-    // sky + stars
-    const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, "#05070f"); sky.addColorStop(1, "#0a1526");
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
-    for (const s of state.stars) { ctx.globalAlpha = s.a; ctx.fillStyle = "#cfe3ff"; ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2); ctx.fill(); }
-    ctx.globalAlpha = 1;
-
-    const range = Math.max(state.range, 1), apex = Math.max(state.apex, 1);
-    const Xmax = range * 1.08, Ymax = apex * 1.12;
-    const D = Math.max(range, apex) * 0.22, Zback = -0.22 * D, Zfront = D;
-
-    // ---- fit projected content to the drawing area ----
-    const pts = [];
-    const add = (x, y, z) => pts.push(proj(x, y, z));
-    add(0, 0, Zback); add(Xmax, 0, Zback); add(0, 0, Zfront); add(Xmax, 0, Zfront);
-    add(Xmax, 0, 0); add(0, Ymax, 0);
-    const N = 80;
-    for (let i = 0; i <= N; i++) { const t = (i / N) * state.T; add(posX(t), Math.max(posY(t), 0), 0); }
-    let umin = Infinity, umax = -Infinity, vmin = Infinity, vmax = -Infinity;
-    for (const p of pts) { if (p.u < umin) umin = p.u; if (p.u > umax) umax = p.u; if (p.v < vmin) vmin = p.v; if (p.v > vmax) vmax = p.v; }
-    const mL = 20, mR = 92, mT = 56, mB = (bottombar ? bottombar.offsetHeight : 90) + 14;
-    const areaW = Math.max(W - mL - mR, 40), areaH = Math.max(H - mT - mB, 40);
-    const bw = Math.max(umax - umin, 1e-6), bh = Math.max(vmax - vmin, 1e-6);
-    const s = Math.min(areaW / bw, areaH / bh) * 0.92;
-    const ox = mL + (areaW - bw * s) / 2 - umin * s;
-    const oy = mT + (areaH - bh * s) / 2 - vmin * s;
-    const S = (x, y, z) => { const p = proj(x, y, z); return { X: ox + p.u * s, Y: oy + p.v * s }; };
-
-    // ---- ground plane ----
-    const c1 = S(0, 0, Zback), c2 = S(Xmax, 0, Zback), c3 = S(Xmax, 0, Zfront), c4 = S(0, 0, Zfront);
-    ctx.fillStyle = "rgba(16,26,46,.55)";
-    ctx.beginPath(); ctx.moveTo(c1.X, c1.Y); ctx.lineTo(c2.X, c2.Y); ctx.lineTo(c3.X, c3.Y); ctx.lineTo(c4.X, c4.Y); ctx.closePath(); ctx.fill();
-
-    // ground grid + X distance labels along the front edge
-    ctx.font = "10px " + MONO();
-    ctx.lineWidth = 1;
-    const stepX = niceStep(range / 6);
-    for (let x = 0; x <= Xmax + 1e-6; x += stepX) {
-      const a = S(x, 0, Zback), b = S(x, 0, Zfront);
-      ctx.strokeStyle = "rgba(120,140,180,.14)";
-      ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke();
-      if (x > 0) { ctx.fillStyle = "rgba(255,157,92,.7)"; ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText(fmt(x), b.X + 3, b.Y + 2); }
-    }
-    const stepZ = niceStep(D / 3);
-    for (let z = Zback; z <= Zfront + 1e-6; z += stepZ) {
-      const a = S(0, 0, z), b = S(Xmax, 0, z);
-      ctx.strokeStyle = "rgba(120,140,180,.10)";
-      ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke();
-    }
-
-    // vertical drop lines from the arc to the floor (depth cue)
-    if (state.range > 0.5) {
-      ctx.strokeStyle = "rgba(70,230,210,.13)"; ctx.lineWidth = 1;
-      for (let i = 1; i < N; i += 6) {
-        const t = (i / N) * state.T, top = S(posX(t), posY(t), 0), bot = S(posX(t), 0, 0);
-        ctx.beginPath(); ctx.moveTo(top.X, top.Y); ctx.lineTo(bot.X, bot.Y); ctx.stroke();
-      }
-    }
-
-    // ---- the three axes ----
-    isoAxis(S, 0, 0, 0, Xmax, 0, 0, "#ff9d5c", "X · portée");
-    isoAxis(S, 0, 0, 0, 0, Ymax, 0, "#8fd6ff", "Y · altitude");
-    isoAxis(S, 0, 0, 0, 0, 0, Zfront, "#9b8cff", "Z · latéral");
-
-    // Y altitude ticks along the vertical axis
-    const stepY = niceStep(apex / 3);
-    ctx.font = "10px " + MONO(); ctx.fillStyle = "rgba(143,214,255,.75)";
-    ctx.textAlign = "right"; ctx.textBaseline = "middle";
-    for (let y = stepY; y <= Ymax - stepY * 0.4; y += stepY) {
-      const p = S(0, y, 0);
-      ctx.strokeStyle = "rgba(143,214,255,.5)"; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(p.X - 3, p.Y); ctx.lineTo(p.X + 3, p.Y); ctx.stroke();
-      ctx.fillText(fmt(y), p.X - 6, p.Y);
-    }
-    ctx.textBaseline = "alphabetic";
-
-    // origin marker
-    const o = S(0, 0, 0);
-    ctx.fillStyle = "#3a4d6b"; ctx.beginPath(); ctx.arc(o.X, o.Y, 4, 0, Math.PI * 2); ctx.fill();
-
-    // predicted parabola (faint dashed)
-    if (state.range > 0.5) {
-      ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(70,230,210,.32)"; ctx.lineWidth = 1.5; ctx.beginPath();
-      for (let i = 0; i <= N; i++) { const t = (i / N) * state.T, p = S(posX(t), Math.max(posY(t), 0), 0); i ? ctx.lineTo(p.X, p.Y) : ctx.moveTo(p.X, p.Y); }
-      ctx.stroke(); ctx.restore();
-    }
-
-    // travelled parabola (bright)
-    const tNow = Math.min(state.t, state.T);
-    if ((state.flying || state.finished) && tNow > 0) {
-      ctx.save(); ctx.strokeStyle = "#46e6d2"; ctx.lineWidth = 2.6; ctx.shadowColor = "rgba(70,230,210,.7)"; ctx.shadowBlur = 8; ctx.beginPath();
-      const M = 70;
-      for (let i = 0; i <= M; i++) { const t = (i / M) * tNow, p = S(posX(t), Math.max(posY(t), 0), 0); i ? ctx.lineTo(p.X, p.Y) : ctx.moveTo(p.X, p.Y); }
-      ctx.stroke(); ctx.restore();
-    }
-
-    // rocket
-    if (state.flying && state.t < state.T) {
-      const t = state.t, p = S(posX(t), posY(t), 0);
-      const t2 = Math.min(t + 0.012, state.T), p2 = S(posX(t2), Math.max(posY(t2), 0), 0);
-      drawRocket(p.X, p.Y, Math.atan2(p2.Y - p.Y, p2.X - p.X), true);
-    } else if (!state.flying && !state.finished) {
-      const p = S(0, 0, 0);
-      const p2 = S(Math.cos(state.angle * Math.PI / 180), Math.sin(state.angle * Math.PI / 180), 0);
-      drawRocket(p.X, p.Y, Math.atan2(p2.Y - p.Y, p2.X - p.X), false);
-    }
-
-    // impact marker + label
-    if (state.finished) {
-      const p = S(state.range, 0, 0);
-      if (state.burstStart >= 0) {
-        const dt = (performance.now() - state.burstStart) / 700;
-        if (dt < 1) { ctx.save(); ctx.globalAlpha = 1 - dt; ctx.strokeStyle = "#ffb347"; ctx.lineWidth = 3 * (1 - dt) + 0.5; ctx.beginPath(); ctx.arc(p.X, p.Y, 6 + dt * 34, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
-      }
-      ctx.fillStyle = "#ff7a3c"; ctx.beginPath(); ctx.arc(p.X, p.Y, 4.5, 0, Math.PI * 2); ctx.fill();
-      const label = "IMPACT · " + fmt(state.range) + " m";
-      ctx.font = "600 11px " + MONO();
-      const w = ctx.measureText(label).width + 16;
-      let bx = Math.max(4, Math.min(p.X - w / 2, W - w - 4)), by = p.Y - 30;
-      ctx.fillStyle = "rgba(255,122,60,.16)"; ctx.strokeStyle = "rgba(255,122,60,.6)"; ctx.lineWidth = 1;
-      roundRect(bx, by, w, 20, 6); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = "#ffb347"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText(label, bx + w / 2, by + 10.5); ctx.textBaseline = "alphabetic";
-    }
-  }
-
-  function isoAxis(S, ax, ay, az, bx, by, bz, color, label) {
-    const p0 = S(ax, ay, az), p1 = S(bx, by, bz);
-    ctx.strokeStyle = color; ctx.lineWidth = 1.8;
-    ctx.beginPath(); ctx.moveTo(p0.X, p0.Y); ctx.lineTo(p1.X, p1.Y); ctx.stroke();
-    const ang = Math.atan2(p1.Y - p0.Y, p1.X - p0.X);
-    ctx.fillStyle = color;
-    ctx.beginPath(); ctx.moveTo(p1.X, p1.Y);
-    ctx.lineTo(p1.X - 9 * Math.cos(ang - 0.4), p1.Y - 9 * Math.sin(ang - 0.4));
-    ctx.lineTo(p1.X - 9 * Math.cos(ang + 0.4), p1.Y - 9 * Math.sin(ang + 0.4));
-    ctx.closePath(); ctx.fill();
-    ctx.font = "600 11px " + MONO();
-    const w = ctx.measureText(label).width;
-    ctx.fillStyle = color; ctx.textBaseline = "middle";
-    ctx.textAlign = "left";
-    let lx = p1.X + 8;
-    if (lx + w > W - 4) { lx = p1.X - 8 - w; }
-    ctx.fillText(label, lx, p1.Y);
-    ctx.textBaseline = "alphabetic";
-  }
-
+  // ---- HUD / results ----
   function updateHud() {
     let alt = 0, vel = state.speed, dist = 0;
-    if (state.flying && state.t <= state.T) { alt = Math.max(posY(state.t), 0); vel = velAt(state.t); dist = posX(state.t); }
-    else if (state.finished) { alt = 0; vel = state.speed; dist = state.range; }
-    els.hudAlt.textContent = fmt(alt) + " m";
-    els.hudVel.textContent = fmt(vel) + " m/s";
-    els.hudDist.textContent = fmt(dist) + " m";
+    if (state.flying && state.t <= state.T) { alt = Math.max(posY(state.t), 0); vel = velAt(state.t); dist = posGround(state.t); }
+    else if (state.finished) { alt = 0; vel = state.impactSpeed; dist = state.range; }
+    els.hudAlt.textContent = fmt(alt) + " m"; els.hudVel.textContent = fmt(vel) + " m/s"; els.hudDist.textContent = fmt(dist) + " m";
   }
-
   function showResults() {
-    els.rRange.textContent = fmt(state.range);
-    els.rApex.textContent = fmt(state.apex);
-    els.rTime.textContent = state.T.toFixed(1);
-    els.rImp.textContent = fmt(state.speed);
+    els.rRange.textContent = fmt(state.range); els.rApex.textContent = fmt(state.apex);
+    els.rTime.textContent = state.T.toFixed(1); els.rImp.textContent = fmt(state.impactSpeed);
   }
-  function clearResults() {
-    els.rRange.textContent = els.rApex.textContent = els.rTime.textContent = els.rImp.textContent = "—";
-  }
+  function clearResults() { els.rRange.textContent = els.rApex.textContent = els.rTime.textContent = els.rImp.textContent = "—"; }
 
   // ---- animation ----
   let raf = 0;
   function launch() {
-    recompute();
-    if (state.range < 0.5) return;
+    recompute(); if (state.range < 0.5) return;
     cancelAnimationFrame(raf);
     state.flying = true; state.finished = false; state.t = 0; state.burstStart = -1;
+    state.impactSpeed = velAt(state.T);
     state.animDur = Math.min(Math.max(state.T * 0.35, 1.6), 4) * 1000;
-    if (reduceMotion) {
-      state.t = state.T; state.flying = false; state.finished = true;
-      showResults(); draw(); return;
-    }
-    state.animStart = performance.now();
-    raf = requestAnimationFrame(tick);
+    if (reduceMotion) { state.t = state.T; state.flying = false; state.finished = true; spawnBurst(); showResults(); draw(); return; }
+    state.animStart = performance.now(); raf = requestAnimationFrame(tick);
   }
   function tick(now) {
     const p = (now - state.animStart) / state.animDur;
-    state.t = Math.min(p, 1) * state.T;
-    draw();
+    state.t = Math.min(p, 1) * state.T; draw();
     if (p < 1) { raf = requestAnimationFrame(tick); }
     else {
       state.flying = false; state.finished = true; state.t = state.T;
-      state.burstStart = performance.now(); showResults(); draw();
-      raf = requestAnimationFrame(function fade(n) { draw(); if (n - state.burstStart < 720) raf = requestAnimationFrame(fade); });
+      spawnBurst(); showResults(); draw();
+      raf = requestAnimationFrame(function fade(n) { draw(); if (n - state.burstStart < state.burstDur) raf = requestAnimationFrame(fade); });
     }
   }
   function reset() {
     cancelAnimationFrame(raf);
-    state.flying = false; state.finished = false; state.t = 0; state.burstStart = -1;
+    state.flying = false; state.finished = false; state.t = 0; state.burstStart = -1; state.particles = [];
     clearResults(); recompute(); draw();
   }
 
   // ---- input wiring ----
-  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-  function applyAngle(a, writeNum) {
-    a = clamp(Math.round(a), 5, 85); state.angle = a; els.angle.value = a;
-    if (writeNum) els.angleNum.value = a;
-    if (!state.flying) reset();
-  }
-  function applySpeed(v, writeNum) {
-    v = clamp(Math.round(v), 10, 150); state.speed = v; els.speed.value = v;
-    if (writeNum) els.speedNum.value = v;
-    if (!state.flying) reset();
-  }
+  function applyAngle(a, writeNum) { a = clamp(Math.round(a), 5, 85); state.angle = a; els.angle.value = a; if (writeNum) els.angleNum.value = a; if (!state.flying) reset(); }
+  function applySpeed(v, writeNum) { v = clamp(Math.round(v), 10, 150); state.speed = v; els.speed.value = v; if (writeNum) els.speedNum.value = v; if (!state.flying) reset(); }
+  function applyAzim(a, writeNum) { a = clamp(Math.round(a), -180, 180); state.azim = a; els.azim.value = a; if (writeNum) els.azimNum.value = a; if (!state.flying) reset(); }
+
   els.angle.addEventListener("input", () => applyAngle(+els.angle.value, true));
   els.speed.addEventListener("input", () => applySpeed(+els.speed.value, true));
+  els.azim.addEventListener("input", () => applyAzim(+els.azim.value, true));
   els.angleNum.addEventListener("input", () => { const v = parseFloat(els.angleNum.value); if (!isNaN(v)) applyAngle(v, false); });
   els.speedNum.addEventListener("input", () => { const v = parseFloat(els.speedNum.value); if (!isNaN(v)) applySpeed(v, false); });
+  els.azimNum.addEventListener("input", () => { const v = parseFloat(els.azimNum.value); if (!isNaN(v)) applyAzim(v, false); });
   els.angleNum.addEventListener("change", () => applyAngle(parseFloat(els.angleNum.value) || 45, true));
   els.speedNum.addEventListener("change", () => applySpeed(parseFloat(els.speedNum.value) || 60, true));
+  els.azimNum.addEventListener("change", () => applyAzim(parseFloat(els.azimNum.value) || 0, true));
 
   $("planet").addEventListener("change", (e) => { state.g = +e.target.value; if (!state.flying) reset(); });
   $("launch").addEventListener("click", launch);
@@ -694,16 +667,37 @@
     tabIso.classList.toggle("is-on", v === "iso");
     tabProfile.setAttribute("aria-selected", v === "profile");
     tabIso.setAttribute("aria-selected", v === "iso");
+    app.classList.toggle("is-iso", v === "iso");
+    canvas.style.cursor = v === "iso" ? "grab" : "default";
     draw();
   }
   tabProfile.addEventListener("click", () => setView("profile"));
   tabIso.addEventListener("click", () => setView("iso"));
+
+  // ---- camera orbit (drag on canvas in 3/4 view) ----
+  let dragging = false, lastX = 0, lastY = 0;
+  canvas.addEventListener("pointerdown", (e) => {
+    if (state.view !== "iso") return;
+    dragging = true; lastX = e.clientX; lastY = e.clientY;
+    canvas.setPointerCapture(e.pointerId); canvas.style.cursor = "grabbing";
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
+    state.camYaw += dx * 0.008;
+    state.camPitch = clamp(state.camPitch - dy * 0.008, 0.12, 1.45);
+    draw();
+  });
+  function endDrag() { if (dragging) { dragging = false; canvas.style.cursor = state.view === "iso" ? "grab" : "default"; } }
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
+
   window.addEventListener("keydown", (e) => {
     if (e.code === "Space" && !/^(BUTTON|INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) { e.preventDefault(); launch(); }
   });
 
   new ResizeObserver(resize).observe(canvas);
-  new ResizeObserver(draw).observe(bottombar);
+  new ResizeObserver(() => { if (bottombar) app.style.setProperty("--dockh", bottombar.offsetHeight + "px"); draw(); }).observe(bottombar);
 
   recompute();
   requestAnimationFrame(resize);
