@@ -81,7 +81,9 @@
     align-items: stretch;
   }
   @media (max-width: 860px) {
-    .console { grid-template-columns: 1fr; }
+    .console { display: flex; flex-direction: column; }
+    .controls { order: -1; }               /* réglages visibles en premier */
+    .viewport { aspect-ratio: 16 / 11; min-height: 240px; }
   }
 
   /* ---------- viewport ---------- */
