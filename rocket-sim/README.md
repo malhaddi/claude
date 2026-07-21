@@ -23,6 +23,15 @@ start rocket-sim/index.html         # Windows
 - **Lancer** — bouton 🚀 ou la barre d'espace
 - **Réinit.** — remet la scène à zéro
 
+### Deux vues (onglets en haut à droite)
+
+- **Profil** — vue de côté classique : la parabole dans le plan vertical.
+- **Vue 3/4** — projection isométrique depuis le point d'origine, avec un sol
+  quadrillé en perspective et les **3 axes** affichés : **X** (portée), **Y**
+  (altitude) et **Z** (latéral / profondeur). La trajectoire reste dans le plan
+  `Z = 0` ; des lignes verticales relient l'arc au sol pour la perception de la
+  profondeur.
+
 Les indicateurs affichent en direct l'altitude, la vitesse et la distance ;
 le panneau de résultats donne la portée, l'altitude maximale, le temps de vol et
 la vitesse d'impact.

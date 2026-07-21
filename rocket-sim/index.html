@@ -59,6 +59,22 @@
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
   .brand h1 { margin: 3px 0 0; font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em; }
 
+  /* ---------- view tabs (top-right) ---------- */
+  .tabs {
+    position: absolute; top: 12px; right: 14px;
+    display: inline-flex; gap: 3px; padding: 3px;
+    background: rgba(8,14,26,.66); border: 1px solid var(--line);
+    border-radius: 9px; backdrop-filter: blur(6px);
+  }
+  .tab {
+    font-family: var(--font-mono); font-size: .72rem; letter-spacing: .04em;
+    color: var(--muted); background: transparent; border: none; cursor: pointer;
+    padding: 6px 11px; border-radius: 7px; transition: .15s;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab.is-on { background: rgba(70,230,210,.14); color: var(--ink); box-shadow: inset 0 0 0 1px rgba(70,230,210,.35); }
+  .tab:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+
   .hud { position: absolute; top: 52px; left: 14px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
   .chip {
     font-family: var(--font-mono); font-size: .72rem;
@@ -159,6 +175,11 @@
     <h1>Trajectoire de fusée</h1>
   </div>
 
+  <div class="tabs" role="tablist" aria-label="Choix de la vue">
+    <button class="tab is-on" id="tabProfile" role="tab" aria-selected="true">Profil</button>
+    <button class="tab" id="tabIso" role="tab" aria-selected="false">Vue 3/4</button>
+  </div>
+
   <div class="hud">
     <div class="chip"><span class="k">Alt</span><span class="v" id="hudAlt">0 m</span></div>
     <div class="chip"><span class="k">Vit</span><span class="v" id="hudVel">0 m/s</span></div>
@@ -229,6 +250,7 @@
     vx: 0, vy0: 0, T: 0, range: 0, apex: 0,
     t: 0, flying: false, finished: false,
     animStart: 0, animDur: 0, burstStart: -1,
+    view: "profile",
     stars: [],
   };
   for (let i = 0; i < 90; i++) {
@@ -280,6 +302,11 @@
   // ---- drawing ----
   function draw() {
     if (!W || !H) return;
+    if (state.view === "iso") drawIso(); else drawProfile();
+    updateHud();
+  }
+
+  function drawProfile() {
     const f = frame();
 
     const sky = ctx.createLinearGradient(0, 0, 0, f.groundY);
@@ -336,8 +363,6 @@
     } else if (!state.flying && !state.finished) {
       drawRocket(f.sx(0), f.groundY - 12, -state.angle * Math.PI / 180, false);
     }
-
-    updateHud();
   }
 
   function drawGrid(f) {
@@ -426,6 +451,168 @@
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
   }
 
+  // ---- 3/4 (isometric) view ----
+  const ISO = {};
+  (function () {
+    const yaw = 35 * Math.PI / 180, pitch = 26 * Math.PI / 180;
+    ISO.cy = Math.cos(yaw); ISO.sy = Math.sin(yaw);
+    ISO.cp = Math.cos(pitch); ISO.sp = Math.sin(pitch);
+  })();
+  const MONO = () => getComputedStyle(document.body).getPropertyValue("--font-mono");
+  function proj(x, y, z) {
+    const x1 = x * ISO.cy + z * ISO.sy;
+    const z1 = -x * ISO.sy + z * ISO.cy;
+    const y2 = y * ISO.cp - z1 * ISO.sp;
+    return { u: x1, v: -y2 };
+  }
+
+  function drawIso() {
+    // sky + stars
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, "#05070f"); sky.addColorStop(1, "#0a1526");
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    for (const s of state.stars) { ctx.globalAlpha = s.a; ctx.fillStyle = "#cfe3ff"; ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2); ctx.fill(); }
+    ctx.globalAlpha = 1;
+
+    const range = Math.max(state.range, 1), apex = Math.max(state.apex, 1);
+    const Xmax = range * 1.08, Ymax = apex * 1.12;
+    const D = Math.max(range, apex) * 0.22, Zback = -0.22 * D, Zfront = D;
+
+    // ---- fit projected content to the drawing area ----
+    const pts = [];
+    const add = (x, y, z) => pts.push(proj(x, y, z));
+    add(0, 0, Zback); add(Xmax, 0, Zback); add(0, 0, Zfront); add(Xmax, 0, Zfront);
+    add(Xmax, 0, 0); add(0, Ymax, 0);
+    const N = 80;
+    for (let i = 0; i <= N; i++) { const t = (i / N) * state.T; add(posX(t), Math.max(posY(t), 0), 0); }
+    let umin = Infinity, umax = -Infinity, vmin = Infinity, vmax = -Infinity;
+    for (const p of pts) { if (p.u < umin) umin = p.u; if (p.u > umax) umax = p.u; if (p.v < vmin) vmin = p.v; if (p.v > vmax) vmax = p.v; }
+    const mL = 20, mR = 92, mT = 56, mB = (bottombar ? bottombar.offsetHeight : 90) + 14;
+    const areaW = Math.max(W - mL - mR, 40), areaH = Math.max(H - mT - mB, 40);
+    const bw = Math.max(umax - umin, 1e-6), bh = Math.max(vmax - vmin, 1e-6);
+    const s = Math.min(areaW / bw, areaH / bh) * 0.92;
+    const ox = mL + (areaW - bw * s) / 2 - umin * s;
+    const oy = mT + (areaH - bh * s) / 2 - vmin * s;
+    const S = (x, y, z) => { const p = proj(x, y, z); return { X: ox + p.u * s, Y: oy + p.v * s }; };
+
+    // ---- ground plane ----
+    const c1 = S(0, 0, Zback), c2 = S(Xmax, 0, Zback), c3 = S(Xmax, 0, Zfront), c4 = S(0, 0, Zfront);
+    ctx.fillStyle = "rgba(16,26,46,.55)";
+    ctx.beginPath(); ctx.moveTo(c1.X, c1.Y); ctx.lineTo(c2.X, c2.Y); ctx.lineTo(c3.X, c3.Y); ctx.lineTo(c4.X, c4.Y); ctx.closePath(); ctx.fill();
+
+    // ground grid + X distance labels along the front edge
+    ctx.font = "10px " + MONO();
+    ctx.lineWidth = 1;
+    const stepX = niceStep(range / 6);
+    for (let x = 0; x <= Xmax + 1e-6; x += stepX) {
+      const a = S(x, 0, Zback), b = S(x, 0, Zfront);
+      ctx.strokeStyle = "rgba(120,140,180,.14)";
+      ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke();
+      if (x > 0) { ctx.fillStyle = "rgba(255,157,92,.7)"; ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText(fmt(x), b.X + 3, b.Y + 2); }
+    }
+    const stepZ = niceStep(D / 3);
+    for (let z = Zback; z <= Zfront + 1e-6; z += stepZ) {
+      const a = S(0, 0, z), b = S(Xmax, 0, z);
+      ctx.strokeStyle = "rgba(120,140,180,.10)";
+      ctx.beginPath(); ctx.moveTo(a.X, a.Y); ctx.lineTo(b.X, b.Y); ctx.stroke();
+    }
+
+    // vertical drop lines from the arc to the floor (depth cue)
+    if (state.range > 0.5) {
+      ctx.strokeStyle = "rgba(70,230,210,.13)"; ctx.lineWidth = 1;
+      for (let i = 1; i < N; i += 6) {
+        const t = (i / N) * state.T, top = S(posX(t), posY(t), 0), bot = S(posX(t), 0, 0);
+        ctx.beginPath(); ctx.moveTo(top.X, top.Y); ctx.lineTo(bot.X, bot.Y); ctx.stroke();
+      }
+    }
+
+    // ---- the three axes ----
+    isoAxis(S, 0, 0, 0, Xmax, 0, 0, "#ff9d5c", "X · portée");
+    isoAxis(S, 0, 0, 0, 0, Ymax, 0, "#8fd6ff", "Y · altitude");
+    isoAxis(S, 0, 0, 0, 0, 0, Zfront, "#9b8cff", "Z · latéral");
+
+    // Y altitude ticks along the vertical axis
+    const stepY = niceStep(apex / 3);
+    ctx.font = "10px " + MONO(); ctx.fillStyle = "rgba(143,214,255,.75)";
+    ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (let y = stepY; y <= Ymax - stepY * 0.4; y += stepY) {
+      const p = S(0, y, 0);
+      ctx.strokeStyle = "rgba(143,214,255,.5)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(p.X - 3, p.Y); ctx.lineTo(p.X + 3, p.Y); ctx.stroke();
+      ctx.fillText(fmt(y), p.X - 6, p.Y);
+    }
+    ctx.textBaseline = "alphabetic";
+
+    // origin marker
+    const o = S(0, 0, 0);
+    ctx.fillStyle = "#3a4d6b"; ctx.beginPath(); ctx.arc(o.X, o.Y, 4, 0, Math.PI * 2); ctx.fill();
+
+    // predicted parabola (faint dashed)
+    if (state.range > 0.5) {
+      ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = "rgba(70,230,210,.32)"; ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let i = 0; i <= N; i++) { const t = (i / N) * state.T, p = S(posX(t), Math.max(posY(t), 0), 0); i ? ctx.lineTo(p.X, p.Y) : ctx.moveTo(p.X, p.Y); }
+      ctx.stroke(); ctx.restore();
+    }
+
+    // travelled parabola (bright)
+    const tNow = Math.min(state.t, state.T);
+    if ((state.flying || state.finished) && tNow > 0) {
+      ctx.save(); ctx.strokeStyle = "#46e6d2"; ctx.lineWidth = 2.6; ctx.shadowColor = "rgba(70,230,210,.7)"; ctx.shadowBlur = 8; ctx.beginPath();
+      const M = 70;
+      for (let i = 0; i <= M; i++) { const t = (i / M) * tNow, p = S(posX(t), Math.max(posY(t), 0), 0); i ? ctx.lineTo(p.X, p.Y) : ctx.moveTo(p.X, p.Y); }
+      ctx.stroke(); ctx.restore();
+    }
+
+    // rocket
+    if (state.flying && state.t < state.T) {
+      const t = state.t, p = S(posX(t), posY(t), 0);
+      const t2 = Math.min(t + 0.012, state.T), p2 = S(posX(t2), Math.max(posY(t2), 0), 0);
+      drawRocket(p.X, p.Y, Math.atan2(p2.Y - p.Y, p2.X - p.X), true);
+    } else if (!state.flying && !state.finished) {
+      const p = S(0, 0, 0);
+      const p2 = S(Math.cos(state.angle * Math.PI / 180), Math.sin(state.angle * Math.PI / 180), 0);
+      drawRocket(p.X, p.Y, Math.atan2(p2.Y - p.Y, p2.X - p.X), false);
+    }
+
+    // impact marker + label
+    if (state.finished) {
+      const p = S(state.range, 0, 0);
+      if (state.burstStart >= 0) {
+        const dt = (performance.now() - state.burstStart) / 700;
+        if (dt < 1) { ctx.save(); ctx.globalAlpha = 1 - dt; ctx.strokeStyle = "#ffb347"; ctx.lineWidth = 3 * (1 - dt) + 0.5; ctx.beginPath(); ctx.arc(p.X, p.Y, 6 + dt * 34, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+      }
+      ctx.fillStyle = "#ff7a3c"; ctx.beginPath(); ctx.arc(p.X, p.Y, 4.5, 0, Math.PI * 2); ctx.fill();
+      const label = "IMPACT · " + fmt(state.range) + " m";
+      ctx.font = "600 11px " + MONO();
+      const w = ctx.measureText(label).width + 16;
+      let bx = Math.max(4, Math.min(p.X - w / 2, W - w - 4)), by = p.Y - 30;
+      ctx.fillStyle = "rgba(255,122,60,.16)"; ctx.strokeStyle = "rgba(255,122,60,.6)"; ctx.lineWidth = 1;
+      roundRect(bx, by, w, 20, 6); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#ffb347"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(label, bx + w / 2, by + 10.5); ctx.textBaseline = "alphabetic";
+    }
+  }
+
+  function isoAxis(S, ax, ay, az, bx, by, bz, color, label) {
+    const p0 = S(ax, ay, az), p1 = S(bx, by, bz);
+    ctx.strokeStyle = color; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(p0.X, p0.Y); ctx.lineTo(p1.X, p1.Y); ctx.stroke();
+    const ang = Math.atan2(p1.Y - p0.Y, p1.X - p0.X);
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.moveTo(p1.X, p1.Y);
+    ctx.lineTo(p1.X - 9 * Math.cos(ang - 0.4), p1.Y - 9 * Math.sin(ang - 0.4));
+    ctx.lineTo(p1.X - 9 * Math.cos(ang + 0.4), p1.Y - 9 * Math.sin(ang + 0.4));
+    ctx.closePath(); ctx.fill();
+    ctx.font = "600 11px " + MONO();
+    const w = ctx.measureText(label).width;
+    ctx.fillStyle = color; ctx.textBaseline = "middle";
+    ctx.textAlign = "left";
+    let lx = p1.X + 8;
+    if (lx + w > W - 4) { lx = p1.X - 8 - w; }
+    ctx.fillText(label, lx, p1.Y);
+    ctx.textBaseline = "alphabetic";
+  }
+
   function updateHud() {
     let alt = 0, vel = state.speed, dist = 0;
     if (state.flying && state.t <= state.T) { alt = Math.max(posY(state.t), 0); vel = velAt(state.t); dist = posX(state.t); }
@@ -499,6 +686,18 @@
   $("planet").addEventListener("change", (e) => { state.g = +e.target.value; if (!state.flying) reset(); });
   $("launch").addEventListener("click", launch);
   $("reset").addEventListener("click", reset);
+
+  const tabProfile = $("tabProfile"), tabIso = $("tabIso");
+  function setView(v) {
+    state.view = v;
+    tabProfile.classList.toggle("is-on", v === "profile");
+    tabIso.classList.toggle("is-on", v === "iso");
+    tabProfile.setAttribute("aria-selected", v === "profile");
+    tabIso.setAttribute("aria-selected", v === "iso");
+    draw();
+  }
+  tabProfile.addEventListener("click", () => setView("profile"));
+  tabIso.addEventListener("click", () => setView("iso"));
   window.addEventListener("keydown", (e) => {
     if (e.code === "Space" && !/^(BUTTON|INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) { e.preventDefault(); launch(); }
   });
