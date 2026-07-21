@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulateur de trajectoire de fusée</title>
+  <style>
+    html, body { margin: 0; background: #060912; }
+  </style>
+</head>
+<body>
+<style>
+  :root {
+    --bg:      #060912;
+    --panel:   #0d1524;
+    --panel-2: #111c30;
+    --line:    #1f2d47;
+    --ink:     #e7ecf7;
+    --muted:   #8593b3;
+    --cyan:    #46e6d2;
+    --amber:   #ff7a3c;
+    --amber-2: #ffb347;
+    --good:    #6ee787;
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  .app {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: clamp(16px, 3vw, 32px);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- header ---------- */
+  .topbar { margin-bottom: 22px; }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--amber);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 8px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 12px var(--amber);
+    animation: blink 1.6s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+  h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.3rem);
+    font-weight: 700;
+    letter-spacing: -.02em;
+    text-wrap: balance;
+  }
+  .lede {
+    margin: 8px 0 0;
+    color: var(--muted);
+    max-width: 60ch;
+    font-size: .95rem;
+    line-height: 1.5;
+  }
+
+  /* ---------- console layout ---------- */
+  .console {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 18px;
+    align-items: stretch;
+  }
+  @media (max-width: 860px) {
+    .console { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- viewport ---------- */
+  .viewport {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #05070e;
+    aspect-ratio: 16 / 10;
+    min-height: 300px;
+  }
+  #stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .hud {
+    position: absolute;
+    top: 12px; left: 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    pointer-events: none;
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: .74rem;
+    background: rgba(8, 14, 26, .72);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 5px 9px;
+    backdrop-filter: blur(6px);
+    display: flex;
+    gap: 7px;
+    align-items: baseline;
+  }
+  .chip .k { color: var(--muted); text-transform: uppercase; letter-spacing: .1em; font-size: .64rem; }
+  .chip .v { color: var(--cyan); font-variant-numeric: tabular-nums; }
+
+  /* ---------- controls ---------- */
+  .controls {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    padding: 18px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .controls h2 {
+    margin: 0;
+    font-size: .78rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 9px; }
+  .field .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .field label {
+    font-size: .84rem;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .readout {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--amber-2);
+    background: rgba(255, 122, 60, .10);
+    border: 1px solid rgba(255, 122, 60, .28);
+    border-radius: 7px;
+    padding: 3px 9px;
+    font-size: .86rem;
+    min-width: 78px;
+    text-align: right;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--line);
+    outline: none;
+    accent-color: var(--amber);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--amber);
+    border: 3px solid #1a1206;
+    box-shadow: 0 0 0 1px var(--amber), 0 0 10px rgba(255,122,60,.6);
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--amber);
+    border: 3px solid #1a1206;
+    cursor: pointer;
+  }
+  input[type="range"]:focus-visible { box-shadow: 0 0 0 2px var(--cyan); }
+
+  .angle-field .row-dial { display: flex; align-items: center; gap: 14px; }
+  .dial { flex: 0 0 auto; }
+  .angle-field .slider-wrap { flex: 1 1 auto; }
+
+  .planet-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 7px;
+  }
+  .planet-grid button {
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    padding: 8px 6px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,.02);
+    color: var(--muted);
+    cursor: pointer;
+    transition: .15s;
+    text-align: left;
+  }
+  .planet-grid button .g { display: block; font-size: .64rem; opacity: .7; margin-top: 2px; }
+  .planet-grid button:hover { border-color: var(--cyan); color: var(--ink); }
+  .planet-grid button[aria-pressed="true"] {
+    border-color: var(--cyan);
+    color: var(--ink);
+    background: rgba(70, 230, 210, .10);
+    box-shadow: inset 0 0 0 1px rgba(70,230,210,.3);
+  }
+
+  .actions { display: flex; gap: 10px; }
+  .btn {
+    flex: 1;
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: .92rem;
+    padding: 11px 14px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: .15s;
+  }
+  .btn-launch {
+    background: linear-gradient(180deg, var(--amber-2), var(--amber));
+    color: #22140a;
+    box-shadow: 0 6px 18px rgba(255,122,60,.28);
+  }
+  .btn-launch:hover { filter: brightness(1.07); transform: translateY(-1px); }
+  .btn-launch:active { transform: translateY(0); }
+  .btn-reset {
+    background: transparent;
+    border-color: var(--line);
+    color: var(--muted);
+    flex: 0 0 auto;
+    padding-inline: 16px;
+  }
+  .btn-reset:hover { border-color: var(--muted); color: var(--ink); }
+  .btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+  /* ---------- results ---------- */
+  .results {
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .stat .label {
+    font-size: .62rem;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+  .stat .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--cyan);
+    margin-top: 3px;
+    line-height: 1;
+  }
+  .stat .num .u { font-size: .72rem; color: var(--muted); font-weight: 400; margin-left: 3px; }
+  .stat.impact .num { color: var(--amber-2); }
+
+  footer {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: .78rem;
+    font-family: var(--font-mono);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  footer code { color: var(--cyan); background: rgba(70,230,210,.08); padding: 1px 6px; border-radius: 5px; }
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <p class="eyebrow">Contrôle de mission · Balistique</p>
+    <h1>Simulateur de trajectoire de fusée</h1>
+    <p class="lede">Règle l'angle de tir et la vitesse initiale, puis lance. La fusée décolle du pas de tir à gauche
+      et retombe à droite&nbsp;— la portée d'impact dépend entièrement de tes réglages.</p>
+  </header>
+
+  <div class="console">
+    <section class="viewport">
+      <canvas id="stage"></canvas>
+      <div class="hud">
+        <div class="chip"><span class="k">Alt</span><span class="v" id="hudAlt">0 m</span></div>
+        <div class="chip"><span class="k">Vit</span><span class="v" id="hudVel">0 m/s</span></div>
+        <div class="chip"><span class="k">Dist</span><span class="v" id="hudDist">0 m</span></div>
+      </div>
+    </section>
+
+    <aside class="controls">
+      <h2>Paramètres de lancement</h2>
+
+      <div class="field angle-field">
+        <div class="row">
+          <label for="angle">Angle de tir</label>
+          <span class="readout"><span id="angleOut">45</span>°</span>
+        </div>
+        <div class="row-dial">
+          <svg class="dial" width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
+            <path d="M6 46 A40 40 0 0 1 46 46" fill="none" stroke="#1f2d47" stroke-width="2"/>
+            <line x1="6" y1="46" x2="46" y2="46" stroke="#1f2d47" stroke-width="2"/>
+            <line id="needle" x1="6" y1="46" x2="46" y2="46" stroke="#ff7a3c" stroke-width="2.4"
+                  stroke-linecap="round" transform="rotate(-45 6 46)"/>
+            <circle cx="6" cy="46" r="3.2" fill="#ffb347"/>
+          </svg>
+          <div class="slider-wrap">
+            <input type="range" id="angle" min="5" max="85" step="1" value="45">
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="row">
+          <label for="speed">Vitesse initiale</label>
+          <span class="readout"><span id="speedOut">60</span> m/s</span>
+        </div>
+        <input type="range" id="speed" min="10" max="150" step="1" value="60">
+      </div>
+
+      <div class="field">
+        <div class="row"><label>Gravité</label></div>
+        <div class="planet-grid" id="planets">
+          <button data-g="9.81" aria-pressed="true">Terre<span class="g">9.81 m/s²</span></button>
+          <button data-g="1.62" aria-pressed="false">Lune<span class="g">1.62 m/s²</span></button>
+          <button data-g="3.71" aria-pressed="false">Mars<span class="g">3.71 m/s²</span></button>
+          <button data-g="24.79" aria-pressed="false">Jupiter<span class="g">24.79 m/s²</span></button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-launch" id="launch">🚀 Lancer</button>
+        <button class="btn btn-reset" id="reset">Réinit.</button>
+      </div>
+
+      <div class="results">
+        <div class="stat impact">
+          <div class="label">Portée (impact)</div>
+          <div class="num"><span id="rRange">—</span><span class="u">m</span></div>
+        </div>
+        <div class="stat">
+          <div class="label">Altitude max</div>
+          <div class="num"><span id="rApex">—</span><span class="u">m</span></div>
+        </div>
+        <div class="stat">
+          <div class="label">Temps de vol</div>
+          <div class="num"><span id="rTime">—</span><span class="u">s</span></div>
+        </div>
+        <div class="stat">
+          <div class="label">Vitesse d'impact</div>
+          <div class="num"><span id="rImp">—</span><span class="u">m/s</span></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <span>Modèle&nbsp;: mouvement de projectile idéal, sans résistance de l'air.</span>
+    <code>portée = v²·sin(2θ) / g</code>
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const canvas = $("stage");
+  const ctx = canvas.getContext("2d");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- inputs / state ----
+  const els = {
+    angle: $("angle"), speed: $("speed"),
+    angleOut: $("angleOut"), speedOut: $("speedOut"),
+    needle: $("needle"),
+    hudAlt: $("hudAlt"), hudVel: $("hudVel"), hudDist: $("hudDist"),
+    rRange: $("rRange"), rApex: $("rApex"), rTime: $("rTime"), rImp: $("rImp"),
+  };
+
+  const state = {
+    angle: 45, speed: 60, g: 9.81,
+    T: 0, range: 0, apex: 0,       // flight time, range, max height
+    t: 0,                          // current sim time
+    flying: false, finished: false,
+    animStart: 0, animDur: 0,
+    burstStart: -1,
+    stars: [],
+  };
+
+  // stars in fractional coords so they survive resize
+  for (let i = 0; i < 90; i++) {
+    state.stars.push({ x: Math.random(), y: Math.random() * 0.72, r: Math.random() * 1.3 + 0.3, a: Math.random() * 0.6 + 0.2 });
+  }
+
+  let W = 0, H = 0, dpr = 1;
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+
+  // ---- physics ----
+  function recompute() {
+    const rad = state.angle * Math.PI / 180;
+    const v = state.speed, g = state.g;
+    state.vx = v * Math.cos(rad);
+    state.vy0 = v * Math.sin(rad);
+    state.T = (2 * state.vy0) / g;
+    state.range = (v * v * Math.sin(2 * rad)) / g;
+    state.apex = (state.vy0 * state.vy0) / (2 * g);
+  }
+  const posX = (t) => state.vx * t;
+  const posY = (t) => state.vy0 * t - 0.5 * state.g * t * t;
+  const velAt = (t) => Math.hypot(state.vx, state.vy0 - state.g * t);
+
+  // nice tick step (1/2/5 × 10^n)
+  function niceStep(raw) {
+    if (raw <= 0 || !isFinite(raw)) return 1;
+    const p = Math.pow(10, Math.floor(Math.log10(raw)));
+    const n = raw / p;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
+  }
+  const fmt = (n) => Math.abs(n) >= 100 ? Math.round(n).toLocaleString("fr-FR")
+                    : Math.abs(n) >= 10 ? n.toFixed(0) : n.toFixed(1);
+
+  // ---- world <-> screen ----
+  function frame() {
+    const padL = 46, padR = 26, padT = 26, padB = 42;
+    const groundY = H - padB;
+    const worldW = Math.max(state.range, 1);
+    const worldH = Math.max(state.apex, 1);
+    const scale = Math.min((W - padL - padR) / worldW, (groundY - padT) / worldH);
+    return {
+      groundY, padL,
+      sx: (x) => padL + x * scale,
+      sy: (y) => groundY - y * scale,
+      scale,
+    };
+  }
+
+  // ---- drawing ----
+  function draw() {
+    if (!W || !H) return;
+    const f = frame();
+
+    // sky
+    const sky = ctx.createLinearGradient(0, 0, 0, f.groundY);
+    sky.addColorStop(0, "#05070f");
+    sky.addColorStop(0.7, "#0a1120");
+    sky.addColorStop(1, "#111d33");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
+
+    // stars
+    for (const s of state.stars) {
+      ctx.globalAlpha = s.a;
+      ctx.fillStyle = "#cfe3ff";
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * f.groundY, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // impact-side horizon glow
+    const glow = ctx.createRadialGradient(W - 60, f.groundY, 8, W - 60, f.groundY, 220);
+    glow.addColorStop(0, "rgba(255,122,60,.16)");
+    glow.addColorStop(1, "rgba(255,122,60,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    drawGrid(f);
+
+    // ground
+    ctx.fillStyle = "#0c1526";
+    ctx.fillRect(0, f.groundY, W, H - f.groundY);
+    ctx.strokeStyle = "rgba(70,230,210,.5)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, f.groundY + 0.5);
+    ctx.lineTo(W, f.groundY + 0.5);
+    ctx.stroke();
+
+    drawPad(f);
+
+    // predicted full arc (faint dashed)
+    if (state.range > 0.5) {
+      ctx.save();
+      ctx.setLineDash([4, 6]);
+      ctx.strokeStyle = "rgba(70,230,210,.28)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let i = 0; i <= 120; i++) {
+        const t = (i / 120) * state.T;
+        const X = f.sx(posX(t)), Y = f.sy(Math.max(posY(t), 0));
+        i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // travelled arc (bright)
+    const tNow = Math.min(state.t, state.T);
+    if ((state.flying || state.finished) && tNow > 0) {
+      ctx.save();
+      ctx.strokeStyle = "#46e6d2";
+      ctx.lineWidth = 2.4;
+      ctx.shadowColor = "rgba(70,230,210,.7)";
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      const steps = 90;
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * tNow;
+        const X = f.sx(posX(t)), Y = f.sy(Math.max(posY(t), 0));
+        i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // impact marker
+    if (state.finished) drawImpact(f);
+
+    // rocket (while flying, before impact)
+    if (state.flying && state.t < state.T) {
+      const t = state.t;
+      const X = f.sx(posX(t)), Y = f.sy(posY(t));
+      const rot = Math.atan2(-(state.vy0 - state.g * t), state.vx);
+      drawRocket(X, Y, rot, true);
+    } else if (!state.flying && !state.finished) {
+      // resting on the pad, tilted to the chosen launch angle
+      drawRocket(f.sx(0), f.groundY - 12, -state.angle * Math.PI / 180, false);
+    }
+
+    updateHud(f);
+  }
+
+  function drawGrid(f) {
+    ctx.font = "10px " + getComputedStyle(document.body).getPropertyValue("--font-mono");
+    ctx.textBaseline = "alphabetic";
+    // vertical distance ticks
+    const stepX = niceStep(Math.max(state.range, 1) / 6);
+    ctx.strokeStyle = "rgba(120,140,180,.10)";
+    ctx.fillStyle = "rgba(133,147,179,.7)";
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= state.range * 1.02 + stepX; x += stepX) {
+      const X = f.sx(x);
+      if (X > W - 10) break;
+      ctx.beginPath(); ctx.moveTo(X, 20); ctx.lineTo(X, f.groundY); ctx.stroke();
+      ctx.textAlign = "center";
+      ctx.fillText(fmt(x), X, f.groundY + 14);
+    }
+    // horizontal altitude ticks
+    const stepY = niceStep(Math.max(state.apex, 1) / 4);
+    for (let y = stepY; y <= state.apex * 1.05 + stepY; y += stepY) {
+      const Y = f.sy(y);
+      if (Y < 18) break;
+      ctx.strokeStyle = "rgba(120,140,180,.08)";
+      ctx.beginPath(); ctx.moveTo(38, Y); ctx.lineTo(W, Y); ctx.stroke();
+      ctx.fillStyle = "rgba(133,147,179,.6)";
+      ctx.textAlign = "left";
+      ctx.fillText(fmt(y), 4, Y + 3);
+    }
+  }
+
+  function drawPad(f) {
+    const x = f.sx(0), y = f.groundY;
+    ctx.fillStyle = "#26364f";
+    ctx.beginPath();
+    ctx.moveTo(x - 14, y); ctx.lineTo(x - 9, y - 9);
+    ctx.lineTo(x + 9, y - 9); ctx.lineTo(x + 14, y);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#3a4d6b";
+    ctx.fillRect(x - 12, y - 3, 24, 3);
+  }
+
+  function drawRocket(x, y, rot, thrusting) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    // flame
+    if (thrusting) {
+      const flick = 10 + Math.random() * 10;
+      const fl = ctx.createLinearGradient(-11, 0, -11 - flick, 0);
+      fl.addColorStop(0, "rgba(255,220,120,.95)");
+      fl.addColorStop(0.5, "rgba(255,122,60,.85)");
+      fl.addColorStop(1, "rgba(255,60,20,0)");
+      ctx.fillStyle = fl;
+      ctx.beginPath();
+      ctx.moveTo(-10, -4);
+      ctx.lineTo(-11 - flick, 0);
+      ctx.lineTo(-10, 4);
+      ctx.closePath();
+      ctx.fill();
+    }
+    // fins
+    ctx.fillStyle = "#ff7a3c";
+    ctx.beginPath(); ctx.moveTo(-8, -3.5); ctx.lineTo(-13, -8); ctx.lineTo(-8, -1.5); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-8, 3.5); ctx.lineTo(-13, 8); ctx.lineTo(-8, 1.5); ctx.closePath(); ctx.fill();
+    // body
+    const body = ctx.createLinearGradient(0, -5, 0, 5);
+    body.addColorStop(0, "#f4f7ff");
+    body.addColorStop(0.5, "#cdd6e6");
+    body.addColorStop(1, "#93a0b8");
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.moveTo(-10, -5);
+    ctx.lineTo(8, -5);
+    ctx.quadraticCurveTo(16, 0, 8, 5);
+    ctx.lineTo(-10, 5);
+    ctx.quadraticCurveTo(-13, 0, -10, -5);
+    ctx.closePath();
+    ctx.fill();
+    // nose
+    ctx.fillStyle = "#ff7a3c";
+    ctx.beginPath(); ctx.moveTo(8, -5); ctx.quadraticCurveTo(16, 0, 8, 5); ctx.closePath(); ctx.fill();
+    // window
+    ctx.fillStyle = "#46e6d2";
+    ctx.beginPath(); ctx.arc(-1, 0, 2.4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawImpact(f) {
+    const x = f.sx(state.range), y = f.groundY;
+    // vertical drop guide
+    ctx.save();
+    ctx.setLineDash([3, 5]);
+    ctx.strokeStyle = "rgba(255,122,60,.5)";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, 24); ctx.lineTo(x, y); ctx.stroke();
+    ctx.restore();
+
+    // burst ring (brief)
+    if (state.burstStart >= 0) {
+      const dt = (performance.now() - state.burstStart) / 700;
+      if (dt < 1) {
+        ctx.save();
+        ctx.globalAlpha = 1 - dt;
+        ctx.strokeStyle = "#ffb347";
+        ctx.lineWidth = 3 * (1 - dt) + 0.5;
+        ctx.beginPath(); ctx.arc(x, y, 6 + dt * 34, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+      }
+    }
+    // crater mark
+    ctx.fillStyle = "#ff7a3c";
+    ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#ffb347";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x - 6, y - 6); ctx.lineTo(x + 6, y - 6); ctx.stroke();
+
+    // label bubble
+    const label = "IMPACT · " + fmt(state.range) + " m";
+    ctx.font = "600 11px " + getComputedStyle(document.body).getPropertyValue("--font-mono");
+    const w = ctx.measureText(label).width + 16;
+    let bx = x - w / 2;
+    bx = Math.max(4, Math.min(bx, W - w - 4));
+    const by = y - 30;
+    ctx.fillStyle = "rgba(255,122,60,.16)";
+    ctx.strokeStyle = "rgba(255,122,60,.6)";
+    roundRect(bx, by, w, 20, 6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#ffb347";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(label, bx + w / 2, by + 10.5);
+    ctx.textBaseline = "alphabetic";
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function updateHud(f) {
+    let alt = 0, vel = state.speed, dist = 0;
+    if (state.flying && state.t <= state.T) {
+      alt = Math.max(posY(state.t), 0);
+      vel = velAt(state.t);
+      dist = posX(state.t);
+    } else if (state.finished) {
+      alt = 0; vel = state.speed; dist = state.range;
+    }
+    els.hudAlt.textContent = fmt(alt) + " m";
+    els.hudVel.textContent = fmt(vel) + " m/s";
+    els.hudDist.textContent = fmt(dist) + " m";
+  }
+
+  // ---- results ----
+  function showResults() {
+    els.rRange.textContent = fmt(state.range);
+    els.rApex.textContent = fmt(state.apex);
+    els.rTime.textContent = state.T.toFixed(1);
+    els.rImp.textContent = fmt(state.speed); // no drag: impact speed = launch speed
+  }
+  function clearResults() {
+    els.rRange.textContent = els.rApex.textContent = els.rTime.textContent = els.rImp.textContent = "—";
+  }
+
+  // ---- animation ----
+  let raf = 0;
+  function launch() {
+    recompute();
+    if (state.range < 0.5) return;
+    cancelAnimationFrame(raf);
+    state.flying = true; state.finished = false; state.t = 0;
+    state.burstStart = -1;
+    state.animDur = Math.min(Math.max(state.T * 0.35, 1.6), 4) * 1000;
+
+    if (reduceMotion) {
+      state.t = state.T; state.flying = false; state.finished = true;
+      state.burstStart = -1;
+      showResults(); draw(); return;
+    }
+    state.animStart = performance.now();
+    raf = requestAnimationFrame(tick);
+  }
+  function tick(now) {
+    const p = (now - state.animStart) / state.animDur;
+    state.t = Math.min(p, 1) * state.T;
+    draw();
+    if (p < 1) {
+      raf = requestAnimationFrame(tick);
+    } else {
+      state.flying = false; state.finished = true; state.t = state.T;
+      state.burstStart = performance.now();
+      showResults();
+      draw();
+      raf = requestAnimationFrame(function fade(n) {
+        draw();
+        if (n - state.burstStart < 720) raf = requestAnimationFrame(fade);
+      });
+    }
+  }
+  function reset() {
+    cancelAnimationFrame(raf);
+    state.flying = false; state.finished = false; state.t = 0; state.burstStart = -1;
+    clearResults();
+    recompute();
+    draw();
+  }
+
+  // ---- input wiring ----
+  function syncAngle() {
+    state.angle = +els.angle.value;
+    els.angleOut.textContent = state.angle;
+    els.needle.setAttribute("transform", `rotate(${-state.angle} 6 46)`);
+    if (!state.flying) { reset(); }
+  }
+  function syncSpeed() {
+    state.speed = +els.speed.value;
+    els.speedOut.textContent = state.speed;
+    if (!state.flying) { reset(); }
+  }
+  els.angle.addEventListener("input", syncAngle);
+  els.speed.addEventListener("input", syncSpeed);
+
+  $("planets").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    for (const btn of e.currentTarget.querySelectorAll("button")) btn.setAttribute("aria-pressed", "false");
+    b.setAttribute("aria-pressed", "true");
+    state.g = +b.dataset.g;
+    if (!state.flying) reset();
+  });
+
+  $("launch").addEventListener("click", launch);
+  $("reset").addEventListener("click", reset);
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space" && e.target.tagName !== "BUTTON") { e.preventDefault(); launch(); }
+  });
+
+  const ro = new ResizeObserver(resize);
+  ro.observe(canvas);
+
+  // init
+  els.needle.setAttribute("transform", "rotate(-45 6 46)");
+  recompute();
+  requestAnimationFrame(() => { resize(); });
+})();
+</script>
+</body>
+</html>
