@@ -43,7 +43,21 @@ def main():
             if attr.isupper() and isinstance(v, dict) and not attr.startswith("_"):
                 todo.update(v)
 
+    # Paginas que YA existen en carrito5.com. No se sobrescriben: se generan
+    # aparte, en _propuestas/, para que el cliente compare antes de decidir.
+    YA_EXISTEN = {"descargar-tpv-gratis.html", "sectores-y-negocios.html",
+                  "software-tpv-comercio-local.html", "verifactu-gratis.html",
+                  "index.html", "tpv-tienda-ropa.html", "tpv-zapateria.html"}
+
     paginas = {f: construir(f, d) for f, d in todo.items()}
+    propuestas = {f: h for f, h in paginas.items() if f in YA_EXISTEN}
+    paginas = {f: h for f, h in paginas.items() if f not in YA_EXISTEN}
+    if propuestas:
+        pdir = os.path.join(out, "_propuestas")
+        os.makedirs(pdir, exist_ok=True)
+        for f, h in propuestas.items():
+            open(os.path.join(pdir, f), "w", encoding="utf-8").write(h)
+        print(f"  {len(propuestas)} propuestas en _propuestas/ (esas paginas ya existen en la web viva)")
 
     import glob
     previas = [p for p in glob.glob(os.path.join(out, "*.html"))
