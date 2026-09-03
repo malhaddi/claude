@@ -121,6 +121,42 @@ hub("operativa-tpv.asp",
      ("Preguntas frecuentes sobre TPV", "/preguntas-frecuentes-tpv.asp"),
      ("Comparativas de TPV", "/comparativas-tpv.asp")])
 
-print("hubs generados: abrir-un-negocio.asp, operativa-tpv.asp")
+
+# ------------------------------------------------------------ normativa
+NORM=["que-es-verifactu.asp","verifactu-cuando-entra-en-vigor.asp","verifactu-autonomos.asp",
+      "verifactu-gratis.asp","sanciones-ley-antifraude.asp","ticketbai-pais-vasco.asp",
+      "factura-electronica-obligatoria-crea-y-crece.asp","obligaciones-legales-abrir-tienda.asp",
+      "declaracion-responsable-software-facturacion.asp","ley-antifraude-tpv.asp","verifactu-tpv.asp"]
+items_norm=[(f,*titulo_de(f)) for f in NORM if os.path.exists(os.path.join(OUT,f))]
+
+hub("normativa-comercio.asp",
+    "Normativa del comercio: VeriFactu, ticketBAI y obligaciones",
+    "Guías sobre la normativa que afecta a un comercio en España: VeriFactu y sus fechas, ticketBAI, factura electrónica, sanciones y obligaciones de cartelería.",
+    "normativa comercio españa, obligaciones legales tienda, verifactu ticketbai factura electronica, ley antifraude comercio",
+    "Normativa del comercio, explicada sin alarmismo",
+    "VeriFactu, ticketBAI, factura electrónica y las obligaciones del día a día. Con las fechas vigentes y remitiendo a tu asesor donde toca.",
+    '<i class="fa-solid fa-scale-balanced"></i> NORMATIVA Y OBLIGACIONES',
+    ["Hay tres normas distintas circulando a la vez y se confunden constantemente: VeriFactu, que regula cómo se comporta tu programa; la factura electrónica entre empresas, que viene de otra ley; y ticketBAI, que es el sistema foral vasco y sustituye al estatal en su territorio.",
+     "Estas páginas separan las tres, dan las fechas que están vigentes ahora mismo y dicen con claridad dónde la respuesta correcta es «pregúntaselo a tu asesor». Ninguna sustituye a un asesoramiento fiscal: son información general para que llegues a esa conversación sabiendo qué preguntar."],
+    [("Guías de normativa", items_norm)],
+    [("¿VeriFactu y la factura electrónica obligatoria son lo mismo?",
+      "No. VeriFactu regula cómo genera y conserva los registros tu programa de facturación, y viene de la Ley Antifraude 11/2021. La factura electrónica entre empresas viene de la Ley Crea y Crece y regula el formato de intercambio. Puedes estar afectado por las dos, por una o por ninguna."),
+     ("¿Cuándo es obligatorio VeriFactu?",
+      "Con el calendario vigente tras el Real Decreto-ley 15/2025, el 1 de enero de 2027 para sociedades y el 1 de julio de 2027 para autónomos. Durante 2026 la adaptación es voluntaria. El calendario ya se ha aplazado dos veces: confirma tu fecha con tu asesor."),
+     ("Tengo la tienda en el País Vasco. ¿Qué me aplica?",
+      "En Álava, Bizkaia y Gipuzkoa lo aplicable es ticketBAI, el sistema de las haciendas forales, no VeriFactu. Cada territorio tiene su propia normativa y su calendario, y el software debe estar registrado en el tuyo."),
+     ("¿Qué documento demuestra que mi programa cumple?",
+      "La declaración responsable que emite el fabricante del software, con la versión y la fecha. Pídesela por escrito y guárdala con tu documentación fiscal: es tu respaldo, porque la norma contempla infracciones también para quien usa sistemas que no cumplen."),
+     ("¿Me pueden multar ya en 2026?",
+      "La obligación empieza en 2027. Durante 2026 la adaptación es voluntaria y no hay sanción por no haberla hecho. Desconfía de quien te venda con prisa y con cifras de multas tajantes: quien puede valorar tu exposición real es tu asesor.")],
+    [("Software TPV homologado VeriFactu", "/verifactu-tpv.asp"),
+     ("Abrir un negocio", "/abrir-un-negocio.asp"),
+     ("Operativa diaria del TPV", "/operativa-tpv.asp"),
+     ("Software TPV por sector", "/tpv_negocios.asp"),
+     ("Preguntas frecuentes sobre TPV", "/preguntas-frecuentes-tpv.asp"),
+     ("Comparativas de TPV", "/comparativas-tpv.asp")])
+print(f"  guias de normativa enlazadas: {len(items_norm)}")
+
+print("hubs generados: abrir-un-negocio.asp, operativa-tpv.asp, normativa-comercio.asp")
 print(f"  guias de apertura enlazadas: {len(items_abrir)}")
 print(f"  guias de operativa enlazadas: {len(items_oper)}")

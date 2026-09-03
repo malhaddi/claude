@@ -88,7 +88,7 @@ GENERADORES = [
     ("gen_funciones.py", ["site"]),
     ("gen_verifactu.py", ["site"]),
     ("gen_faq_hub.py", ["site"]),
-    ("gen_generico.py", ["abrir_1", "abrir_2", "operativa_1", "operativa_2", "vs_1", "vs_2"]),
+    ("gen_generico.py", ["abrir_1", "abrir_2", "operativa_1", "operativa_2", "vs_1", "vs_2", "normativa_1"]),
     ("gen_hubs2.py", []),
 ]
 

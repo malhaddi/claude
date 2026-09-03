@@ -16,6 +16,12 @@ NUEVOS_HUBS = [
      "Impresora, lector, cajón y equipo: qué comprar"),
     ("/preguntas-frecuentes-tpv.asp", "Preguntas frecuentes", "fa-circle-question",
      "Precio, VeriFactu, migración y soporte sin marketing"),
+    ("/normativa-comercio.asp", "Normativa del comercio", "fa-scale-balanced",
+     "VeriFactu, ticketBAI, factura electrónica y sanciones"),
+    ("/abrir-un-negocio.asp", "Cómo abrir un negocio", "fa-store",
+     "Guías por sector: inversión, trámites y errores"),
+    ("/operativa-tpv.asp", "Operativa diaria del TPV", "fa-list-check",
+     "Devoluciones, precios, cierres, informes"),
 ]
 
 # Enlaces contextuales: sector -> paginas de funcion relevantes
