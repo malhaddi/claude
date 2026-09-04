@@ -1,0 +1,113 @@
+  paginas analizadas: 272  de 2 dominios
+  intenciones distintas: 239
+  intenciones con mas de una pagina: 28
+  de esas, repartidas entre dominios distintos: 14
+
+  A. LA MISMA INTENCION EN LOS DOS DOMINIOS
+     (compites contra ti mismo: una de las dos no va a posicionar)
+
+   !! [telefonia informatica sat]
+        abacosoftware   negocio_reparaciones.asp
+        abacosoftware   negocio_telefonia.asp
+        abacosoftware   negocio_telefonia_sat.asp
+        carrito5        tpv-informatica-telefonia.html
+
+   !! [electrodomestico abrir]
+        abacosoftware   abrir-tienda-electrodomesticos.asp
+        abacosoftware   negocio_electrodomesticos.asp
+        carrito5        tpv-tienda-electrodomesticos.html
+
+   !! [perfumeria cosmetica]
+        abacosoftware   negocio_cosmetica.asp
+        abacosoftware   negocio_perfumeria.asp
+        carrito5        tpv-drogueria.html
+
+   !! [parafarmacia herboristeria]
+        abacosoftware   negocio_parafarmacia.asp
+        carrito5        tpv-herboristeria-parafarmacia.html
+        carrito5        tpv-tienda-parafarmacia.html
+
+   !! [arqueo cierre diario]
+        abacosoftware   arqueo-de-caja-cierre-diario.asp
+        carrito5        blog/como-hacer-arqueo-de-caja-cierre-z.html
+
+   !! [caza pesca armeria]
+        abacosoftware   negocio_armeria.asp
+        carrito5        tpv-tienda-pesca-caza.html
+
+   !! [comic manga]
+        abacosoftware   negocio_comics.asp
+        carrito5        tpv-tienda-manga-comics.html
+
+   !! [cosmetica natural]
+        abacosoftware   negocio_cosmetica_natural.asp
+        carrito5        tpv-tienda-cosmetica-natural.html
+
+   !! [ecotienda herboristeria]
+        abacosoftware   negocio_herboristeria.asp
+        carrito5        tpv-herboristeria.html
+
+   !! [informatica]
+        abacosoftware   negocio_informatica.asp
+        carrito5        tpv-electronica-informaticas.html
+
+   !! [papeleria]
+        abacosoftware   negocio_papeleria.asp
+        carrito5        tpv-papeleria.html
+
+   !! [hogar textil cama]
+        abacosoftware   negocio_textil_hogar.asp
+        carrito5        tpv-textil-hogar.html
+
+   !! [frecuent pregunta sobre]
+        abacosoftware   preguntas-frecuentes-tpv.asp
+        carrito5        preguntas-frecuentes-tpv-verifactu.html
+
+   !! [termino uso]
+        abacosoftware   terminos_uso.asp
+        carrito5        pg/terminos.asp
+
+  B. VARIAS PAGINAS DEL MISMO DOMINIO -> 14 grupos
+
+   ?  [barra codigo etiqueta]  (abacosoftware)
+        app_etiquetas_ql5.asp
+        etiquetas-codigo-de-barras-tpv.asp
+   ?  [homologado index nube]  (abacosoftware)
+        index.asp
+        index.html
+   ?  [mascotas pienso accesorio]  (abacosoftware)
+        negocio_animales.asp
+        negocio_petshop.asp
+   ?  [almoneda antiguedad coleccionismo]  (abacosoftware)
+        negocio_antiguedad.asp
+        negocio_antiguedades.asp
+   ?  [articulo erotico sex]  (abacosoftware)
+        negocio_articulos_eroticos.asp
+        negocio_sexshop.asp
+   ?  [colchoneria decoracion muebleria]  (abacosoftware)
+        negocio_colchoneria.asp
+        negocio_muebles.asp
+   ?  [complemento decoracion regalo]  (abacosoftware)
+        negocio_complementos.asp
+        negocio_decoracion.asp
+   ?  [bebe puericultura infantil]  (abacosoftware)
+        negocio_infantil.asp
+        negocio_puericultura.asp
+   ?  [mano ocasion segundamano]  (abacosoftware)
+        negocio_segunda_mano.asp
+        negocio_vintage_segundamano.asp
+   ?  [consulta desde sugerencia]  (abacosoftware)
+        tpv_consultas_desde_web.asp
+        tpv_consultas_desde_web_med.asp
+   ?  [faq frecuent pregunta]  (carrito5)
+        preguntas-frecuentes-operativa-caja-tienda.html
+        preguntas-frecuentes-verifactu-ley-antifraude.html
+   ?  [control stock zapateria]  (carrito5)
+        programa-stock-zapateria.html
+        tpv-zapateria.html
+   ?  [minorista local]  (carrito5)
+        software-tpv-comercio-local.html
+        tpv-comercio.html
+   ?  [instrumentos]  (carrito5)
+        tpv-tienda-instrumentos-musica.html
+        tpv-tiendas-instrumentos-musica.html
