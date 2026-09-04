@@ -18,7 +18,15 @@ El fichero de keywords puede ser una exportacion de Search Console, Semrush o
 Ahrefs, o una lista a pelo. Se detecta la columna de la busqueda por el nombre
 de cabecera; si no hay cabecera reconocible, se usa la primera columna.
 """
-import csv, os, sys
+import csv, os, signal, sys
+
+# Sin esto, cerrar la salida antes de tiempo ("| head") revienta con
+# BrokenPipeError en vez de terminar en silencio, que es lo que hace cualquier
+# orden de Unix.
+try:
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+except (AttributeError, ValueError):
+    pass                              # Windows no tiene SIGPIPE
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import clusters as C                                    # noqa: E402
