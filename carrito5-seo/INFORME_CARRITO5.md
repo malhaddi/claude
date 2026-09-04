@@ -122,12 +122,66 @@ El plan gratuito es **Plan Inicio, hasta 1.000 artículos**. Lo dicen las propia
 páginas vivas recogidas en el índice. Queda confirmada la corrección que ya hice: el
 «50 tickets al mes» del dossier interno **es incorrecto** y no debe publicarse.
 
+## 7. Madrid: la plaza más grande de España no tiene página
+
+El menú del propio sitio enumera once plazas. Diez tienen página general. Una no:
+
+```
+   !!  madrid       solo sectorial: tpv-instrumentos-musica-madrid.html
+   ok  barcelona    software-tpv-barcelona.html
+   ok  valencia     software-tpv-valencia.html
+   ok  sevilla      software-tpv-sevilla-centro-tetuan.html
+   ok  malaga       software-tpv-malaga-larios-centro.html  + tpv-malaga.html
+   ok  bilbao       software-tpv-bilbao-gran-via-casco-viejo.html
+   ok  zaragoza     software-tpv-zaragoza-centro-delicias.html + tpv-zaragoza.html
+   ok  mallorca     tpv-palma-de-mallorca.html
+   ok  alicante     tpv-alicante.html
+   ok  murcia       tpv-murcia.html
+   ok  vigo         tpv-vigo.html
+```
+
+Madrid aparece **solo** en `tpv-instrumentos-musica-madrid.html`, que es una página
+de sector cruzado con ciudad: capta «TPV tienda de música Madrid», no «TPV Madrid».
+Los barrios de Madrid (Salamanca, Malasaña, Chueca, Chamberí, Sol, Gran Vía, Retiro,
+Alcalá de Henares, Getafe, Leganés) se citan en los menús, pero **ninguno devuelve
+una página propia** en cinco búsquedas distintas.
+
+Hay Vigo y hay Murcia. No hay Madrid.
+
+**Dos lecturas posibles, y conviene saber cuál es antes de actuar:**
+
+1. Las páginas de Madrid **no existen**. Entonces es el mayor hueco de contenido del
+   sitio, y por bastante: se está renunciando al mercado minorista más grande del país
+   mientras se cubre Vigo.
+2. **Existen pero no están indexadas.** Sería igual de grave, y de otra manera: querría
+   decir que hay páginas huérfanas o bloqueadas que Google no llega a ver.
+
+No puedo distinguir las dos desde aquí, porque la ausencia en el índice de búsqueda no
+demuestra la ausencia en el servidor. **El `sitemap.xml` lo resuelve en un minuto.**
+La acción es la misma en los dos casos: mirar el sitemap, y si Madrid no está, es lo
+primero que hay que escribir.
+
+Se comprueba con `pipeline/cobertura_geografica.py`, que compara las plazas que el
+menú del sitio anuncia contra las que tienen página.
+
+## 8. Los barrios probablemente son secciones, no páginas
+
+`software-tpv-sevilla-centro-tetuan.html` cubre en una sola página Sierpes, Tetuán,
+Velázquez, Campana, O'Donnell y Plaza Nueva. `software-tpv-valencia.html` cubre Ciutat
+Vella, Ruzafa y Eixample. Es decir: **el barrio es un apartado dentro de la página de
+ciudad**, no una URL.
+
+Eso es una buena noticia para el inventario (son 74 URLs, no 200) y una decisión
+razonable: una página por barrio que no pueda decir nada específico de ese barrio sería
+contenido duplicado. Con el sitemap se confirma.
+
 ## Pendiente
 
-1. `sitemap.xml` para cerrar el inventario (bloqueado por el proxy, lo tiene que
-   pasar el cliente).
-2. Enumerar el cluster de barrios.
-3. Decidir el patrón de URL de ciudad antes de escribir una sola página nueva.
+1. **`sitemap.xml`** — resuelve a la vez el total real y la pregunta de Madrid
+   (bloqueado por el proxy, lo tiene que pasar el cliente).
+2. Si Madrid no está: escribir Madrid. Es la prioridad número uno del sitio.
+3. Decidir el patrón de URL de ciudad antes de escribir una sola página nueva,
+   y resolver los pares de Málaga y Zaragoza.
 4. El `aggregateRating` de 4,9 sobre 318 valoraciones sigue declarándose sin reseñas
    visibles. Es riesgo de acción manual. Decisión del cliente: retirarlo o publicar
    las reseñas.
